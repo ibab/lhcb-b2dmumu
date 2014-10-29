@@ -1,4 +1,4 @@
-B2Dmumu
-=======
+# B→Dμμ Branching fraction
 
-Master's project: Measuring the branching ratio of B2Dmumu
+Measuring the branching fraction of the decay B→Dμμ with LHCb
+

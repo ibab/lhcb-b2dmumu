@@ -2,7 +2,7 @@
 #
 # Descriptor:  [B_c+ -> (D_s+ -> K+ K- pi+) mu+ mu-]cc
 #
-# NickName:  Bc_Dsmumu=DecProdCut
+# NickName:  Bc_Dsmumu=BcVegPy,DecProdCut
 #
 # Production: BcVegPy
 #
@@ -13,6 +13,7 @@
 #
 # PhysicsWG: RD
 # Tested:  Yes
+# CPUTime: <1min
 # Responsible:    Igor Babuschkin
 # Email:  igor.babuschkin@cern.ch
 # Date: 20141030

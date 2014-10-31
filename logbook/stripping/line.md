@@ -1,4 +1,3 @@
-line.md
 
 # Info on Stripping Line
 

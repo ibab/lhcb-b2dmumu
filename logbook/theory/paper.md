@@ -1,4 +1,3 @@
-paper.md
 
 # Existing paper: Study of B0→D0μ+μ− Decay in Perturbative QCD Approach
 

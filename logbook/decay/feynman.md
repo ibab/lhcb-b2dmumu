@@ -1,4 +1,4 @@
-feynman.md
+
 # Understanding the decay: Feynman diagrams
 
 There seem to be 3 contributions to B→Dμμ:

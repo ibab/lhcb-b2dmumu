@@ -1,4 +1,3 @@
-basics.md
 
 # Basic tools and techniques used
 

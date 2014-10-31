@@ -1,4 +1,3 @@
-general.md
 
 # General info on finding/generating MC
 

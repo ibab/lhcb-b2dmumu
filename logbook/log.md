@@ -1,4 +1,3 @@
-log.md
 
 # Chronological log
 

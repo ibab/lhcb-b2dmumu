@@ -1,0 +1,1548 @@
+----------------------------------------------------------------------------
+! Package     : Phys/DecayTreeTuple
+! Responsible : Rob Lambert, Patrick Koppenburg & The WGs
+! Purpose     : Option-steered tuples. 
+!-----------------------------------------------------------------------------
+
+!========================= DecayTreeTuple v4r11 2014-10-30 =========================
+
+! 2014-10-03 - Olivier Deschamps
+ - TupleToolBremInfo : Fix issue in case of  non converted photon in the decay
+
+! 2014-10-02 - Olivier Deschamps
+ - TupleToolBremInfo : add DiElectron brem info for gamma->ee
+ - TupleToolSubMass  : fix problem in decay sorting for some rare configuration
+
+! 2014-09-08 - Chris Jones
+ - Update TupleToolPropertime and TupleToolParticleReFit to access vertex 
+   fitters and propertime fitters via the IDVAlgorithm interface, instead
+   of defining their own types.
+
+!========================= DecayTreeTuple v4r10 2014-07-25 =========================
+
+! 2014-07-03 - O. Deschamps
+ - TupleToolPi0Info  : Add 'daughters' info in case of merged pi0
+ - TupleToolBremInfo : Adapt to change in DaVinciTools. Brem multiplicity is
+                       now reliable even on microDST.
+
+!========================= DecayTreeTuple v4r9 2014-05-19 =========================
+
+! 2014-05-12 - Olli Lupton
+ - Overhaul TupleToolSwimmingInfo:
+  . Fill 0 TPs for events which were not swum, rather than returning an error code.
+  . Tweak logic for dealing with multiple candidates in ExtraLocation.
+  . Match composite particles to their TPs by comparing their daughters, rather than
+    comparing them directly. Copes better when the same candidate is tagged as both
+    flavours.
+  . Only write per-(trigger|stripping)-line TP decision branches if there are more
+    than one of them (i.e. don't duplicate ..._DEC to ..._DEC_linename if there's
+    only one line, as there typically is for the Stripping)
+  . Fix typo (?) where one of .._Stripping_nTP and .._Trigger_nTP got duplicated as 
+    .._nTP
+  . Increase maximum number of turning points from 100 to 1000 (some KSHH candidates
+    get >100)
+
+! 2014-04-09 - Albert Puig
+ - Cleanup of TupleToolVtxIsoln (removed unneeded vars and properties).
+ - Improved documentation in TupleToolVtxIsoln.
+
+!========================= DecayTreeTuple v4r8 2014-04-02 =========================
+
+! 2014-04-01 - Chris Jones
+ - Add DecayTreeTupleANNPID to package list.
+
+!========================= DecayTreeTuple v4r7 2014-02-20 =========================
+
+! 2014-01-31 - Chris Jones
+ - Fix a couple of minor bugs in TupleToolDecayTreeFitter :-
+  . Invalid check for verbose printout level
+  . Seg. fault when attempting for get the TES location for an object not in
+    the TES.
+
+! 2014-01-21 - Stefania Vecchi
+ - Added a protection on null pointers 
+ - Enabled writing of SSpionBDT
+
+!========================= DecayTreeTuple v4r6 2013-12-18 =========================
+
+! 2013-12-11 - Alex Shires
+ - TupleToolBremInfo - Add the HasBremAdded flag (the BremMultiplicity is not
+   correct on uDSTs).
+
+! 2013-12-10 - Stefania Vecchi
+ - TupleToolTagging: Add info on the chisquare of the vertex fit B+particle.
+
+! 2013-12-09 - Stefania Vecchi
+ - TupleToolTagging: Add Igor's code to save tagger informations
+                     (IP,p,pT,IP_B...) if StoreTaggersInfo = True.
+
+! 2013-11-30 - Stefania Vecchi
+ - TupleToolTagging: Add OS_Charm and SS_Proton taggers in the list of active
+                     taggers to save.
+
+!========================= DecayTreeTuple v4r5 2013-10-29 =========================
+
+! 2013-10-16 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter: Fix bug https://savannah.cern.ch/bugs/index.php?102869
+   Now there's a protection against non functional substitutions and against
+   mass constraining particles not in the decay tree.
+
+! 2013-10-09 - Patrick Koppenburg
+ - TupleToolGeometry: Fix bug https://savannah.cern.ch/bugs/index.php?102616
+   Now issue an error when a composite particle without a vertex is given, 
+   like a rho+. 
+
+!========================= DecayTreeTuple v4r4 2013-10-02 =========================
+
+! 2013-08-16 - Albert Puig
+ - New version of TupleToolVtxIsoln that makes use of the VertexIsolation tool.
+
+!========================= DecayTreeTuple v4r3 2013-08-01 =========================
+
+! 2013-07-23 - Chris Jones
+ - Update previous commit to check once during initialize() instead of 
+   during every call to fill(...).
+
+! 2013-07-10 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter: Bug #102007 : Always require an instance name.
+
+! 2013-07-07 - Stefania Vecchi
+ - TupleToolTagging.cpp: no more filling of the Tagging Category
+   Requires  Event/PhysEvent 159384
+
+!========================= DecayTreeTuple v4r2 2013-06-13 =========================
+
+! 2013-05-17 - Antonio Falabella
+  - TupleToolTagging.cpp: Changed in order to retrieve the flavour tagging
+    informations if they are present (for uDST/DST persistency).
+
+!========================= DecayTreeTuple v4r1 2013-04-05 =========================
+
+! 2013-03-21 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter: Allow for NULL PVs in PV comparison method. 
+   Fixes bug https://savannah.cern.ch/bugs/?100933.
+
+! 2013-03-07 - Chris Jones
+ - Change the way the tuple names for stable particles in 
+   TupleToolDecayTreeFitter to fix a problem where different types where being 
+   mixed in the same tuple branches.
+ - Prefer boost::lexical_cast over static_cast to char
+ - Fix a few minor performance issues related to not using references where
+   appropriate.
+
+! 2013-03-04 - Patrick Koppenburg
+ - New flag FilMultiPV for TupleToolGeometry (that's becoming a monster)
+
+! 2013-02-26 - Chris Jones
+ - Fix -pedantic compilation warnings
+
+! 2013-02-25 Kazu Akiba
+ - Adding TupleToolParticleStats. this tool only counts the number of particles
+   reconstructed, located in a particular location. By default it counts
+   the number of photons, but locations can be set to count any kind of particle.
+
+!========================= DecayTreeTuple v4r0p1 2013-02-20 =========================
+
+! 2013-01-18 - Chris Jones
+ - Small clean up and optimisation of TupleToolGeometry
+
+!========================= DecayTreeTuple v4r0 2012-11-30 =========================
+
+! 2012-11-29 - Marco Clemencic
+ - Added CMake configuration file.
+ - Modified requirements to simplify auto conversion to CMake.
+
+! 2012-11-22 - Chris Jones
+ - Major restructuring.
+  + Move the base classes and core components to a new package called
+    Phys/DecayTreeTupleBase.
+  + Move some components to various seperate new packages
+   . DecayTreeTupleDalitz    - 'Dalitz' tools
+   . DecayTreeTupleJets      - Jet tools
+   . DecayTreeTupleMC        - MC tools
+   . DecayTreeTupleMuonCalib - Muon PID calibration
+   . DecayTreeTupleReco      - Reconstruction information tools
+   . DecayTreeTupleTrigger   - Trigger and stripping tools
+
+! 2012-11-19 - Chris Jones
+ - Protect MCTupleToolKinematic against an empty MCVertex container and also 
+   NULL MCVertex pointers
+
+! 2012-11-16 - Chris Jones
+ - Minor clean up of TupleToolDira and TupleToolPrimaries
+ - Standardise the Trigger/TISTOS variable names with the rest of the tools
+   to start with <name>_
+
+! 2012-10-29 - Wouter Hulsbergen
+ - Make sure TTDecayTreeFitter uses TrackStateProvider to improve Ks tracks 
+   in 2012 dsts.
+
+! 2012-10-26 - Maurizio Martinelli
+ - Added a flag in TupleToolDecayTreeFitter to store the refitted tracks 
+   momentum.
+
+! 2012-10-24 - Alexandra Martin Sanchez
+ - Added TupleToolL0Calo.cpp, TupleToolL0Calo.h to compute 
+   L0 trigger efficiencies from decay tree tuple.
+
+! 2012-10-16 - Patrick Koppenburg
+ - Move MaxPV property to TupleToolBase. Use it in TupleToolDecayTreeFitter, 
+   TupleToolPrimaries and TupleToolGeometry
+ - TupleToolGeometry: new fields (verbose) AllIP and and AllIPchi2.
+
+!========================= DecayTreeTuple v3r26 2012-10-04 =========================
+
+! 2012-09-11 - Chris Jones
+ - Clean up base classes, making things private that have no reason to be protected
+ - Rework printout so it uses MsgStream and doesn't send any "\n" characters that
+   screw up Message Service indenting.
+ - Update various tools to use getIfExists
+ - Remove nPVs from TupleToolEventInfo. Implementation would not work on a uDST,
+   variable is available from TupleToolRecoStats (where it is better at home anyway)
+   in a way that is uDST friendly.
+
+!========================= DecayTreeTuple v3r25 2012-08-31 =========================
+
+! 2012-08-08 - Patrick Koppenburg
+ - src/TupleToolDecaytreeFitter : remove warning about the bug that was just fixed.
+
+! 2012-08-08 - Patrick Koppenburg
+ - src/TupleToolDecaytreeFitter : do not store original PV if refitted version is 
+   already included.
+   bug #89749: TupleToolDecayTreeFitter stores the chain wrt best PV twice when 
+               PV is refitted
+
+! 2012-0806 - Patrick Koppenburg
+ - src/TupleToolTriggerBase: complain when trailing Decision is missing.
+
+! 2012-07-31 - Patrick Koppenburg
+ - Backward incompatible changes (i.e. some variables will change)
+  . src/MCTupleToolKinematic.cpp : store OSCIL flag in Verbose mode only
+  . src/TupleToolDecayTreeFitter : rename chi2_B to chi2
+ - Backward compatible changes:
+  . src/DecayTreeTupleBase.* : inherit from DaVinciTupleAlg
+  . src/TupleToolTrackInfo.cpp : add prefix+"_TRACK_FirstMeasurementX,Y,Z in Verbose mode
+
+!========================= DecayTreeTuple v3r24p1 2012-07-26 =========================
+
+! 2012-07-26 - Chris Jones
+ - Minor CPU optimisation.
+
+!========================= DecayTreeTuple v3r24 2012-07-09 =========================
+
+! 2012-07-02 - Chris Jones
+ - Remove all usage of the OnOfflineTool
+
+! 2012-06-30 - Chris Jones
+ - Fix 32bit compilation warnings from TupleToolBremInfo
+
+! 2012-06-29 - Chris Jones
+ - Use a public instance of LoKi::DistanceCalculator in TupleToolIsolationTwoBody
+
+!========================= DecayTreeTuple v3r23 2012-06-28 =========================
+
+! 2012-06-23 -  Olivier Deschamps
+ - Add new tool TupleToolBremInfo : provide multiplicity/momentum/origin of brem 
+   for electron particles
+
+! 2012-06-22 - Chris Jones
+ - Use getIDVAlgorithm instead of getDVAlgorithm, in preparation of a future
+   change to the DaVinci base classes.
+
+! 2012-06-15 - Albert Bursche
+ - Prevent TupleToolDalitz from running on jets. It leads to segfaults otherwise. 
+
+! 2012-06-15 - Chris Jones
+ - Fix a compilation warning in TupleToolVeto + some minor optimsations.
+
+! 2012-06-15 -  Fatima Soomro
+- Added the functionality in TupleToolTISTOS to specify a list of PIDs, 
+   that IF specified will direct the tool to fill trigger info only for those 
+   particles, like tuple.TupleToolTISTOS.PIDList = [413, 211, 421, 333, 22, 321] 
+   If no list is specified the tool behaves as it used to previously, 
+   i.e. fill trigger info for all the particles in the decay descriptor
+- Added _CaloSpdE and _CaloPrsE to TupleToolPid
+
+! 2012-06-14 -  Olivier Deschamps
+ - TupleToolSubMass   : fix problem with tree ordering for some charged B decays
+ - TupleToolStripping : fix problem with DecReports structure changing between 
+                        different events, due to null reports being suppressed
+                        to save space on the (m)DSTs. 
+     ==> the list of stripping lines must now be set explicitely via the
+         StrippingList property (or equivalently TriggerList inherited from
+          TupleToolTriggerBase)
+
+! 2012-06-12 -  Olivier Deschamps
+ - TupleToolSubMass : new tool producing the invariant masses for all n-body 
+   combinations in N-body decays (n=2,N) 
+  . The PID subtitution can be configured
+
+! 2012-06-06 - Marc Grabalosa
+ - TupleToolTagging : New and consitstent default tag decision and omega (0, 0.5)
+
+! 2012-06-05 - Patrick Koppenburg
+ - TupleToolTrackInfo: 
+   . Add Track likelihood
+   . Move Match chi2 to non verbose mode as this is the suggested chi2 to cut on
+   . Buglet in VELO_UTID
+
+! 2012-05-15 - Patrick Koppenburg
+ - Add some verbose printout in TupelToolDecayTreeFitter to link to bug
+  . https://savannah.cern.ch/bugs/?89749
+
+! 2012-05-09 - Rob Lambert
+ - throw NameError in addBranches if the branch name contains whitespace
+  . fixes bug #94449
+
+!========================= DecayTreeTuple v3r22p1 2012-05-08 =========================
+
+! 2012-05-08 - Patrick Koppenburg
+ - Protect TupleToolDalitz against NULL ParticleProperties. 
+     See Bug https://savannah.cern.ch/bugs/?94383
+ - Do so as well in TupleToolWZJets
+
+!========================= DecayTreeTuple v3r22 2012-05-03 =========================
+
+! 2012-05-02 - Fatima Soomro
+ - Added TupleToolIsolationTwoBody
+  + Based on Giampi's isolation tool which should go into DVTools at some 
+    point... After that it will be a matter of a few lines to get isolation 
+    extract the isolation variable for a track. There are many parameters which 
+    can be tuned, see Giampi's talk on this in Dec 2011.
+ - Added TupleToolMuonIDCalib
+  + The latter is used for Muon (mis)ID studies, particularly for Bs-> mumu. 
+    An example of how to configure this tool can be found at
+    http://svnweb.cern.ch/world/wsvn/lhcb/Erasmus/trunk/Phys/LNFNTuples/scripts/muID_mdst_March2012.py
+
+! 2012-04-27 - Olivier Deschamps
+ - Add a new tool TupleToolVeto that flag a particle when already used to build 
+   another particle in a given container (relies on DaVinciTools/ParticleVeto)
+ - TupleToolL0Data : fix  default setting
+
+! 2012-04-04 - V. Gligorov
+ - Add options to TupleToolSwimmingInfo to allow it to grab particles by hand
+   from a specified location, in order to solve (hack) problem with the
+   D*->D0pi chain in which the D0 linked to from the D* is not the same D0
+   linking to the swimming reports.
+ - Currently only works for one candidate per event.   
+
+! 2012-04-02 - Chris Jones
+ - Suppress the numerous icc11 compiler remarks and warnings.
+
+!========================= DecayTreeTuple v3r21 2012-03-29 =========================
+
+! 2012-03-23 - Jibo He
+ - TupleToolTISTOS
+  . Added Hlt1Phys Hlt2Phys  
+
+! 2012-03-21 - Chris Jones
+ - Some fixes for running on uDSTs, in TupleToolTrigger and TupleToolStripping.
+ - If HltRoutingBits are missing, catch the exception that is thrown in 
+   TupleToolTrigger, so the processing does not terminate.
+
+! 2012-03-20 - Patrick Koppenburg
+ - Fix warning about unsigned long
+
+! 2012-03-20 - Patrick Koppenburg
+ - DecayTreeTupleTemplates.icpp: Ignore TupleToolDecay when initialising tools. 
+   This avoids the red herring 
+   ERROR DecayTreeTuple:: Can't get the tool 'TupleToolDecay/B', check your syntax
+   StatusCode=FAILURE
+
+! 2012-03-20 - Patrick Koppenburg
+ - TupleToolGeometry: Fix misleading message 
+   ERROR TupleToolGeometry:: Can't retrieve the end vertex for piminus StatusCode=FAILURE
+   Introduced on 2012-03-14
+
+! 2012-03-19 - Roel Aaij
+ - TupleToolSwimmingInfo: replace "/" with "_" in decision branch names.
+
+! 2012-03-14 - Patrick Koppenburg
+ - TupleToolGeometry: do things in slightly different order
+
+!========================= DecayTreeTuple v3r20 2012-02-09 =========================
+
+! 2012-02-09 - Patrick Koppenburg
+ - TupleToolGeometry : fill MINIP only in verbose (allows to switch it
+   off for microDST)
+
+! 2012-02-09 - Patrick Koppenburg
+ - Fix bug #91350 : do not follow pv is there isn't any.
+ - Move sumPT method to TupleToolPrimaries
+
+! 2012-02-07 - Cedric Potterat
+ - Update TupleToolJetsBase according to the developpement of LoKiJetMakerAlg 
+   (Phys/LoKiJets)
+
+! 2012-01-26 - Chris Jones
+ - Remove hack in TupleToolEventInfo to save event number and GPS time as 
+   doubles. Gaudi v23r0 supports saving these natively as ulonglong.
+
+! 2011-12-23 - Rob Lambert
+ - Switch to TrackStateProvider in TupleToolTrackPosition
+
+! 2011-12-18 - Chris Jones
+ - Extend the TupleToolPid to include all of the main sub-detector PID
+   variables when in verbose mode.
+
+! 2011-12-17 - Chris Jones
+ - Add RICHDLLbt to variables saved by the TupleToolRICHPid
+ - Explicitly store the above-threshold flag for each PID hypothese, regardless
+   of the Particle type.
+
+!========================= DecayTreeTuple v3r19 2011-12-15 =========================
+
+! 2011-12-14 - Chris Jones
+ - Extend TupleToolMCBackgroundInfo to use a list of background category 
+   tools. Allows for out-the-box running on both DSTs and uDSTs.
+ - Extend TupleToolMCTruth to use a list of MC associators instead of a
+   single one. Allows (almost) for out-the-box running on both DSTs and uDSTs.
+   A few warnings/errors need to be squash when running on uDSTs.
+
+! 2011-12-07 - Patrick Koppenburg
+ - Task #24643:
+	. src/TupleToolDecayTreeFitter : use new Tool SubstitutePIDTool
+    These changes need Phys/DaVinciInterfaces r132662 and 
+    Phys/DaVinciTools r132663
+
+! 2011-12-05 - Patrick Koppenburg
+ - First working version of PID-changing decaytreefitter. Task #24643
+   . TODO : extract functionality in a tool that can be shared with
+     SubstututePID. Now there's a lot of code duplication.
+
+! 2011-12-03 - Chris Jones
+ - General tidy up
+ - Reimplement TupleToolRecoStats to only use information from the 
+   RecSummary object. Makes the tool compatible with uDSTs.
+ - Add a temporary hack to TupleToolEventInfo to split the 64bit event Number
+   and GPS time into two 32 bit ints and store these. Allows the full 64 bit
+   variable to be reconstructed later on if required.
+   Temporary hack until Gaudi fully supports 64bit variables in Tuples (v23r0).
+
+! 2011-11-29 - Chris Jones
+ - Remove some redundant messages from initialisation of DecayTreeTuple
+
+! 2011-11-24 - Patrick Koppenburg
+ - TupleToolTrackInfo : add match chi2
+
+! 2011-11-23 - Tomasz Skwarnicki
+ - Make TupleToolEventInfo, TupleToolTrigger try info location with and 
+   without RootInTES
+
+! 2011-11-23 - Chris Jones
+ - Fix various gcc 4.6 compilation warnings and errors
+
+! 2011-11-21 - Andrew Powell
+ - TupleToolMuonPid: Added LHCb::ProtoParticle::InAccMuon to tuple 
+
+! 2011-11-15 - Chris Jones
+ - Tidy up the TisTos tool a bit
+
+! 2011-11-11 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter : more verbose printout
+
+! 2011-11-11 - Chris Jones
+ - Update TupleToolMCBackgroundInfo to always load the Background category
+   tool using the same runtime name.
+
+!=================== DecayTreeTuple v3r18 2011-11-10 =========================
+
+! 2011-11-10 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter : Fix bug 88702
+
+! 2011-11-10 - Roel Aaij
+ - Remove spurious include from TupleToolSwimmingInfo.
+
+! 2011-11-01 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter : Fix bug 88365
+
+! 2011-10-17 - Roel Aaij
+ - Update TupleToolSwimmingInfo to fill false everywhere if the global Hlt or
+   stripping decision is false.
+
+! 2011-10-15 - V. Gligorov
+ - First commit of TupleToolSwimmingInfo for holding acceptance
+   information from the swimming code.
+
+! 2011-10-05 - Patrick Koppenburg
+ - TupleToolDecayTree: add mass for intermediate states when Verbose is True
+
+! 2011-10-03 - Chris Jones
+ - Fix the incorrect usage of std::unique to remove duplicates
+
+! 2011-09-27 - Marco Gersabeck
+ - TupleToolPropertime: add option FitToPV to allow measuring proper time w.r.t.
+   their best PV for all particles
+
+!=================== DecayTreeTuple v3r17 2011-09-15 =========================
+! 2011-09-07 - Patrick Koppenburg
+ - TupleToolEventInfo : add field polarity
+ - TupleToolMuonPid: comment out unused IsMuonTight. Causes a warning.
+
+! 2011-09-01 - Albert Bursche
+   - added TupleToolJets a trivial tool derrived from TupleToolJetsBase
+
+! 2011-09-01- Kazu Akiba
+  -Changed TupleToolMuonPid. added few vairables. 
+
+! 2011-09-01- Kazu Akiba
+  - Adding TupleToolMuonPid. simple tuple tool based on tupletoolpid with, 
+    but with a small selection of the muon variables
+
+
+! 2011-08-17 - Rob Lambert
+ - Add Stripping TisTos ability to TUpleToolTISTOS,
+   . requires .TriggerTisTosName = "TESTisTos"
+   .          .FillXXX=False
+   .          .FillStripping=True  
+
+! 2011-08-10 - Patrick Koppenburg
+ - TupleToolEventInfo : 
+   . store event number as double to fix Bug #84257
+   . Add trigger type in verbose mode.
+
+!========================= DecayTreeTuple v3r16 2011-07-28 =========================
+! 2011-07-27 - Albert Bursche
+  Overhaul of the TupleToolJets family	
+    - added support for 'ExtraWeights' to TupleToolJetRelations
+    - fixed missing TupleToolJetsBase::initialize in TupleToolJetRelations
+    - improved handling of non-basic particles in TupleToolWZJets
+
+
+! 2011-07-04 - Patrick Koppenburg
+ - TupleToolassHypo: Fix bug 83621
+   New behaviour: Now the tool does cc by default.
+
+!========================= DecayTreeTuple v3r15 2011-06-29 =========================
+! 2011-06-24 - Patrick Koppenburg
+ - src/TupleToolRecoStats.cpp : more stuff
+ - src/TupleToolDecayTreeFitter.h : better (?) doc
+
+! 2011-06-24 - Olivier Deschamps
+  - restore doc/release.notes
+  - TupleToolProtoPData : fix info() verbosity
+  - TupleToolCaloHypo : change default properties (neutral only by default)
+
+! 2011-06-17 - Andrew Powell
+ - TupleToolRICHPid: Added track (x,y,z) and (rho,phi) entrance coordinates for each radiator   
+
+! 2011-06-17 - Olivier Deschamps
+  - NEW TupleToolProtoData: tuple  ProtoP Info (from property list) - require CaloUtils v9r1
+
+
+! 2011-06-14 - Olivier Deschamps
+ - TupleToolBase.h : new method isPureNeutralCalo() based on CaloUtils/CaloParticle.h : detect neutral calo particles (gamma, pi0, eta->gg, ...) 
+   	NEEDED to treat gamma->e+e- as a standard vertexed particle.
+    -> adapted tools :  TupleToolDira, TupleToolGeometry, TupleToolPID, TupleToolRichPID, TupleToolVtxIsoln (previously gamma/pi0 filtering was based on particleID)
+ - TupleToolRecoStats : add multiplicity in long tracks with Chi2 < threshold (default threshold = 9)
+ - TupleToolPi0Info   : add CL
+ - NEW TupleToolL0Data    : tuple  L0Data (from property list) and emulated L0Decision (for L0TCK list)
+ - NEW TupleToolCaloHypo  : tuple  data   (from property list) from CaloHypoEstimator for particle->proto()->calo()
+ - NEW TupleToolDira  (Fatima Soomro) : tuple dira and error
+
+
+! 2011-06-13 - Philip Hunt
+ - Added MCTupleToolPrompt which flags whether a particle originates from a prompt charm
+   decay based on the true lifetime of the ancestors.
+
+!========================= DecayTreeTuple v3r14p2 2011-05-24 =========================
+! 2011-05-23 - Albert Bursche
+ - Fixed segfault in TuplToolJetRelations. 
+   Dummy entries were not properly named.
+
+! 2011-05-20 - Albert Bursche
+ - Added TuplToolJetRelations and fixed segfault in TupleToolWZJets 
+   which was due to shadowing of m_Tuple variable in TupleToolJetsBase.
+
+
+!========================= DecayTreeTuple v3r14p1 2011-05-20 =========================
+! 2011-05-20 - Rob Lambert
+ - Revert bad behaviour of TupleToolGeometry with respect to refitting PVs.
+	 Introduced in previous version "2011-04-04 - Yuehong Xie"
+   bug #82482
+   Broke TupleToolGeometry on MicroDSTs and falls outside the established
+         refitting framework.
+   For the moment only refit if an option is set to true.
+   In the future this should be linked with Juan's refitting framework.
+   
+
+! 2011-05-17 - Albert Bursche
+ - Added TuplToolJetsBase and transferred much of the funtionality from TupleToolWZJets to it.
+   This is done in order to ease adding of more Jet related TupleTools in the near future.
+
+!========================== DecayTreeTuple v3r14 2011-04-29 =================
+! 2011-04-26 - Patrick Koppenburg
+ - TupleToolKinematic::preFitMass: fix bug 81455
+
+! 2011-04-14 - Patrick Koppenburg
+ - TupleToolDecayTreeTuple : pass reference to fitter
+
+! 2011-04-08 - Juan Palacios
+ - TupleToolTriggerbase
+  . Remove unused data member.
+ - TupleToolDecayTreeTuple
+  . Fix memory leaks, avoid some newed pointers.
+
+! 2011-04-06 - Patrick Koppenburg
+ - TupleToolDecayTreeTuple : add PV key and coordinates wehn isVerbose() is on
+ - TupleToolBase : inline methods should be const
+   . Move Number.icpp into TupleToolBase
+ - Adpat TupleTool*RecoStats accordingly
+
+! 2011-04-04 - Yuehong Xie
+ - TupleToolGeometry:
+   . explicit call the PV refitter when filling variable "_MINIP, _MINIPCHI2,
+      _MINIPNEXTBEST, _MINIPCHI2NEXTBEST". Lack of this feature caused a problem
+     in the B->JpsiX analysis.   
+
+! 2011-04-01 - Patrick Koppenburg
+ - Second part of TupleToolDecayTreeFitter : 
+   . Loop over PVs and fill one entry per PV. The best PV always comes first.
+   . TODO : take only PVs related to candidate once task https://savannah.cern.ch/task/?19817
+     is complete
+
+! 2011-04-01 - Patrick Koppenburg
+ - TupleToolDecayTreeFitter : 
+   . Full re-implementation following suggestion https://savannah.cern.ch/bugs/?80317
+   . WARNING: This is bacward-incompatible with previous configurations. Example:
+
+decay = "B0 -> (^J/psi(1S) -> ^mu+ ^mu-) (^KS0 -> ^pi+ ^pi-)"
+bh = 'B0'
+tuple.Decay = decay
+tuple = DecayTreeTuple("MyTuple")
+tuple.ToolList +=  ["TupleToolGeometry",  "TupleToolKinematic", "TupleToolPrimaries", "TupleToolEventInfo" ]
+tuple.Branches = { "B"  : "["+bh+"]cc : "+decay.replace("^","") }
+from Configurables import TupleToolDecayTreeFitter
+tuple.B.ToolList +=  [ "TupleToolDecayTreeFitter/Fit",            # just a refit
+                       "TupleToolDecayTreeFitter/PVFit",          # fit with PV constraint
+                       "TupleToolDecayTreeFitter/MassFit",        # fit with J/psi mass constraint
+                       "TupleToolDecayTreeFitter/FullFit" ]       # fit with all constraints I can think of
+
+tuple.B.addTool(TupleToolDecayTreeFitter("PVFit"))
+tuple.B.PVFit.Verbose = True
+tuple.B.PVFit.constrainToOriginVertex = True
+tuple.B.PVFit.daughtersToConstrain = [ "J/psi(1S)" ]
+
+tuple.B.addTool(TupleToolDecayTreeFitter("MassFit"))
+tuple.B.MassFit.constrainToOriginVertex = False
+tuple.B.MassFit.daughtersToConstrain = [ "J/psi(1S)" ]
+
+tuple.B.addTool(TupleToolDecayTreeFitter("FullFit"))
+tuple.B.FullFit.Verbose = True
+tuple.B.FullFit.constrainToOriginVertex = True
+tuple.B.FullFit.daughtersToConstrain = [ bh, "J/psi(1S)" ]
+
+   . This will produce the following columns for the B (from this tool):
+       - B_Fit_status B_Fit_nDOF B_Fit_chi2_B B_Fit_nIter B_Fit_M B_Fit_MERR B_Fit_P B_Fit_PERR 
+       - B_PVFit_PERR B_PVFit_ctau B_PVFit_ctauErr B_PVFit_decayLength B_PVFit_decayLengthErr B_PVFit_J_psi_1S_ctau  
+         B_PVFit_J_psi_1S_ctauErr B_PVFit_J_psi_1S_decayLength B_PVFit_J_psi_1S_decayLengthErr B_PVFit_KS0_ctau  
+         B_PVFit_KS0_ctauErr B_PVFit_KS0_decayLength B_PVFit_KS0_decayLengthErr
+       - B_MassFit_status B_MassFit_nDOF B_MassFit_chi2_B B_MassFit_nIter B_MassFit_M B_MassFit_MERR B_MassFit_P 
+         B_MassFit_PERR B_PVFit_status B_PVFit_nDOF B_PVFit_chi2_B B_PVFit_nIter B_PVFit_M B_PVFit_MERR B_PVFit_P 
+       - B_FullFit_status B_FullFit_nDOF B_FullFit_chi2_B B_FullFit_nIter B_FullFit_M 
+         B_FullFit_MERR B_FullFit_P B_FullFit_PERR 
+         B_FullFit_ctau B_FullFit_ctauErr B_FullFit_decayLength B_FullFit_decayLengthErr 
+         B_FullFit_J_psi_1S_ctau B_FullFit_J_psi_1S_ctauErr B_FullFit_J_psi_1S_decayLength B_FullFit_J_psi_1S_decayLengthErr 
+         B_FullFit_KS0_ctau B_FullFit_KS0_ctauErr B_FullFit_KS0_decayLength B_FullFit_KS0_decayLengthErr 
+
+ - src/TupleToolTISTOS.h : remove unsused pointer to IPaticleDescedants tool
+
+!========================== DecayTreeTuple v3r13 2011-03-10 =================
+
+! 2011-03-09 - Yasmine Amhis 
+
+   - TupleToolDecayTreeFitter 
+   . Move comment from .cpp to .h	
+! 2011-03-09 - Yasmine Amhis
+  - TupleToolDecayTreeFitter 
+  . add doc and comments	
+
+! 2011-03-08 - Albert Bursche
+ - Some code cleanup in TupleToolWZJets.
+   Added some meaning to 'Verbose' flag.
+   Results with Verbose = True should be equal to those calculated before.   
+
+! 2011-03-08 - Rob Lambert
+ - Fixed TupleToolTagging to allow multiple different tagging tools,
+   each with different options as required, see bug #79090
+
+! 2011-03-04 - Patrick Koppenburg
+ - TupleToolVtxIsoln : Change info to debug
+
+! 2011-03-01 - Yasmine Amhis 
+ - TupleToolDecayTreeFitter 
+   . minor bug fix   
+
+! 2011-02-22 - Patrick Koppenburg
+ - TupleToolVtxIsoln: 
+   . Remove useless limitation to pid 511
+   . Remoev IP and IPS options (that were'n working anyway)
+   . Change default chi2 and DeltaChi2 cuts to 9 (so they do something)
+   . Add tuple variables <head>_SMALLESTCHI2, <head>_SMALLESTDELTACHI2
+   . Fixed doxygen
+   . Fix bug 78611
+
+!========================== DecayTreeTuple v3r12 2011-02-20 =================
+
+! 2011-02-15 - Chris Jones
+ - Initialise m_ppSvc in TupleToolWZJets during initialize() method and
+   not the Constructor.
+
+! 2011-02-13 - Chris Jones
+ - Add missing use statement in requirements file for HltEvent
+
+! 2011-02-11 - Albert Bursche
+ - New tool TypleToolWZJets that adds jets to particles and writes
+   jets infos in the tuple (and jets to TES)
+
+! 2011-02-11 - Patrick Koppenburg
+ - New tool TypleToolMassHypo that adds masses iunder otrher pid hypotheses.
+   May have some limitations...
+
+! 2011-02-01 - Rob Lambert
+ - Removed AutomaticList and CollateTriggerList from TupleToolTriggerBase,
+   Now if you specify Verbose you have to give a list.
+   To find out the list, talk to the other members of your group
+   or run ReadHltReport in your sequence
+
+!========================== DecayTreeTuple v3r11p1 2011-01-21 ===============
+
+! 2011-01-21 - Juan Palacios
+ - Make compatible with DaVinci v26 series.
+ - Increase to v3r11p1.
+
+! 2011-01-20 - Rob Lambert
+ - Fixed a bug in the addTupleTool wrapper if an instance was supplied
+	 in this case splitName seems to give odd results, and the __class__
+   must be called to find the true tool name
+
+! 2011-01-20 - Rob Lambert
+ - Added TupleToolTrackPosition, propagates tracks to the given Z
+   Stores X and Y
+
+!========================== DecayTreeTuple v3r11 2011-01-19 =================
+
+! 2011-01-17 - Marc Grabalosa
+ - Add OS combination tagcat, omega and decision in TupleToolTagging.cpp
+
+! 2011-01-14 - Rob Lambert
+ - Add python directory and a Configuration.py to dress-up the configurables
+   Functions: addTupleTool and addBranches defined to simplify life a lot.
+   Currently one must replace "from Configurables import DecayTreeTuple"
+    with "from DecayTreeTuple.Configuration import *"
+
+! 2011-01-14 - Juan Palacios
+ - DVAlgorithm::bestPV -> DVAlgorithm::i_bestVertex.
+
+! 2011-01-12 - Chris Jones
+ - Add LHCb::ProtoParticle::ProbNNghost to variables stored by TupleToolPid
+
+! 2011-01-11 - Rob Lambert
+ - Protect against null pointer resolution in TupleToolNeutrinoReco
+
+! 2011-01-04 - Juan Palacios
+ - Replace all calls to desktop() by new DVAlgorithm equivalents.
+ - Increase to v3r11.
+ - REQUIRES Phys/DaVinciKernel v9r0 OR HIGHER!!!
+
+!========================== DecayTreeTuple v3r10 2010-12-20 =================
+
+! 2010-12-09 - Rob Lambert
+ - Add mass-dependence in TupleToolNeutrinoReco
+ - Fix bug in calculation of 'X'
+ - Update documentation to suit
+
+! 2010-12-01 - Juan Palacios
+ - Add property IBackgroundCategoryType to TupleToolMCBackgroundInfo. Controls
+   the implementation of IBackgroundCategory to be used. Default is "BackgroundCategory"
+
+! 2010-12-01 - Rob Lambert
+ - Add new tool TupleToolNeutrinoReco
+   Calculates the variables required to reconstruct a missing neutrino
+   Includes detailed instructions on what to do with the calculated vars
+
+! 2010-11-17 - Emilie Maurice
+ - TupleToolGeometry: add 2 variables to obtain the min IP and the min chi2 wrt the 2nd best primary vertex
+
+! 2010-11-16 - Patrick Koppenburg
+ - TupleToolTriggerBase: Bug fix. Verbose didn't get into fillVerbose
+   if none of VerboseXXX is set. Consequently one could nto get the 
+   roiuting bits alone
+ - TupleToolEventInfo can now fill the mu of a run. See doxygen.
+
+! 2010-11-15 - V. Gligorov
+ - Add NeuroBayes based PID probabilities to TupleToolPid. There is one
+   probability per "stable" hypothesis (e,mu,k,p,pi)
+
+! 2010-11-05 - Michel De Cian
+ - TupleToolTrackIsolation: Bugfix, changed "partMomentum.Phi() - trackMomentum.Phi()" to  "fabs( partMomentum.Phi() - trackMomentum.Phi() )" in method coneP
+
+! 2010-11-06 - Olivier Deschamps
+ - TupleToolKinematics : add specific protection in case of  merged pi0 (basic particles with measured mass). Potential bug when both resolved pi0 and merged pi0 where run simultaneously as _MM column appear or not depending on the first pi0 type seen.
+
+! 2010-11-02 - Andrew Powell
+	- New Tuple Tool: TupleToolRICHPid
+	- Stores informartion associated with the RichPid object. To be used within 
+	  the RICH PID calibration package.
+
+!========================== DecayTreeTuple v3r9 2010-11-02 ==================
+
+! 2010-11-01  Yasmine Amhis
+  - TupleToolDecayTreeFitter
+    . Remove warning
+
+! 2010-10-30 - Yasmine Amhis 
+  - TupleToolDecayTreeFitter
+    . New Algo to get many  DTF with many configurations in one job.
+
+! 2010-10-30 - Ailsa Sparkes
+ - TupleToolGeometry: Added protection against crashes for Eta
+
+! 2010-10-27 - Tomasz Skwarnicki
+ - TupleToolTISTOS: make it possible to use non-standard TriggerTisTos tools
+
+! 2010-10-22 - Olivier Deschamps
+ - TupleToolPhotonInfo : add photon->ConfLevel() info
+
+!========================== DecayTreeTuple v3r8 2010-10-10 ==================
+
+! 2010-09-24 - Patrick Koppenburg
+ - Restore ReoutingBits in TupleToolTrigger. They got lost somehow.
+
+! 2010-09-09 - Patrick Koppenburg
+ - Add VeloLiteClusters to TupleToolRecoStats
+
+!========================== DecayTreeTuple v3r7 2010-08-20 ==================
+
+! 2010-08-19 - Patrick Koppenburg
+ - TupleToolRecoStats: add a protection against no velo tracks in the event
+   (happens every 100000 events or so)
+ - TupleToolCPU : store memory and CPU time
+
+! 2010-08-11 - Jibo He
+ - TupleToolRecoStats.h
+   Use boost::bind instead of boost::lambda::bind to get neater compilaton. 
+
+! 2010-08-11 - Jibo He
+ - TupleToolRecoStats
+   . Add protection from empty track container so that it works also 
+     for SDST, as reported by Stefano Perazzini in the mailing list. 
+
+! 2010-07-28 - Patrick Koppenburg
+ - TupleToolRecoStats: add quantitites we use to discard huge events.
+   Code by Fatima Soomro and Jibo He.
+
+!========================== DecayTreeTuple v3r6 2010-07-08 ==================
+
+! 2010-07-03 - Tomasz Skwarnicki
+ - change TriggerTupleBase to treat L0 same way as Hlt1,Hlt2
+   change TupleToolTrigger to use HltlikeL0 DecReports and line names
+   change TuplrToolTISTOS to use L0TriggerTisTos tool for L0, 
+          now Hlt1L0 lines appear under their own rather then L0 names 
+
+!========================== DecayTreeTuple v3r5p1 2010-06-24 ================
+
+! 2010-06-24 - Rob Lambert
+ - MCTupleToolReconstructed bugfix bug #67537
+   . not all entries filled if mcp was not stable.
+
+! 2010-06-08 - Patrick Koppenburg
+ - TupleToolTriggerBase : reduce printout
+
+! 2010-06-03 - Juan Palacios
+ - TupleToolVtxIsoln
+  . Remove useless include of deprecated Kernel/IGeomDispCalculator.h.
+  . Move IVertexFit include to .cpp.
+
+! 2010-06-02 - Patrick Koppenburg
+ - Remove useless stuff from TupleToolPrimaries
+ - New tool TupleToolDebug for bug #68232
+ - TupleToolEventInfo : store number of PVs
+
+! 2010-06-02 - Patrick Koppenburg
+ - Bug 68234 : Strore origin vertex for stable MC particles as well.
+
+!========================== DecayTreeTuple v3r5 2010-05-24 ================
+
+! 2010-04-28 - Olivier Deschamps
+ - new tuple tool : TupleToolPhotonInfo : with Spd/Prs/track-matching/ClusterMoment/... info
+
+! 2010-05-19 - Patrick Koppenburg
+ - More printout in TupleToolPrimaries
+
+! 2010-05-18 - Rob Lambert
+ - rewrite TupleToolPrimaries to make more sense to me
+
+! 2010-05-12 Juan Palacios
+ - src/TupleToolGeometry.cpp
+  . Adapt to new DVAlgorithm::primaryVertices() signature.
+ - cmt/requirements
+  . Increase version to v3r5.
+
+! 2010-05-09 - V. Gligorov
+ - TupleToolTriggerRecoStats - update for new HLT2 reconstruction. 
+
+!========================== DecayTreeTuple v3r4 2010-04-30 ================
+
+! 2010-04-28 - Patrick Koppenburg
+ - TupleToolEventInfo : add BX type and GPS time
+
+! 2010-04-26 - Patrick Koppenburg
+ - New tool TupleToolStripping that reads the stripping decisions from
+   DecReports.
+
+! 2010-04-23 - Jibo He
+ - TupleToolTrackInfo
+   Track->key() added to help check whether several candidates in one event
+	 share the same track.  
+
+! 2010-04-23 - Patrick Koppenburg
+ - TupleToolPropertime, MCTupleToolKinematic : Store _TAU as nanoseconds and
+   not picoseconds. Nanoseconds is the Gaudi convention. 
+   WARNING : Backward incompatible with previous Tuples.
+
+! 2010-04-21 - Rob Lambert
+ - TupleToolTrackInfo: Added VELO_UTID, the double obtained from multiplying
+   all the velo hit IDs on the track together.
+
+! 2010-04-20 - Rob Lambert
+ - Fixed DecayTreeTuples such that the tuple is not created unless the 
+   given decay was seen, savannah bug #65947
+
+!========================== DecayTreeTuple v3r3 2010-04-12 ================
+
+! 2010-04-12 - Rob Lambert
+ - Removed MM from basic particles in TupleToolKinematic
+
+! 2010-04-08 - Juan Palacios
+ - cmt/requirements
+  . Increased to v3r3
+
+! 2010-03-31 - Rob Lambert
+ - Added a single '.' to TupleToolTriggerBase as suggested by Johannes
+
+! 2010-03-16 - Yuehong Xie
+ - Added Verbose momentum information at origin vertex position for basic particles
+   in TupleToolKinematic.
+
+! 2010-03-16 - Rob Lambert
+ - Fixed missed commit in TupleToolTriggerBase and TupleToolTrigger
+   TupleToolTriggerBase: Initialize, compile triggerList to look for
+   TupleToolTrigger:  fill '-1' if requested trigger is not in reports
+
+!========================== DecayTreeTuple v3r2 2010-03-08 ================
+
+! 2010-03-04 - Yuehong Xie
+- TupleToolPID : Add hasRich, hasCalo, hasMuona nd isMuon
+
+
+! 2010-03-03 - Patrick Koppenburg
+ - Add head_PreFitMass in vebose mode (task #14256)
+
+! 2010-03-01 - Rob Lambert
+ - TupleToolPrimaries : never get PVs from DVAlg, fixes #14187
+ - DecayTreeTupleBase : Finalise TupleToolDecay instances, fixes #63124
+
+!========================== DecayTreeTuple v3r1 2010-02-22 ================
+
+! 2010-02-09 - Patrick Koppenburg
+ - TupleToolPrimaries : get PVs from DVAlgorithm by default. Fixes #62588.
+ - TupleToolPID : Add Ecal and Calo energies
+
+! 2010-02-06 - V. Gligorov
+ - TupleToolEventInfo : add L0, HLT, ODIN TCK information
+
+! 2010-02-06 - V. Gligorov
+ - TupleToolTISTOS,TupleToolTriggerBase : eliminate duplication of L0
+   tistos information between the L0 and Hlt1L0 triggers 
+
+!========================== DecayTreeTuple v3r0p1 2010-02-05 ================
+
+! 2010-02-04 - Rob Lambert
+ - Minor Fix TupleTool Base
+    . Fix for slc5 warning returning const in return by value, see bug 62360
+
+!========================== DecayTreeTuple v3r0 2010-01-27 ==================
+
+! 2010-01-27 - Rob Lambert
+ - Minor fixes:
+	  . added forgotten baseclasses into the cvs
+ - TupleToolTagging:
+    . Verbose mode now gives decision and probability for all ActiveTaggers
+
+! 2010-01-26 - Rob Lambert
+ - Major changes:
+		. All TupleTools now inherit from TupleToolBase.
+			- defines the Verbose property for all Tools, which can be 
+				checked with isVerbose()
+			- defines the ExtraName property for all Tools, which is used
+				to add a prefix to the name of every variable
+				This lets you have more than one copy of the same tool.
+				fullName() is cleverly used to construct the prefix.
+		
+		. TupleToolTrigger and TupleToolTISTOS now inherit from a common class
+			- TupleToolTriggerBase, allows the user to circumvent automatic
+        lists of trigger contents, to make sure the ntuple can be filled
+        from real data, where the trigger changes continuously.
+		
+		. The Verbose mode of TupleToolBase is now propagated to all tools,
+			only the most common/mandatory entries will be filled if !isVerbose().	
+	
+ - These changes have been tested and verified for 
+	 all the tools which changed a lot
+
+ - The savannah bugs:61744,61672,61644 and task: 13423 should be consulted 
+
+!========================== DecayTreeTuple v2r11 2010-01-26 ===================
+
+! 2010-01-20 Basem Khanji
+ - TupleToolTagging : Added the probability per tagger variables.
+
+!========================== DecayTreeTuple v2r10 2010-01-19 ==================
+! 2010-01-19 - Patrick Koppenburg
+ - TupleToolGeometry : protect against no PV locations
+
+! 2010-01-13 - Patrick Koppenburg
+ - Remove IPhysDesktop inclusion everywhere
+
+! 2010-01-11 - V. Gligorov
+ - TupleToolTISTOS : use the ANNDispatchSvc to retreive the Hlt selection
+   IDs to names mapping.
+
+! 2010-01-05 - V. Gligorov
+ - TupleToolTrigger : use the ANNDispatchSvc to retreive the Hlt selection
+   IDs to names mapping.
+
+!========================== DecayTreeTuple v2r9 2009-12-16 ==================
+
+! 2009-12-08 - V. Gligorov
+ - TupleToolEventInfo : store the bunch crossing ID
+ - Tag gligorov_20091209
+
+! 2009-12-08 - Patrick Koppenburg
+ - TupleToolGeometry : Do not skip candidates that have no best PV
+ - Increment to v2r9
+ - Tag pkoppenb_20091208
+
+!========================== DecayTreeTuple v2r8 2009-11-30 ==================
+
+! 2009-11-27 - Olivier Deschamps
+  - TupleToolPi0Info : set default RequireMCTruth to false and add Warning("deprecated tool") when set to true
+  - TupleToolVtxIsoln : add protection for merged pi0 (daughter but no endVertex) 
+
+! 2009-11-25 - Patrick Koppenburg
+ - Fix compilation problem in TupleToolDalitz.icpp
+
+! 2009-11-24 - Patrick Koppenburg
+ - (MC)TupleToolDalitz.* : do not revert all PIDs, but revert daughters if
+   mother is an antiparticle. Was getting strange results for CP-conjugate
+   decays like D->KsPiPi.
+ - Correct warnings in TupleToolPi0Info
+ - v2r8
+
+! 2009-11-19 - Rob Lambert
+ - src/MCTupleToolPID.{h,cpp} new. Add MC PID.
+ - src/MCTupleToolKinematic.{h,cpp} fix doxygen
+
+!========================== DecayTreeTuple v2r7 2009-11-17 ==================
+
+! 2009-11-17 - Patrick Koppenburg
+ - src/MCTupleToolPrimaries : new
+ - src/TupleToolPrimaries : get PV location from OnOfflineTool, not from dva.
+   This prevented using it in EventTuple.
+
+! 2009-11-16 - Juan Palacios
+ - src/TupleToolTagging.cpp
+  . Remove unused variables.
+
+! 2009-11-12 - Juan Palacios
+ - TupleToolGeometry.cpp
+ - TupleToolGeometry.h
+ - TupleToolPrimaries.cpp
+ - TupleToolPrimaries.h
+ - TupleToolPropertime.cpp
+ - TupleToolPropertime.h
+ - TupleToolTagging.cpp
+ - TupleToolTagging.h
+ - TupleToolVtxIsoln.cpp
+ - TupleToolVtxIsoln.h
+  . Remove use of ContextTool and replace by use of parent DVAlgoritm.
+
+! 2009-11-06 - Patrick Koppenburg
+ - Moved implementation of Hlt routing bits reading to HltInterfaces
+
+! 2009-11-05 - Patrick Koppenburg
+ - TupleToolTrigger:
+   . Do not fill Hlt1Global and Hlt2Global anymore (by default). They are confusing.
+   . Fill Hlt routing bits
+ - v2r7
+
+!========================== DecayTreeTuple v2r6 2009-10-28 ==================
+
+! 2009-10-21 - Tomasz Skwarnicki
+ - undo use of HltDecReports to clean up trigger list in TupleToolTISTOS
+   since cannot be done consistently. Make sure the list does not mutate.
+   Verbose properties to control tistossing of individual triggers.
+
+! 2009-10-14 - Juan PALACIOS
+ - src/TupleToolMCTruth{.h, .cpp}
+  . Add property IP2MCPAssociatorType to allow to switch implementation of
+    IParticle2MCAssociator to be used. Default: DaVinciSmartAssociator.
+  . Remove unnecessary includes.
+  . Minor clean-up.
+
+! 2009-10-08 - Patrick Koppenburg
+ - Number.icpp : avoid triggering of data on demand service when 
+	  counting numbers	
+ - v2r6
+
+!========================== DecayTreeTuple v2r5 2009-10-01 ==================
+
+! 2009-09-28 - Patrick Koppenburg for Aurélien Martens
+ - TupleToolPid : Pi0 ID is 111
+
+! 2009-09-11 - Tomasz Skwarnicki
+ - clean-up the list of individual triggers in TupleToolTISTOS by checking 
+   for their presence in HltDecReport 
+
+! 2009-09-10 - Tomasz Skwarnicki
+ - adopt TupleToolTISTOS to new way of wild character matching in trigger names
+
+! 2009-09-06 - Greig Cowan
+ - Minor bug fixes to TupleToolP2VV to check pointers before dereferencing.
+
+! 2009-09-04 - Rob Lambert
+ - TupleToolAngles bugfix. bug 55236
+   Angles now calculated with respect to mother.
+   To revert to old behavior set WRTMother=False
+
+! 2009-08-20 - Vanya BELYAEV
+
+ -  src/TupleToolVtxIsoln.cpp
+
+     fix for new signature of IVertexFit interface 
+
+ 
+! 2009-08-14 - Rob Lambert
+ - Fixed minor bug in TupleToolGeometry
+
+! 2009-08-13 - Rob Lambert
+ - Added vertex position information into TupleToolGeometry
+ - Added TupleToolTrackIsolation, Fills information about the number
+   of tracks within a particular cone angle of the track
+
+! 2009-08-05 - Stephanie Hansmann-Menzemer - ! 
+- remove filling of track-extra info, according to changes in Track.xml class
+
+!========================== DecayTreeTuple v2r4 2009-08-07 ==================
+
+! 2009-07-30 - Patrick Koppenburg
+ - Added TupleToolTriggerRecoStats that fills some stats about number
+   of particles
+ - Outsourced TupleToolRecoStats' Number method to a Number.icpp file
+ - Increment to v2r4
+
+!========================== DecayTreeTuple v2r3p4 2009-07-24 ================
+
+! 2009-07-13 - Rob Lambert
+ - Bugfix: MCDecayTreeTuple
+ 		Corrected default tool list
+
+! 2009-07-07 - Rob Lambert
+ - BugFix: TupleToolGeneration, savannah bug 52751
+ - To clarify situation wrt MC Association, association is performed by:
+		- TupleToolMCTruth
+			Most tools will use the associates found here
+		- TupleToolBackgroundInfo
+			It would be nice if there was no duplication here
+		- TupleToolPi0Info 
+			Necessary as the Pi0 assosciation is different
+
+!========================== DecayTreeTuple v2r3p3 2009-07-03 ================
+! 2009-07-03 - Patrick Koppenburg
+ - Remove test file. Use $DAVINCISYSROOT/tests/options/DVTestDecayTreeTuple.py  
+   for tests.
+
+! 2009-07-03 - Juan Palacios
+ - cmt/requirements
+  . Use DecFiles v18r*
+
+!========================== DecayTreeTuple v2r3p2 2009-06-23 ================
+! 2009-06-18 - Patrick Koppenburg
+ - Remove stupid warning.
+ - Increment to v2r3p2
+
+!======================= DecayTreeTuple v2r3p1 2009-06-12 =====================
+! 2009-06-12 - Patrick Koppenburg
+ - More debugging
+
+! 2009-06-11 - Rob Lambert
+ - Fixed a bug in MCTupleToolKinematic
+
+!======================== DecayTreeTuple v2r3 2009-06-03 =====================
+
+! 2009-06-04 - Rob Lambert
+ - More documentation in MCTupleToolEventType/MCTupleToolDecayType
+
+! 2009-06-03 - Rob Lambert
+ - Major changes. Modified TupleToolMCTruth to take a list 
+                  of MCParticleTupleTools.
+                  TupleToolMCTruth is now the only place assosciation occurs
+                  Altered all TupleToolMC to inherit from MCParticleTupleTool
+                  Renamed all things needing MC to MCTupleTool*
+                  Renamed MCTupleToolMCTruth to MCTupleToolKinematic
+                  
+
+! 2009-06-01 - Patrick Koppenburg
+ - More debugging
+
+! 2009-05-22 - Patrick Koppenburg
+ - MCTupleToolMCTruth.cpp : add oscillation flag
+
+! 2009-05-15 - Rob Lambert
+ - TupleToolMCInteractions : Fixed bug which was causing warnings.
+		bug caused by new genHeader() entries being unsigned ints, and
+		not handled correctly by the tool.
+
+! 2009-05-14 - Patrick Koppenburg
+ - MCTupleToolMCTruth : protect against stable particles
+ - MCTupleToolReconstructed : ProtoParticles different for various particles.
+   . Add DLL info and track chi2
+
+! 2009-05-13 - Patrick Koppenburg
+ - (MC)DecayTreeTuple new option RevertToPositiveID : make True default.
+
+!======================== DecayTreeTuple v2r2 2009-05-11 =====================
+
+! 2009-05-08 - Rob Lambert
+ - Modified TupleToolMCInteractions, added some more functionality
+
+! 2009-04-29 - Rob Lambert
+ - Added TupleToolMCInteractions
+		Allows simple scaling of one set of interactions to another.
+
+! 2009-04-15 - V. Gligorov
+ - TupleToolMCTruth.{h,cpp} minor fix to remove compilation warning.
+
+! 2009-04-09 - V. Gligorov
+ - TupleToolMCTruth.{h,cpp}
+   . Use DaVinciSmartAssociator for charged&neutral "stables"
+ - TupleToolKinematic.{h,cpp}
+   . Store mass as well as measured mass.
+
+!======================== DecayTreeTuple v2r1 2009-04-08 =====================
+
+! 2009-03-27 - Patrick Koppenburg
+ - MCDecayTreeTuple : treat oscillated Bs properly. 
+
+! 2009-03-06 - Rob Lambert
+ - Two new tuple tools.
+   MCEventType, for searching for Event Types in the MCTruth
+   MCDecayType for classifying the decay of an MCParticle
+   See the Sim/SimComponents/EventTypeFinder tool
+
+! 2009-03-03 - Patrick Koppenburg
+ - DecayTreeTupleTemplates : fix a crash happening only in VERBOSE
+
+!======================== DecayTreeTuple v2r0 2009-03-01 =====================
+
+! 2009-02-20 - Patrick Koppenburg
+ - (MC)DecayTreeTuple new option RevertToPositiveID : Revert all PID
+   if mother ID is positive.
+
+! 2009-02-19 - Patrick Koppenburg
+ - (MC)DecayTreeTuple : more debugging. 
+ - TupleToolDecay : fix bug in decay descriptor return
+ - The main method fillTuple can also be templated
+ - Interesting addition : store the number of candidates as well.
+   -> This allows to get weight fo candidates without 
+      reverse-looping.
+ - Also store event number. Note that this is the number
+   of times execute has been called. Signification may vary
+   with place in sequencer.
+
+! 2009-02-18 - Patrick Koppenburg
+ - TupleToolDalitz : get svc only once
+
+! 2009-02-17 - V. Gligorov
+ - Fixed TupleToolMCTruth for the case of MC2008 data where
+   the MCParticle has no endVertex. Now returns -9999. for all
+   vertex coordinates and for the true proper time of the
+   MCParticle.
+
+! 2009-02-17 - Patrick Koppenburg
+ - Added (MC)TupleToolDalitz.{cpp,h,icpp}
+
+! 2009-02-17 - Patrick Koppenburg
+ - Protect against absence of decay head
+
+! 2009-02-11 - Patrick Koppenburg
+ - Added TupleToolRecoStats and TupleToolSelResults
+ - EventTuple : Can now save ETC. See examples in DaVinci.
+ - Increment to v2r0
+
+! 2009-02-09 - Patrick Koppenburg
+ - TupleToolEventInfo : remove inactive options to make ETC
+
+! 2009-02-03 - Patrick Koppenburg
+ - TupleToolDecay : trivial fix for gcc4.3
+
+! 2009-01-26 - Patrick Koppenburg
+ - Removed HltSummaryTool from ITupleToolTrigger
+
+! 2009-01-23 - Patrick Koppenburg
+ - Added TupleToolAngles, same as MCTupleToolAngles
+
+! 2009-01-22 - Patrick Koppenburg
+ - Use the fact that all Hlt1 selections are called XxxDecision to
+   consider only those (except if AllIntermediateSteps is set to true.)
+ - src/MCTupleToolAngles.cpp : new tool
+
+! 2009-01-22 - Patrick Koppenburg
+ - First working version of MCDecayTreeTuple
+   . Moved all templated methods to DecayTreeTupleBaseTemplates.icpp
+   . Added MCDecayTreeTuple to test options
+   . Fill momentum by default in MCTupleToolMCTruth
+ - New Tool MCTupleToolReconstructed that links to protoparticles
+
+! 2009-01-21 - Patrick Koppenburg
+ - Slight change of strategy: put as much as possible in DecayTreeTupleBase.
+   All functionality goes there. 
+ - The first release of MCDecayTreeTuple : completely untested, but it compiles.
+
+! 2009-01-20 - Patrick Koppenburg
+  ##
+  # The plan is to get a shared base for DecayTreeTuple and MCDecayTreeTuple.
+  # The differences are (MC)Particle, (MC)DecayFinder, I(MC)ParticleTools.
+  # Some can be addressed by templates.
+  ##
+ - Extracted class OnePart from DecayTreeTuple.
+   . Added MCTools 
+   . Moved fill method to DecayTreeTupleBase -> removes dependency on Particle, Tuple and parent
+ - Split DecayTreeTuple in DecayTreeTuple and Base
+   . Template as much as possible in DecayTreeTupleBase
+   . Move the rest to DecayTreeTuple
+ - Increment to v2r0
+
+! 2009-01-19 - Tomasz Skwarnicki
+ - adopt TupleToolTISTOS to new ways of tistossing L0 trigger
+
+! 2009-01-19 - Patrick Koppenburg
+ - Add MCTupleToolP2VV and MCTupleToolMCTruth using MCParticle as input
+ - call the from TupleToolMCTruth
+
+! 2009-01-17 - Chris Jones
+ - Fix OSX/gcc4 warning in TupleToolVtxIsoln
+
+!======================== DecayTreeTuple v1r10 2009-01-15 ====================
+
+! 2008-12-22 - Patrick Koppenburg
+ - Adapt options to DaVinci v22r0 configurable. Not backward compatible.
+
+! 2008-12-19 - Patrick Koppenburg
+ - TupleToolGeometry : More variables. Now IP and FD come in three flavours
+   . Best PV
+   . Best PV of mother
+   . Origin (i.e. mother) vertex
+ - options/DVTestDecayTreeTuple.py
+   . Adapt to DaVinci() 
+
+! 2008-12-17 - Patrick Koppenburg
+ - TupleToolGeometry : Added a method to fill IPs wrt to best PV for 
+   intermediates and finals as well.
+
+! 2008-12-09 - Patrick Koppenburg
+ - Move escape method to a function in namespace Decays in DaVinciKernel.
+
+! 2008-12-06 - Vanya BELYAEV
+ - minor fix for new particle properties 
+   verison increment to v1r10
+
+! 2008-12-01 - Vanya BELYAEV
+ - src/DecayTreeTuple.cpp
+   add '#include "boost/lexical_cast.hpp"' line 
+ - cmt/requirements 
+   verison increment to v1r9p1 
+
+!======================== DecayTreeTuple v1r9 2008-11-27 ===================
+! 2008-11-27 - Marco Cattaneo
+ - Fix compilation on Windows
+
+! 2008-11-18 - Patrick Koppenburg
+ - TupleToolTrigger : fill all selections in first. Else the Tuple writing
+   tends to crash.
+
+! 2008-11-14 - Tomasz Skwarnicki
+ - TupleTollTISTOS.cpp  adopt to the new ITriggerTisTos tool interface
+
+! 2008-11-13 - Sean Brisbane
+ - TupleToolVtxIsoln Bug fixes for composites with granddaughters
+
+! 2008-11-11 - Sean Brisbane
+ - TupleToolTrackInfo: Protected against tracks with empty DOF from the track fit
+
+! 2008-11-11 - Patrick Koppenburg for YasmineTrèsCalme
+ - TupleToolPID, TupleToolGeometry: Special protection against crashes for pi0
+ - TupleToolPi0Info : New tool dedicated to Pi0s
+
+! 2008-11-09 - V. Gligorov
+ - TupleToolTISTOS : rewritten to get the triggers in the same order 
+
+! 2008-10-28 - Juan PALACIOS
+ - src/TupleToolGeometry.cpp, src/TupleToolPrimaries.cpp
+  . Adapt to new IPhysDesktop::primaryVertices() method
+
+! 2008-10-16 - Patrick Koppenburg
+ - Count number of selections in trigger
+
+! 2008-10-13 - Patrick Koppenburg
+ - Add a warning when HltDecReports are not here
+
+!======================== DecayTreeTuple v1r8 2008-10-06 ===================
+! 2008-10-06 - Patrick Koppenburg
+ - Added minimum IP on all PVs in TupleToolGeometry. This is what one actually
+   cuts on when requiring (MIPCHI2DV(PRIMARY)>4)
+ - Increment to v1r8
+
+!======================== DecayTreeTuple v1r7p1 2008-10-06 ===================
+
+- 2008-10-02 - Adlene Hicheur
+ - Fix bug in true angular information ntuple filling (from Conor)
+
+!========================== DecayTreeTuple v1r7 2008-10-02 ===================
+! 2008-10-02 - Tomasz Skwarnicki
+ - TupleToolTISTOS: proper fix for L0 and Hlt2 new trigger names
+
+! 2008-09-28 - V. Gligorov
+ - TupleToolTISTOS : get L0 triggers coprrectly
+
+- 2008-09-25 - Adlene Hicheur
+ - Add true angular information in TupleToolMCTruth
+! 2008-09-16 - Patrick Koppenburg
+ - TupleToolTrigger : use HltDecReport
+ - Test options : Run HltDecReport maker.
+ - Increment to v1r7
+
+!========================== DecayTreeTuple v1r6 2008-09-10 ===================
+! 2008-09-10 - Patrick Koppenburg
+ - Change L0 and HLT again.
+
+! 2008-09-01 - Patrick Koppenburg
+ - DVTest...py : Change L0 and Hlt options
+
+!========================== DecayTreeTuple v1r5 2008-08-05 ===================
+! 2008-07-15 - V. Gligorov
+ - Fixed initialization issues in TupleToolMCHierachy and TupleToolMCBackgroundInfo.
+
+! 2008-07-11 - Patrick Koppenburg
+ - TupleTool* : Do not use IGeomDispCalculator but IDistanceCalculator
+
+! 2008-07-10 - Patrick Koppenburg for Mitesh Patel
+ - TupleToolTrackInfo : added chi2 probability 
+
+! 2008-07-08 - Stephane Poss
+ - Fixed use of associators in TupleToolMCHierachy to use the new associators
+   wrapper.
+
+! 2008-07-04 - V. Gligorov
+ - Fixed use of associators in TupleToolMCTruth to use the new associators
+   wrapper.
+
+!===================== DecayTreeTuple v1r4 2008-07-07 ==============================
+! 2008-07-03 - Patrick Koppenburg for Tom Blake
+ - P2VV : allow to choose calcualtor tool (Calculator options) and angular basis.
+
+! 2008-07-01 - Patrick Koppenburg
+ - New algorithm EventTuple which only fills event-variables
+ - New tool TupleToolgeneration reading GenHeader
+
+! 2008-06-27 - Patrick Koppenburg
+ - Add test file
+
+! 2008-06-25 - Patrick Koppenburg
+ - TupleToolTrigger : Use IANNSvc
+ - Increment to v1r4
+
+! 2008-06-23 - V. Gligorov
+ - Fixed use of associators in TupleToolMCTruth
+
+! 2008-06-18 - Patrick Koppenburg
+ - Depend on HltInterfaces
+ - Increment to v1r4
+
+!===================== DecayTreeTuple v1r3 2008-06-09 =======================
+
+! 2008-05-04 - V. Gligorov
+ - TupleToolTrigger.{cpp,h}: Added options to allow users to save only the L0
+   information, or only the HLT information. Default is to save all.
+
+! 2008-04-28 - Patrick Koppenburg for Mitesh Patel
+ - TupleToolVtxIsolation: new tool for isolation
+ - Increment to v1r3
+
+!===================== DecayTreeTuple v1r2 2008-04-24 =======================
+
+! 2008-04-21 - Patrick Koppenburg
+ - Hlt enums name change
+
+! 2008-04-09 - V. Gligorov
+ - TupleToolTISTOS: bugfix, extra documentation.
+
+! 2008-04-09 - V. Gligorov
+ - Added TupleToolTISTOS.{h,cpp} to save TISTOS status of each composite particle
+ - TupleToolGeometry
+  . Added saving of flight distance to PV for particles
+
+! 2008-03-27 - Patrick Koppenburg
+ - DecayTreeTuple: fix an unchecked StatusCode
+ - Increment to v1r2
+
+! 2008-03-17 - Stephane Poss
+ - TupleToolPrimaries
+  . Correct documentation (was TupleTooEventInfo documentation)
+ - TupleToolTagging
+  . Add tagger type number
+ - TupleToolMCHierarchy
+  . Gives MC mother, MC grand mother and MC grand grand mother IDs
+    for particles, useful as complement to Background Category Tool
+ - TupleToolTrackInfo
+	. Track chi2 and track ndof for basic particles
+
+!===================== DecayTreeTuple v1r1p1 2008-03-06 =====================
+
+! 2008-02-20 - Patrick Koppenburg
+ - Include physical constants
+
+! 2008-02-12 - Juan PALACIOS
+ - cmt/requirements
+  . Increase version to v1r1p1
+ - src/TupleToolMCTruth.cpp
+  . Replace calls to deprecated Particle2MCLinker single-location 
+    constructor to calls to one with vector of locations.
+
+!===================== DecayTreeTuple v1r1 2008-02-05 =======================
+
+! 2008-01-31 - Patrick Koppenburg
+ - TupleToolTrigger: Implemented.
+
+! 2008-01-31 - Patrick Koppenburg for Jeremie Borel
+ - Removed TupleToolMCPid.h and TupleToolMCPid.cpp
+
+! 2008-01-28 - Patrick Koppenburg
+ - Bug fix in Truth tool. Thanks to Marco Gersabeck for spotting it.
+
+! 2008-01-07 - Patrick Koppenburg for Jeremie Borel
+ - Some changes in interfaces
+
+! 2007-12-18 - Patrick Koppenburg
+ - Added a TupleToolP2VV for B->mumuK* and friends
+ - Removed TupleToolKinetic which is a duplicate of TupleToolKinematic
+
+! 2007-12-18 - Patrick Koppenburg
+ - Move interfaces to DaVinciKernel
+ - Increment to v1r1
+
+!===================== DecayTreeTuple v1r0 2007-12-13 =======================
+
+! 2007-12-12 - Patrick Koppenburg
+ - First import. Read doxygen for more information

@@ -1,0 +1,126 @@
+!-----------------------------------------------------------------------------
+! Package     : Phys/DiLeptonTuple
+! Responsible : Patrick Koppenburg
+! Purpose     : Options for many different Tuples all involving 2 leptons
+!-----------------------------------------------------------------------------
+
+!============================================== v1r5 2014-9-28 ==============================
+! 2014-9-28 Diego Martinez Santos
+	 Make version v1r5
+! 2014-03-03 - Alex Shires
+ - Added options for K* files from leptonic
+
+!============================================== v1r5 2014-3-14 ==============================
+! 2014-3-14 Diego Martinez Santos
+	 Make version v1r5
+!============================================== v1r5 2014-3-14 ==============================
+! 2014-3-14 Diego Martinez Santos
+	 Make version v1r5
+! 2014-03-03 - Alex Shires
+ - Added python to include Greg's isolation
+
+
+! 2014-01-23 - Marco Clemencic
+ - Added CMake configuration file.
+
+!============================================== v1r4 2014-1-21 ==============================
+! 2014-1-21 Diego Martinez Santos
+	 Make version v1r4
+! 2014-01-09 - Alex Shires
+ - Updates to options file and addign ConstB fit to the Dilepton tuple
+ for nonresonant decays
+
+!============================================== v1r3 2013-10-22 ==============================
+! 2013-10-22 Diego Martinez Santos
+	 Make version v1r3
+!
+! See LHCb-ANA-2011-093
+!-----------------------------------------------------------------------------
+
+! 2013-10-02 - Alex Shires
+ - Add verbose PID to DVBu2LLK_MC.py
+
+! 2013-10-02 - Alex Shires
+ - Add TupleToolRecoStats to DVBu2LLK_truth.py
+
+
+! 2013-10-02 - Patrick Koppenburg
+ - Add options/DVLambdab2MuMupK.py
+ - Update Stripping
+
+!============================================== v1r2 2013-10-1 ==============================
+! 2013-10-1 Diego Martinez Santos
+	 Make version v1r2
+
+! 2013-09-27 - Alex Shires
+ - Adapted truth matching descriptors
+ - Added "RunBu2LLK.py' file for easy running of tests
+   usuage: gaudirun.py "options".py RunBu2LLK.py MC12-MagDown.py 
+
+! 2013-09-18 - Patrick Koppenburg
+ - Adapt options to DaVinci v33r6p1 with new DecayDescriptors.
+   This version is backward-incompatible.
+   If needed, branch from r160267.
+ - Make it v2r0
+
+! 2013-07-15 - Alex Shires
+ - removing EvtMax settings for the LLK options files
+
+! 2013-07-15 - Alex Shires
+ - Options for data and for mc2012
+
+! 2013-04-04 - Patrick Koppenburg
+ - add TupleToolAllParticles in a place that makes it a bit less visible than 
+   it would be in DecayTreeTupleReco
+
+! 2013-03-04 - Patrick Koppenburg
+ - Reduce verbosity a lot. Add verbose option array.
+
+! 2013-01-28
+  Fix it
+!========================= DiLeptonTuple v1r0 2013-01-25 =========================
+First import
+!========================= Bs2JpsiKs v2r6 2013-01-25 =========================
+! 2012-09-11 - Patrick Koppenburg
+ - rewrite done
+
+! 2012-09-10 - Patrick Koppenburg
+ - weighting: fill all PVs.
+
+! 2012-09-03 - Patrick Koppenburg
+ - branching.cpp:
+   . Make it a class
+   . Fill all (PV,B) combinations into RooDatSet
+   . Todo : kill multiple (PV,B) candidates 
+
+! 2012-08-31 - Patrick Koppenburg
+ - Never use bestPv any more. Try all combinations.
+ - weighting.cpp : split gigantic method and make it a class.
+
+! 2012-08-14 - Patrick Koppenburg
+ - NoKsFit renamed only psi fit 
+
+! 2012-08-14 - Patrick Koppenburg
+ - Allow FullFit_chi2_B and FullFit_chi2
+
+! 2012-08-14 - Patrick Koppenburg
+ - More consistent use of trigger lines in DiMuonTuple
+
+! 2012-04-20 - Patrick Koppenburg
+ - A skeleton NN to swim that compiles
+
+! 2012-03-21 - Patrick Koppenburg
+ - Make sequencers with HDR filters in DiMuonTuple.
+
+! 2012-02-27 - Patrick Koppenburg
+ - Replace B2JpsiKs Tuples by DaVinci v30r0 tuples
+
+! 2012-01-19 - Patrick Koppenburg
+ - Start developments for 2011 version -> v3r0
+
+!========================= Bs2JpsiKs v2r5 2012-01-19 =========================
+! 2012-01-19 - Patrick Koppenburg
+ - Version used for LHCb-PAPER-2011-041 is v2r5. If something needs to be 
+	changed, branch from here.
+
+!========================= Bs2JpsiKs v2r4 2011-12-29 =======

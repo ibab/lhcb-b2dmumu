@@ -1,0 +1,50 @@
+#============================================================================
+# Created    : 2007-12-05
+# Maintainer : Patrick Koppenburg
+#============================================================================
+package           DecayTreeTuple
+version           v4r11
+
+#============================================================================
+# Structure
+#============================================================================
+branches          cmt doc src python
+
+#============================================================================
+# Used packages.
+#============================================================================
+
+use   DecayTreeTupleBase        v*    Phys
+use   DecayTreeFitter           v*    Phys
+
+# Depend on the various component packages, so they get built before the
+# python stuff below.
+use   DecayTreeTupleReco        v*    Phys
+use   DecayTreeTupleDalitz      v*    Phys
+use   DecayTreeTupleJets        v*    Phys
+use   DecayTreeTupleMC          v*    Phys
+use   DecayTreeTupleTrigger     v*    Phys
+use   DecayTreeTupleMuonCalib   v*    Phys
+use   DecayTreeTupleTracking    v*    Phys
+use   DecayTreeTupleANNPID      v*    Phys
+
+use   LoKiPhys                  v*    Phys
+use   HepMC                     v*    LCG_Interfaces
+
+private
+macro_append ROOT_linkopts " -lMLP -lGraf -lHist -lMatrix -lTreePlayer -lGpad -lGraf3d -lTMVA "
+macro_append cppflags "" \
+             target-clang " -O0 " 
+end_private
+
+#============================================================================
+# Python
+#============================================================================
+apply_pattern    install_python_modules
+macro_append DecayTreeTupleGenConfUser_dependencies DecayTreeTupleConfDbMerge
+
+#============================================================================
+# Component library building rule
+#============================================================================
+library          DecayTreeTuple     ../src/*.cpp 
+apply_pattern    component_library  library=DecayTreeTuple

@@ -1,0 +1,37 @@
+#============================================================================
+# Created    : 2013-01-25
+# Maintainer : Patrick Koppenburg
+#============================================================================
+package           DiLeptonTuple
+version           v1r5
+
+#============================================================================
+# Structure, i.e. directories to process. 
+#============================================================================
+branches          cmt doc options python src
+#============================================================================
+# Used packages. Specify the version, * at the end specifies 'any revision'
+#    Put as many lines as needed, with all packages, without the '#'
+#============================================================================
+# use   Package      v1r*    Hat
+#============================================================================
+# Used packages. Specify the version, * at the end specifies 'any revision'
+#    Put as many lines as needed, with all packages, without the '#'
+#============================================================================
+# use   Package      v1r*    Hat
+use GaudiPolicy v*
+use   DecayTreeTupleBase  v*    Phys
+use   DaVinciMCKernel     v*    Phys
+
+
+include_path      none
+#============================================================================
+# Component library building rule
+#============================================================================
+library          DiLeptonTuple    ../src/*.cpp 
+#============================================================================
+# define component library link options
+#============================================================================
+apply_pattern    component_library library=DiLeptonTuple
+#============================================================================
+apply_pattern install_python_modules

@@ -32,9 +32,7 @@ use   LoKiPhys                  v*    Phys
 use   HepMC                     v*    LCG_Interfaces
 
 private
-macro_append ROOT_linkopts " -lMLP -lGraf -lHist -lMatrix -lTreePlayer -lGpad -lGraf3d -lTMVA "
-macro_append cppflags "" \
-             target-clang " -O0 " 
+macro_append ROOT_linkopts " -lTMVA "
 end_private
 
 #============================================================================

@@ -22,7 +22,7 @@ Bd2MueKst = "[B0 -> ^(J/psi(1S) -> ^mu+ ^e-) ^(K*(892)0 -> ^K+ ^pi-) ]CC"
 Bd2eMuKst = "[B0 -> ^(J/psi(1S) -> ^e+ ^mu-) ^(K*(892)0 -> ^K+ ^pi-) ]CC"
 Lambdab2MuMupK = "[Lambda_b0 -> ^(J/psi(1S) -> ^mu+ ^mu-) ^(Lambda(1520)0 -> ^p+ ^K-) ]CC"
 
-Bd2MuMuD0 = "[B0 -> ^(J/psi(1S) -> ^mu+ ^mu-) ^(D0 -> ^K- ^pi+) ]CC"
+Bd2MuMuD0 = "[B0 -> ^(J/psi(1S) -> ^mu+ ^mu-) ^(D~0 -> ^K+ ^pi-) ]CC"
 
 Lambdab2Jpsippi = "[Lambda_b0 -> ^(J/psi(1S) -> ^mu+ ^mu-) ^p+ ^pi-]CC"
 Lambdab2JpsiLambda = "[Lambda_b0 -> ^(J/psi(1S) -> ^mu+ ^mu-) ^(Lambda0 -> ^p+ ^pi-)]CC"
@@ -287,7 +287,7 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
     #isolation
     if "iso" in verbose :
         # lines from Greg Ciezarek
-        #from configIso import configIso
+        from configIso import configIso
         configIso()
         # this is work in progress 
         #will be comitted to SVN properly at a future date as of 3/4/14
@@ -300,9 +300,9 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
         tuple.B.TupleToolApplyIsolationSoft.OutputSuffix="_Soft"
         tuple.B.TupleToolApplyIsolationSoft.WeightsFile="weightsSoft.xml"
         tuple.B.ToolList+=["TupleToolApplyIsolation/TupleToolApplyIsolationSoft"]  
-        #vtxiso = tuple.B.addTupleTool("TupleToolVtxIsoln")
-        #tuple.B.TupleToolApplyIsolationHard.OutputLevel = 3 
-        #tuple.B.TupleToolApplyIsolationSoft.OutputLevel = 3 
+        vtxiso = tuple.B.addTupleTool("TupleToolVtxIsoln")
+        tuple.B.TupleToolApplyIsolationHard.OutputLevel = 3 
+        tuple.B.TupleToolApplyIsolationSoft.OutputLevel = 3 
 #    tuple.addTupleTool("TupleToolPropertime")
     if ( "/Event/Phys/" == head): # not reading stripping output
         tts = tuple.addTupleTool("TupleToolStripping")
@@ -349,7 +349,7 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
 #    tuple.OutputLevel = 1
     if ( addendum == "MC" ):   # it's MC!
         tmc = tuple.addTupleTool("TupleToolMCTruth")
-#        tmc.addTupleTool("MCTupleToolKinematic")
+        #tmc.addTupleTool("MCTupleToolKinematic")
         tmc.addTupleTool("MCTupleToolHierarchy")
         tuple.addTupleTool("TupleToolMCBackgroundInfo")
 
@@ -364,7 +364,7 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
     elif (not isMDST):   # it's not mdst
         from Configurables import TrackScaleState as SCALER
         scaler = SCALER('StateScale')   
-        seq.Members += [ scaler ]
+#        seq.Members += [ scaler ]
 
     seq.Members += [ # PrintDecayTree( Inputs = [ location]),
                      tuple ]

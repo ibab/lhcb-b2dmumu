@@ -17,3 +17,10 @@
  - Request Monte Carlo for interesting channels
  - Start training classifier with B->K\*mumu MC
 
+### 2014-11-11
+
+- Nearly finished configuration for pulling data (`data` subdirectory)
+- Finished configuration for pulling B->D0mumu Monte Carlo (`mc` subdirectory)
+- Submitted jobs for pulling B->D0mumu Monte Carlo dataset
+- Something to keep in mind for later: uniform classifiers [https://github.com/anaderi/lhcb_trigger_ml](https://github.com/anaderi/lhcb_trigger_ml)
+

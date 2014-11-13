@@ -13,7 +13,7 @@ DaVinci().appendToMainSequence(addTuple(
     decay=Bd2MuMuD0,
     dtf=False,
     resonant=False,
-    addendum="DST",
+    addendum="MC",
     verbose=["Pid", "iso"]
 ))
 

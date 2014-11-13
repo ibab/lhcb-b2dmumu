@@ -35,7 +35,7 @@ for kind in ['up', 'down']:
     j.merger = RootMerger(files=['Bd2MuMuD0.root'])
 
     # Reuse data vertex isolation classifier
-    j.inputsandbox = ['../data/weightsHard.xml', '../data/weightsSoft.xml']
+    j.inputsandbox = ['./weightsHard.xml', './weightsSoft.xml']
 
     mc_jobs[kind] = j
 

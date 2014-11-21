@@ -24,3 +24,19 @@
 - Submitted jobs for pulling B->D0mumu Monte Carlo dataset
 - Something to keep in mind for later: uniform classifiers [https://github.com/anaderi/lhcb_trigger_ml](https://github.com/anaderi/lhcb_trigger_ml)
 
+### 2014-11-21
+
+- Started building an analysis pipeline
+  - Reduce variables
+  - Blind signal region
+  - Perform preselection
+  - Add mis-id mass hypotheses
+  - Classify signal/background with AdaBoost
+  - Create plots of all variables
+  - Still missing: perform MLE on the resulting mass distribution
+- Bd -> K\*mumu data might be used to evaluate the BDT, especially wrt to bias in mass variable
+  - Implemented a second pipeline for running the Bd -> D0mumu classifier on Bd -> K\*mumu data
+  - Clear mass peak appears when applying the classifier
+- Started assembling a list of preselection criteria
+
+

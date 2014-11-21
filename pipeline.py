@@ -28,7 +28,7 @@ input_mc = [
 
 # Real data fetched from the grid
 input_data = [
-    './storage/Data/AllYears/Stripping20/Dimuon/DVBd2MuMuD0_data/combined/Bd2MuMuD0.root'
+    './storage/Data/AllYears/Stripping20/Dimuon/DVBd2MuMuD0_data/combined/Bd2MuMuD0.root',
 ]
 
 # Variables that are used in the analysis
@@ -88,9 +88,13 @@ variables = [
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
         'Psi_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
+        'Kplus_PIDk',
+        'piminus_PIDk',
 ]
 
+# Variables that are used in the multivariate classification
 bdt_variables = [
+        'B_TAU',
         'B_ISOLATION_BDT_Soft',
         'B_ENDVERTEX_CHI2',
         'B_DIRA_OWNPV',
@@ -103,11 +107,15 @@ bdt_variables = [
         'piminus_ProbNNpi',
         'piminus_ProbNNp',
         'Psi_FD_ORIVX',
+        # Ghost probability
+        # no isMuonLoose on K,pi
 ]
 
 selection = [
         'Psi_M < 2860 || Psi_M > 3200',
         'Psi_M < 3500',
+        'Kplus_PIDk > 0',
+        'piminus_PIDk < 0',
 ]
 
 mc_variables = [
@@ -130,7 +138,10 @@ from ruffus import *
 @transform(input_data, suffix('.root'), '.reduced.root')
 def reduce(infile, outfile):
     from root_numpy import root2array, array2root
-    arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
+    try:
+        arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
+    except:
+        arr = root2array(infile, 'DecayTree', variables)
 
     arr = append_fields(arr, 'B_TAU', calc_tau(arr))
     
@@ -258,8 +269,8 @@ def classify(inputs, output):
     ]
 
     mcname_new = mcname.replace('.root', '.classified.root')
-    sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=100)
-    mc = root2array(mcname, 'B2dD0MuMu', bdt_variables, step=100)
+    sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=10)
+    mc = root2array(mcname, 'B2dD0MuMu', bdt_variables, step=10)
 
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -273,16 +284,23 @@ def classify(inputs, output):
     clf = AdaBoostClassifier(
             DecisionTreeClassifier(max_depth=3),
             algorithm='SAMME',
-            n_estimators=500,
+            n_estimators=700,
             learning_rate=0.5
     )
 
+    logging.info('Skip x-validation.')
     #logging.info('Running x-validation...')
     #scores = cross_val_score(clf, X, y, cv=10, n_jobs=4)
     #from scipy.stats import sem
     #logging.info('Scores: {} +/- {}'.format(np.mean(scores), sem(scores)))
     
+    logging.info('Fit classifier model...')
     clf.fit(X, y)
+    import pickle
+    logging.info('Dump classifier to disk...')
+    s = pickle.dumps(clf)
+    with open('classifier.pkl', 'wb') as f:
+        f.write(s)
 
     logging.info("Variable importances:")
     for n, i in sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: -x[1]):
@@ -292,10 +310,12 @@ def classify(inputs, output):
     data_vars = np.array(data_vars.tolist())
     data = root2array(fname, 'B2dD0MuMu')
 
+    logging.info('Apply classifier to data...')
     pred = clf.decision_function(data_vars)
     data = append_fields(data, 'classifier', pred)
     array2root(data, output, 'B2dD0MuMu', 'recreate')
 
+    logging.info('Apply classifier to MC...')
     mc_vars = root2array(mcname, 'B2dD0MuMu', bdt_variables)
     mc_vars = np.array(mc_vars.tolist())
     mc = root2array(mcname, 'B2dD0MuMu')
@@ -317,13 +337,15 @@ def plot_vars(infile, outfile):
 
     cuts = [
         #'D~0_M > 1800 && D~0_M < 1920',
-        'B_M > 5150 && B_M < 5450',
+        'B_M > 5200 && B_M < 5450',
 
-        'classifier > 0.30',
+        'D~0_M > 1800 && D~0_M < 1940',
+        #'classifier > 0.13',
+        #'classifier > 0.13',
+        #'B_DIRA_OWNPV > 0.999996',
 
         #'B_ISOLATION_BDT_Soft < 0',
         #'B_ENDVERTEX_CHI2 < 10',
-        #'B_DIRA_OWNPV > 0.99996',
         ##'Kplus_PT + piminus_PT > 1000',
 
         #'D~0_DIRA_OWNPV > 0.9980',
@@ -350,17 +372,20 @@ def plot_vars(infile, outfile):
 
     arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
 
+    #factor = float(30) / total_mc
     factor = float(50) / total_mc
 
     with PdfPages(outfile) as pdf:
         for vname in arr.dtype.names:
             logging.info('Plotting ' + vname)
-            n, bins, _ = plt.hist(arr[vname], histtype='stepfilled', bins=100, alpha=0.8)
+            x = arr[vname][arr[vname] > -1000]
+            x_mc = arr_mc[vname][arr_mc[vname] > -1000]
+            n, bins, _ = plt.hist(x, histtype='stepfilled', bins=40, alpha=0.7, normed=True)
             if vname in arr_mc.dtype.names:
                 n_mc, edges = np.histogram(arr_mc[vname], bins)
-                binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.8)
+                #binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
 
-                #plt.hist(arr_mc[vname], histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
+                plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
             #plt.yscale('log')
             if 'B_M' in vname:
                 plt.axvline(5279, color='b', ls='--')
@@ -382,6 +407,8 @@ def plot_vars(infile, outfile):
         plt.tight_layout()
         pdf.savefig()
         plt.clf()
+
+        # TODO plot K_ProbNN vs pi_ProbNN
 
 def prepare_sel(selections):
     return ' && '.join(map(lambda x: '(' + x + ')', selections))

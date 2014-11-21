@@ -88,8 +88,14 @@ variables = [
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
         'Psi_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
-        'Kplus_PIDk',
-        'piminus_PIDk',
+        'Kplus_PIDK',
+        'piminus_PIDK',
+        'Kplus_TRACK_GhostProb',
+        'piminus_TRACK_GhostProb',
+        'muplus_TRACK_GhostProb',
+        'muminus_TRACK_GhostProb',
+        'Kplus_isMuonLoose',
+        'piminus_isMuonLoose',
 ]
 
 # Variables that are used in the multivariate classification
@@ -107,15 +113,19 @@ bdt_variables = [
         'piminus_ProbNNpi',
         'piminus_ProbNNp',
         'Psi_FD_ORIVX',
-        # Ghost probability
-        # no isMuonLoose on K,pi
+        'Kplus_TRACK_GhostProb',
+        'piminus_TRACK_GhostProb',
+        'muplus_TRACK_GhostProb',
+        'muminus_TRACK_GhostProb',
 ]
 
 selection = [
         'Psi_M < 2860 || Psi_M > 3200',
         'Psi_M < 3500',
-        'Kplus_PIDk > 0',
-        'piminus_PIDk < 0',
+        'Kplus_PIDK > 0',
+        'piminus_PIDK < 0',
+        'Kplus_isMuonLoose == 0',
+        'piminus_isMuonLoose == 0',
 ]
 
 mc_variables = [
@@ -138,10 +148,7 @@ from ruffus import *
 @transform(input_data, suffix('.root'), '.reduced.root')
 def reduce(infile, outfile):
     from root_numpy import root2array, array2root
-    try:
-        arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
-    except:
-        arr = root2array(infile, 'DecayTree', variables)
+    arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
 
     arr = append_fields(arr, 'B_TAU', calc_tau(arr))
     
@@ -268,14 +275,18 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
+    step = 200
+
     mcname_new = mcname.replace('.root', '.classified.root')
-    sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=10)
-    mc = root2array(mcname, 'B2dD0MuMu', bdt_variables, step=10)
+    sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
+    mc = root2array(mcname, 'B2dD0MuMu', bdt_variables, step=step)
 
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-    from sklearn.cross_validation import cross_val_score
+    from sklearn.cross_validation import StratifiedKFold
     from sklearn.metrics import roc_curve, auc
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
 
     X = np.append(np.array(sidebands), np.array(mc))
     X = np.array(X.tolist())
@@ -288,23 +299,40 @@ def classify(inputs, output):
             learning_rate=0.5
     )
 
-    logging.info('Skip x-validation.')
-    #logging.info('Running x-validation...')
-    #scores = cross_val_score(clf, X, y, cv=10, n_jobs=4)
-    #from scipy.stats import sem
-    #logging.info('Scores: {} +/- {}'.format(np.mean(scores), sem(scores)))
-    
-    logging.info('Fit classifier model...')
-    clf.fit(X, y)
-    import pickle
-    logging.info('Dump classifier to disk...')
-    s = pickle.dumps(clf)
-    with open('classifier.pkl', 'wb') as f:
-        f.write(s)
+    mean_fpr = np.linspace(0, 1, 200)
 
-    logging.info("Variable importances:")
-    for n, i in sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: -x[1]):
-        logging.info("{} - {}".format(n, i))
+    with PdfPages('classifier.pdf') as pdf:
+
+        logging.info('Running x-validation...')
+        skf = StratifiedKFold(y, 10)
+
+        mean_fpr = np.linspace(0, 1, 200)
+        mean_tpr = np.zeros(200)
+
+        for i, (train, test) in enumerate(skf):
+            logging.info('Running fold #{}'.format(i + 1))
+            probs = clf.fit(X[train], y[train]).predict_proba(X[test])
+            fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
+            plt.plot(fpr, tpr)
+        pdf.savefig()
+        plt.clf()
+
+        logging.info("Variable importances:")
+        imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: -x[1])
+        for n, i in imp:
+            logging.info("{} - {}".format(n, i))
+        plt.bar(np.arange(len(imp)), [entr[1] for entr in imp], 0.35)
+        plt.gca().set_xticklabels([entr[0] for entr in imp])
+        pdf.savefig()
+        plt.clf()
+
+        logging.info('Fit classifier model...')
+        clf.fit(X, y)
+        import pickle
+        logging.info('Dump classifier to disk...')
+        s = pickle.dumps(clf)
+        with open('classifier.pkl', 'wb') as f:
+            f.write(s)
 
     data_vars = root2array(fname, 'B2dD0MuMu', bdt_variables)
     data_vars = np.array(data_vars.tolist())
@@ -336,32 +364,9 @@ def plot_vars(infile, outfile):
     sns.set_palette("deep", desat=.6)
 
     cuts = [
-        #'D~0_M > 1800 && D~0_M < 1920',
         'B_M > 5200 && B_M < 5450',
-
         'D~0_M > 1800 && D~0_M < 1940',
-        #'classifier > 0.13',
-        #'classifier > 0.13',
-        #'B_DIRA_OWNPV > 0.999996',
-
-        #'B_ISOLATION_BDT_Soft < 0',
-        #'B_ENDVERTEX_CHI2 < 10',
-        ##'Kplus_PT + piminus_PT > 1000',
-
-        #'D~0_DIRA_OWNPV > 0.9980',
-
-        #'muplus_ProbNNmu > 0.6',
-        #'muminus_ProbNNmu > 0.5',
-
-        #'Kplus_ProbNNpi < 0.05',
-        #'Kplus_ProbNNk > 0.8',
-        #'Kplus_ProbNNp < 0.02',
-
-        #'piminus_ProbNNpi > 0.9',
-        #'piminus_ProbNNp < 0.002',
-        #'piminus_ProbNNpi > 0.4',
-
-        #'Psi_FD_ORIVX < 1.5',
+        'classifier > 0.03',
     ]
 
     data = infile[0]
@@ -378,14 +383,16 @@ def plot_vars(infile, outfile):
     with PdfPages(outfile) as pdf:
         for vname in arr.dtype.names:
             logging.info('Plotting ' + vname)
-            x = arr[vname][arr[vname] > -1000]
-            x_mc = arr_mc[vname][arr_mc[vname] > -1000]
+            #x = arr[vname][arr[vname] > -1000]
+            #x_mc = arr_mc[vname][arr_mc[vname] > -1000]
+            x = arr[vname]
+            x_mc = arr_mc[vname]
             n, bins, _ = plt.hist(x, histtype='stepfilled', bins=40, alpha=0.7, normed=True)
             if vname in arr_mc.dtype.names:
                 n_mc, edges = np.histogram(arr_mc[vname], bins)
-                #binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
+                binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
 
-                plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
+                #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
             #plt.yscale('log')
             if 'B_M' in vname:
                 plt.axvline(5279, color='b', ls='--')

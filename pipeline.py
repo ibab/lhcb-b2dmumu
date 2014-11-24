@@ -16,9 +16,12 @@ Analysis pipeline:
 
 """
 
+
 import logging
 from log import setup_logging; setup_logging()
 
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.mlab import rec_append_fields as append_fields
 
 # Simulated data fetched from the grid
@@ -94,6 +97,10 @@ variables = [
         'piminus_TRACK_GhostProb',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
+        'Kplus_TRACK_CHI2NDOF',
+        'piminus_TRACK_CHI2NDOF',
+        'muplus_TRACK_CHI2NDOF',
+        'muminus_TRACK_CHI2NDOF',
         'Kplus_isMuonLoose',
         'piminus_isMuonLoose',
 ]
@@ -117,15 +124,6 @@ bdt_variables = [
         'piminus_TRACK_GhostProb',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
-]
-
-selection = [
-        'Psi_M < 2860 || Psi_M > 3200',
-        'Psi_M < 3500',
-        'Kplus_PIDK > 0',
-        'piminus_PIDK < 0',
-        'Kplus_isMuonLoose == 0',
-        'piminus_isMuonLoose == 0',
 ]
 
 mc_variables = [
@@ -172,9 +170,20 @@ def blind_signalpeak(infile, outfile):
     logging.info('Events in blinded dataset: ' + str(len(arr)))
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
+@transform(reduce_mc, suffix('.root'), '.mc_cut.root')
+def select_mc(infile, outfile):
+    select(infile, outfile, plots=None)
+
 @transform(blind_signalpeak, suffix('.root'), '.cut.root')
-def select(infile, outfile):
+def select(infile, outfile, plots='plots/select.pdf'):
     from root_numpy import root2array, array2root
+
+    selection = [
+        'Psi_M < 2860 || Psi_M > 3200',
+        'Psi_M < 3500',
+        'Kplus_isMuonLoose == 0',
+        'piminus_isMuonLoose == 0',
+    ]
 
     trigger_lines = [
         'B_L0MuonDecision_TOS == 1',
@@ -191,9 +200,47 @@ def select(infile, outfile):
         'B_Hlt2DiMuonDetachedDecision_TOS == 1',
     ]
 
-    arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection) + ' && (' + ' || '.join(trigger_lines) + ')')
+    pid_cuts = [
+        'Kplus_PIDK > 0',
+        'piminus_PIDK < 0',
+    ]
+
+    trigger_cut = '(' + ' || '.join(trigger_lines) + ')'
+
+    arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection) + ' && ' + trigger_cut)
+
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+    import seaborn as sns
+    sns.set_palette("deep", desat=.6)
+
+    logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
+
+    mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
+    plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
+    #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
+    #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
+    plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
+    plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
+    plt.axhline(0, color='r', ls='-')
+    plt.axvline(0, color='r', ls='-')
+    # idea: diagonal cut
+    #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
+    plt.xlim(-140, 140)
+    plt.tight_layout()
+    plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
+    plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
+    plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
+    plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
+    plt.savefig('plots/pid_plot.pdf')
+    plt.clf()
+
+    arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
     logging.info('Events after selection: ' + str(len(arr)))
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+
+    if plots:
+        plot(outfile, plots)
 
 #@transform(select, suffix('.root'), '.misid.root')
 def add_misid(infile, outfile):
@@ -264,7 +311,7 @@ def add_misid(infile, outfile):
     arr = append_fields(arr, newnames, newfields)
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
-@transform(select, suffix('.root'), add_inputs(reduce_mc), '.classified.root')
+@transform(select, suffix('.root'), add_inputs(select_mc), '.classified.root')
 def classify(inputs, output):
     from root_numpy import root2array, array2root
     import numpy as np
@@ -275,7 +322,7 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
-    step = 200
+    step = 50
 
     mcname_new = mcname.replace('.root', '.classified.root')
     sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
@@ -294,14 +341,14 @@ def classify(inputs, output):
 
     clf = AdaBoostClassifier(
             DecisionTreeClassifier(max_depth=3),
-            algorithm='SAMME',
-            n_estimators=700,
+            algorithm='SAMME.R',
+            n_estimators=300,
             learning_rate=0.5
     )
 
     mean_fpr = np.linspace(0, 1, 200)
 
-    with PdfPages('classifier.pdf') as pdf:
+    with PdfPages('plots/classifier.pdf') as pdf:
 
         logging.info('Running x-validation...')
         skf = StratifiedKFold(y, 10)
@@ -313,7 +360,7 @@ def classify(inputs, output):
             logging.info('Running fold #{}'.format(i + 1))
             probs = clf.fit(X[train], y[train]).predict_proba(X[test])
             fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
-            plt.plot(fpr, tpr)
+            plt.plot(1 - fpr, tpr)
         pdf.savefig()
         plt.clf()
 
@@ -351,48 +398,51 @@ def classify(inputs, output):
     mc = append_fields(mc, 'classifier', pred)
     array2root(mc, mcname_new, 'B2dD0MuMu', 'recreate')
 
-@transform(classify, formatter(), add_inputs(reduce_mc), 'plots.pdf')
-def plot_vars(infile, outfile):
+@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
+def plot_final(infile, outfile):
+    cuts = [
+        'B_M > 5200 && B_M < 5450',
+        'D~0_M > 1800 && D~0_M < 1940',
+        'classifier > 0.03',
+    ]
+    plot(infile[0], outfile, mcfile=infile[1], cuts=cuts)
+
+def plot(data, plotfile, mcfile=None, cuts=None):
     import numpy as np
     from root_numpy import root2array
-    import matplotlib
-    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from matplotlib.colors import LogNorm
     from matplotlib.backends.backend_pdf import PdfPages
     import seaborn as sns
     sns.set_palette("deep", desat=.6)
 
-    cuts = [
-        'B_M > 5200 && B_M < 5450',
-        'D~0_M > 1800 && D~0_M < 1940',
-        'classifier > 0.03',
-    ]
-
-    data = infile[0]
-    mc = infile[1].replace('.root', '.classified.root')
+    if cuts is None:
+        cuts = []
 
     arr = root2array(data, 'B2dD0MuMu', selection=prepare_sel(cuts))
-    total_mc = len(root2array(mc, 'B2dD0MuMu'))
 
-    arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
+    if mcfile:
+        mc = mcfile.replace('.root', '.classified.root')
+        arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
+        total_mc = len(root2array(mc, 'B2dD0MuMu'))
+        factor = float(50) / total_mc
 
-    #factor = float(30) / total_mc
-    factor = float(50) / total_mc
-
-    with PdfPages(outfile) as pdf:
+    logging.info('Saving plots to {}'.format(plotfile))
+    with PdfPages(plotfile) as pdf:
         for vname in arr.dtype.names:
-            logging.info('Plotting ' + vname)
+            logging.debug('Plotting ' + vname)
             #x = arr[vname][arr[vname] > -1000]
             #x_mc = arr_mc[vname][arr_mc[vname] > -1000]
             x = arr[vname]
-            x_mc = arr_mc[vname]
             n, bins, _ = plt.hist(x, histtype='stepfilled', bins=40, alpha=0.7, normed=True)
-            if vname in arr_mc.dtype.names:
-                n_mc, edges = np.histogram(arr_mc[vname], bins)
-                binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
 
-                #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
+            if mcfile:
+                x_mc = arr_mc[vname]
+                if vname in arr_mc.dtype.names:
+                    n_mc, edges = np.histogram(arr_mc[vname], bins)
+                    binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
+
+                    #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
             #plt.yscale('log')
             if 'B_M' in vname:
                 plt.axvline(5279, color='b', ls='--')
@@ -415,16 +465,12 @@ def plot_vars(infile, outfile):
         pdf.savefig()
         plt.clf()
 
-        # TODO plot K_ProbNN vs pi_ProbNN
-
 def prepare_sel(selections):
     return ' && '.join(map(lambda x: '(' + x + ')', selections))
 
 def calc_tau(arr):
     from scipy.constants import c
     arr = arr['B_FD_OWNPV'] * arr['B_M'] / (arr['B_P'] * c * 10**3) * 10**12
-    print(arr)
-    print(arr.dtype)
     return arr
 
 def binned_hist(ax, data, binedges, *args, **kwargs):
@@ -436,4 +482,5 @@ def binned_hist(ax, data, binedges, *args, **kwargs):
 
 if __name__ == '__main__':
     import sys
+    pipeline_printout_graph("flow.pdf", forcedtorun_tasks = [reduce, reduce_mc], no_key_legend = True)
     pipeline_run(forcedtorun_tasks=sys.argv[1:])

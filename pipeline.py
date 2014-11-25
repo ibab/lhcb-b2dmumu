@@ -89,7 +89,7 @@ variables = [
         'B_Hlt2TopoMu2BodyBBDTDecision_TOS',
         'B_Hlt2TopoMu3BodyBBDTDecision_TOS',
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
-        'Psi_Hlt2SingleMuonDecision_TOS',
+        'B_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
         'Kplus_PIDK',
         'piminus_PIDK',
@@ -170,6 +170,8 @@ def blind_signalpeak(infile, outfile):
     logging.info('Events in blinded dataset: ' + str(len(arr)))
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
+    plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
+
 @transform(reduce_mc, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
     select(infile, outfile, plots=None)
@@ -196,7 +198,7 @@ def select(infile, outfile, plots='plots/select.pdf'):
         'B_Hlt2TopoMu2BodyBBDTDecision_TOS == 1',
         'B_Hlt2TopoMu3BodyBBDTDecision_TOS == 1',
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS == 1',
-        'Psi_Hlt2SingleMuonDecision_TOS == 1',
+        'B_Hlt2SingleMuonDecision_TOS == 1',
         'B_Hlt2DiMuonDetachedDecision_TOS == 1',
     ]
 
@@ -209,38 +211,40 @@ def select(infile, outfile, plots='plots/select.pdf'):
 
     arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection) + ' && ' + trigger_cut)
 
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import LogNorm
-    import seaborn as sns
-    sns.set_palette("deep", desat=.6)
+    if plots:
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import LogNorm
+        import seaborn as sns
+        sns.set_palette("deep", desat=.6)
+        sns.set_context('talk')
 
-    logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
+        logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
 
-    mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
-    plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
-    #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
-    #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
-    plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
-    plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
-    plt.axhline(0, color='r', ls='-')
-    plt.axvline(0, color='r', ls='-')
-    # idea: diagonal cut
-    #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
-    plt.xlim(-140, 140)
-    plt.tight_layout()
-    plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
-    plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
-    plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
-    plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
-    plt.savefig('plots/pid_plot.pdf')
-    plt.clf()
+        mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
+        plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
+        #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
+        #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
+        plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
+        plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
+        plt.axhline(0, color='r', ls='-')
+        plt.axvline(0, color='r', ls='-')
+        # idea: diagonal cut
+        #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
+        plt.xlim(-140, 140)
+        plt.tight_layout()
+        plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
+        plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
+        plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
+        plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
+        plt.savefig('plots/pid_plot.pdf')
+        plt.clf()
 
     arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
     logging.info('Events after selection: ' + str(len(arr)))
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
     if plots:
-        plot(outfile, plots)
+        plot(outfile, plots, bins=100)
 
 #@transform(select, suffix('.root'), '.misid.root')
 def add_misid(infile, outfile):
@@ -322,7 +326,7 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
-    step = 50
+    step = 1
 
     mcname_new = mcname.replace('.root', '.classified.root')
     sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
@@ -331,9 +335,12 @@ def classify(inputs, output):
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
     from sklearn.cross_validation import StratifiedKFold
-    from sklearn.metrics import roc_curve, auc
+    from sklearn.metrics import roc_curve, auc, zero_one_loss
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
+    import seaborn as sns
+    sns.set_palette('deep', desat=.6)
+    sns.set_context('talk')
 
     X = np.append(np.array(sidebands), np.array(mc))
     X = np.array(X.tolist())
@@ -342,13 +349,20 @@ def classify(inputs, output):
     clf = AdaBoostClassifier(
             DecisionTreeClassifier(max_depth=3),
             algorithm='SAMME.R',
-            n_estimators=300,
+            n_estimators=400,
             learning_rate=0.5
     )
 
     mean_fpr = np.linspace(0, 1, 200)
 
     with PdfPages('plots/classifier.pdf') as pdf:
+        logging.info('Calculating correlation...')
+        import pandas
+        corr = pandas.DataFrame(sidebands).corr()
+        sns.heatmap(corr, vmax=.8, linewidths=0, square=True)
+        plt.tight_layout()
+        pdf.savefig()
+        plt.clf()
 
         logging.info('Running x-validation...')
         skf = StratifiedKFold(y, 10)
@@ -356,20 +370,40 @@ def classify(inputs, output):
         mean_fpr = np.linspace(0, 1, 200)
         mean_tpr = np.zeros(200)
 
+        errs = []
+
         for i, (train, test) in enumerate(skf):
             logging.info('Running fold #{}'.format(i + 1))
             probs = clf.fit(X[train], y[train]).predict_proba(X[test])
             fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
-            plt.plot(1 - fpr, tpr)
+            plt.plot(fpr, tpr, lw=1)
+
+            err = np.zeros((400,))
+            for i, y_pred in enumerate(clf.staged_predict(X[test])):
+                err[i] = zero_one_loss(y_pred, y[test])
+            errs.append(err)
+
+        plt.ylim(0.8, 1.0)
+        plt.xlim(0.0, 0.2)
+        plt.ylabel('True positive rate')
+        plt.xlabel('False positive rate')
+        plt.tight_layout()
         pdf.savefig()
         plt.clf()
 
-        logging.info("Variable importances:")
-        imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: -x[1])
-        for n, i in imp:
-            logging.info("{} - {}".format(n, i))
-        plt.bar(np.arange(len(imp)), [entr[1] for entr in imp], 0.35)
-        plt.gca().set_xticklabels([entr[0] for entr in imp])
+        for err in errs:
+            plt.plot(np.arange(400)+1, err)
+        plt.ylabel('Error')
+        plt.xlabel('$N_\\mathrm{estimators}$')
+        plt.tight_layout()
+        pdf.savefig()
+        plt.clf()
+
+        logging.info('Plot importances...')
+        imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: x[1])
+        plt.barh(np.arange(len(imp)), [entr[1] for entr in imp], 0.30, align='center')
+        plt.yticks(np.arange(len(imp)), [entr[0] for entr in imp])
+        plt.tight_layout()
         pdf.savefig()
         plt.clf()
 
@@ -403,11 +437,11 @@ def plot_final(infile, outfile):
     cuts = [
         'B_M > 5200 && B_M < 5450',
         'D~0_M > 1800 && D~0_M < 1940',
-        'classifier > 0.03',
+        'classifier > 0.015',
     ]
-    plot(infile[0], outfile, mcfile=infile[1], cuts=cuts)
+    plot(infile[0], outfile, mcfile=infile[1], cuts=cuts, variables=variables)
 
-def plot(data, plotfile, mcfile=None, cuts=None):
+def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
     import numpy as np
     from root_numpy import root2array
     import matplotlib.pyplot as plt
@@ -415,9 +449,13 @@ def plot(data, plotfile, mcfile=None, cuts=None):
     from matplotlib.backends.backend_pdf import PdfPages
     import seaborn as sns
     sns.set_palette("deep", desat=.6)
+    sns.set_context('talk')
 
     if cuts is None:
         cuts = []
+
+    if variables is None:
+        variables = []
 
     arr = root2array(data, 'B2dD0MuMu', selection=prepare_sel(cuts))
 
@@ -425,22 +463,25 @@ def plot(data, plotfile, mcfile=None, cuts=None):
         mc = mcfile.replace('.root', '.classified.root')
         arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
         total_mc = len(root2array(mc, 'B2dD0MuMu'))
-        factor = float(50) / total_mc
+        print(total_mc)
+        #factor = float(50) / total_mc
+        #factor = len(arr) / len(arr_mc)
+        factor = 0.01
 
     logging.info('Saving plots to {}'.format(plotfile))
     with PdfPages(plotfile) as pdf:
-        for vname in arr.dtype.names:
+        for vname in variables:
             logging.debug('Plotting ' + vname)
             #x = arr[vname][arr[vname] > -1000]
             #x_mc = arr_mc[vname][arr_mc[vname] > -1000]
             x = arr[vname]
-            n, bins, _ = plt.hist(x, histtype='stepfilled', bins=40, alpha=0.7, normed=True)
+            n, bine, _ = plt.hist(x, histtype='stepfilled', bins=bins, alpha=0.7)
 
             if mcfile:
                 x_mc = arr_mc[vname]
                 if vname in arr_mc.dtype.names:
-                    n_mc, edges = np.histogram(arr_mc[vname], bins)
-                    binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7, normed=True)
+                    n_mc, edges = np.histogram(arr_mc[vname], bine)
+                    binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7)
 
                     #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
             #plt.yscale('log')

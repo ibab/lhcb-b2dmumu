@@ -31,81 +31,10 @@ input_data = [
     './storage/Data/AllYears/Stripping20/Dimuon/DVBd2Kstmumu_data/combined/Bd2Kstmumu.root',
 ]
 
-# Variables that are used in the analysis
-variables = [
-        'B_M',
-        'B_DIRA_OWNPV',
-        'B_FD_OWNPV',
-        'B_ENDVERTEX_CHI2',
-        'B_P',
-        'B_PT',
-        'B_ISOLATION_BDT_Hard',
-        'B_ISOLATION_BDT_Soft',
-        'B_OWNPV_CHI2',
-        'Psi_M',
-        'Psi_FD_ORIVX',
-        'Psi_FDCHI2_ORIVX',
-        'Kstar_M',
-        'Kstar_FD_ORIVX',
-        'Kstar_CosTheta',
-        'Kstar_DIRA_OWNPV',
-        'muplus_isMuon',
-        'muplus_ProbNNpi',
-        'muplus_ProbNNmu',
-        'muminus_isMuon',
-        'muminus_ProbNNpi',
-        'muminus_ProbNNmu',
-        'Kplus_hasRich',
-        'Kplus_ProbNNpi',
-        'Kplus_ProbNNk',
-        'Kplus_ProbNNmu',
-        'Kplus_ProbNNp',
-        'Kplus_PX',
-        'Kplus_PY',
-        'Kplus_PZ',
-        'Kplus_PT',
-        'piminus_PX',
-        'piminus_PY',
-        'piminus_PZ',
-        'piminus_PT',
-        'Psi_PX',
-        'Psi_PY',
-        'Psi_PZ',
-        'Psi_PE',
-        'piminus_hasRich',
-        'piminus_ProbNNpi',
-        'piminus_ProbNNk',
-        'piminus_ProbNNmu',
-        'piminus_ProbNNp',
-        'B_L0MuonDecision_TOS',
-        'B_Hlt1TrackAllL0Decision_TOS',
-        'B_Hlt1TrackMuonDecision_TOS',
-        'B_Hlt2Topo2BodyBBDTDecision_TOS',
-        'B_Hlt2Topo3BodyBBDTDecision_TOS',
-        'B_Hlt2Topo4BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu2BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu3BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
-        'B_Hlt2SingleMuonDecision_TOS',
-        'B_Hlt2DiMuonDetachedDecision_TOS',
-]
-
-# Variables that are used in the multivariate classification
-bdt_variables = [
-        'B_TAU',
-        'B_ISOLATION_BDT_Soft',
-        'B_ENDVERTEX_CHI2',
-        'B_DIRA_OWNPV',
-        'Kstar_DIRA_OWNPV',
-        'muplus_ProbNNmu',
-        'muminus_ProbNNmu',
-        'Kplus_ProbNNpi',
-        'Kplus_ProbNNk',
-        'Kplus_ProbNNp',
-        'piminus_ProbNNpi',
-        'piminus_ProbNNp',
-        'Psi_FD_ORIVX',
-]
+from pipeline import variables
+variables = map(lambda x: x.replace('D~0', 'Kstar'), variables)
+from pipeline import bdt_variables
+bdt_variables = map(lambda x: x.replace('D~0', 'Kstar'), bdt_variables)
 
 selection = [
         'Psi_M < 2860 || Psi_M > 3200',
@@ -132,10 +61,7 @@ from ruffus import *
 @transform(input_data, suffix('.root'), '.reduced.root')
 def reduce(infile, outfile):
     from root_numpy import root2array, array2root
-    try:
-        arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
-    except:
-        arr = root2array(infile, 'DecayTree', variables)
+    arr = root2array(infile, 'DecayTree', variables)
 
     arr = append_fields(arr, 'B_TAU', calc_tau(arr))
     
@@ -182,7 +108,7 @@ def classify(inputs, output):
     data = append_fields(data, 'classifier', pred)
     array2root(data, output, 'Bd2Kstarmumu', 'recreate')
 
-@transform(classify, formatter(), 'plots_kst.pdf')
+@transform(classify, formatter(), 'plots/plots_kst.pdf')
 def plot_vars(infile, outfile):
     import numpy as np
     from root_numpy import root2array
@@ -200,7 +126,7 @@ def plot_vars(infile, outfile):
 
         'Kstar_M > 792 && Kstar_M < 992',
         #'Kstar_M >  && Kstar_M < 1890',
-        'classifier > 0.03',
+        'classifier > 0.02',
         #'classifier > -0.15',
         #'B_DIRA_OWNPV > 0.999996',
 
@@ -231,7 +157,7 @@ def plot_vars(infile, outfile):
     with PdfPages(outfile) as pdf:
         for vname in arr.dtype.names:
             logging.info('Plotting ' + vname)
-            n, bins, _ = plt.hist(arr[vname], histtype='stepfilled', bins=50, alpha=0.7)
+            n, bins, _ = plt.hist(arr[vname], histtype='stepfilled', bins=30, alpha=0.7)
 
             if 'B_M' in vname:
                 plt.axvline(5279, color='b', ls='--')

@@ -10,3 +10,9 @@ InstallArea
 cleanup.*
 setup.*
 *.cmt
+
+.ruffus_history.sqlite
+__pycache__/
+*.pyc
+*.pkl
+

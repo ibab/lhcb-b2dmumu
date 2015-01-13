@@ -1,24 +1,9 @@
 #!/usr/bin/env python2
-"""
-Analysis pipeline:
-
- *
- |
- Reduce dataset (Throw away unused variables)
- |
- Blind signal peak (Remove events with B_M close to B0 mass)
- |
- Apply cut-based selection
- |
- |--------> Plot variables
- |
- ?
-
-"""
-
 
 import logging
 from log import setup_logging; setup_logging()
+import plotting
+from util import *
 
 import matplotlib
 matplotlib.use('Agg')
@@ -170,7 +155,7 @@ def blind_signalpeak(infile, outfile):
     logging.info('Events in blinded dataset: ' + str(len(arr)))
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
-    plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
+    plotting.plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
 
 @transform(reduce_mc, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
@@ -244,7 +229,7 @@ def select(infile, outfile, plots='plots/select.pdf'):
     array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
 
     if plots:
-        plot(outfile, plots, bins=100)
+        plotting.plot(outfile, plots, bins=100)
 
 #@transform(select, suffix('.root'), '.misid.root')
 def add_misid(infile, outfile):
@@ -326,7 +311,7 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
-    step = 1
+    step = 50
 
     mcname_new = mcname.replace('.root', '.classified.root')
     sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
@@ -334,13 +319,6 @@ def classify(inputs, output):
 
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-    from sklearn.cross_validation import StratifiedKFold
-    from sklearn.metrics import roc_curve, auc, zero_one_loss
-    import matplotlib.pyplot as plt
-    from matplotlib.backends.backend_pdf import PdfPages
-    import seaborn as sns
-    sns.set_palette('deep', desat=.6)
-    sns.set_context('talk')
 
     X = np.append(np.array(sidebands), np.array(mc))
     X = np.array(X.tolist())
@@ -353,67 +331,18 @@ def classify(inputs, output):
             learning_rate=0.5
     )
 
-    mean_fpr = np.linspace(0, 1, 200)
+    logging.info('Validating classifier...')
+    from classification import validate_classifier
+    validate_classifier(clf, X, y, 'plots')
 
-    with PdfPages('plots/classifier.pdf') as pdf:
-        logging.info('Calculating correlation...')
-        import pandas
-        corr = pandas.DataFrame(sidebands).corr()
-        sns.heatmap(corr, vmax=.8, linewidths=0, square=True)
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
+    logging.info('Fit classifier to data...')
+    clf.fit(X, y)
 
-        logging.info('Running x-validation...')
-        skf = StratifiedKFold(y, 10)
-
-        mean_fpr = np.linspace(0, 1, 200)
-        mean_tpr = np.zeros(200)
-
-        errs = []
-
-        for i, (train, test) in enumerate(skf):
-            logging.info('Running fold #{}'.format(i + 1))
-            probs = clf.fit(X[train], y[train]).predict_proba(X[test])
-            fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
-            plt.plot(fpr, tpr, lw=1)
-
-            err = np.zeros((400,))
-            for i, y_pred in enumerate(clf.staged_predict(X[test])):
-                err[i] = zero_one_loss(y_pred, y[test])
-            errs.append(err)
-
-        plt.ylim(0.8, 1.0)
-        plt.xlim(0.0, 0.2)
-        plt.ylabel('True positive rate')
-        plt.xlabel('False positive rate')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
-
-        for err in errs:
-            plt.plot(np.arange(400)+1, err)
-        plt.ylabel('Error')
-        plt.xlabel('$N_\\mathrm{estimators}$')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
-
-        logging.info('Plot importances...')
-        imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: x[1])
-        plt.barh(np.arange(len(imp)), [entr[1] for entr in imp], 0.30, align='center')
-        plt.yticks(np.arange(len(imp)), [entr[0] for entr in imp])
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
-
-        logging.info('Fit classifier model...')
-        clf.fit(X, y)
-        import pickle
-        logging.info('Dump classifier to disk...')
-        s = pickle.dumps(clf)
-        with open('classifier.pkl', 'wb') as f:
-            f.write(s)
+    logging.info('Dump classifier to disk...')
+    import pickle
+    s = pickle.dumps(clf)
+    with open('classifier.pkl', 'wb') as f:
+        f.write(s)
 
     data_vars = root2array(fname, 'B2dD0MuMu', bdt_variables)
     data_vars = np.array(data_vars.tolist())
@@ -439,89 +368,10 @@ def plot_final(infile, outfile):
         'D~0_M > 1800 && D~0_M < 1940',
         'classifier > 0.015',
     ]
-    plot(infile[0], outfile, mcfile=infile[1], cuts=cuts, variables=variables)
-
-def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
-    import numpy as np
-    from root_numpy import root2array
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import LogNorm
-    from matplotlib.backends.backend_pdf import PdfPages
-    import seaborn as sns
-    sns.set_palette("deep", desat=.6)
-    sns.set_context('talk')
-
-    if cuts is None:
-        cuts = []
-
-    if variables is None:
-        variables = []
-
-    arr = root2array(data, 'B2dD0MuMu', selection=prepare_sel(cuts))
-
-    if mcfile:
-        mc = mcfile.replace('.root', '.classified.root')
-        arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
-        total_mc = len(root2array(mc, 'B2dD0MuMu'))
-        print(total_mc)
-        #factor = float(50) / total_mc
-        #factor = len(arr) / len(arr_mc)
-        factor = 0.01
-
-    logging.info('Saving plots to {}'.format(plotfile))
-    with PdfPages(plotfile) as pdf:
-        for vname in variables:
-            logging.debug('Plotting ' + vname)
-            #x = arr[vname][arr[vname] > -1000]
-            #x_mc = arr_mc[vname][arr_mc[vname] > -1000]
-            x = arr[vname]
-            n, bine, _ = plt.hist(x, histtype='stepfilled', bins=bins, alpha=0.7)
-
-            if mcfile:
-                x_mc = arr_mc[vname]
-                if vname in arr_mc.dtype.names:
-                    n_mc, edges = np.histogram(arr_mc[vname], bine)
-                    binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7)
-
-                    #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
-            #plt.yscale('log')
-            if 'B_M' in vname:
-                plt.axvline(5279, color='b', ls='--')
-            plt.xlabel(vname)
-            plt.ylim(0, max(n) * 1.05)
-            pdf.savefig()
-            plt.clf()
-
-        logging.info('Plotting m_B vs. q^2')
-        jp = sns.jointplot(arr['B_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m_{B^0}$', '$q^2_{\\mu\\mu}$')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
-
-        logging.info('Plotting m_D vs. q^2')
-        jp = sns.jointplot(arr['D~0_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m_{\\bar{D}^0}$', '$q^2_{\\mu\\mu}$')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
-
-def prepare_sel(selections):
-    return ' && '.join(map(lambda x: '(' + x + ')', selections))
-
-def calc_tau(arr):
-    from scipy.constants import c
-    arr = arr['B_FD_OWNPV'] * arr['B_M'] / (arr['B_P'] * c * 10**3) * 10**12
-    return arr
-
-def binned_hist(ax, data, binedges, *args, **kwargs):
-    #The dataset values are the bin centres
-    x = (binedges[1:] + binedges[:-1]) / 2.0
-    #The weights are the y-values of the input binned data
-    weights = data
-    return ax.hist(x, bins=binedges, weights=weights, *args, **kwargs)
+    plotting.plot(infile[0], outfile, mcfile=infile[1], cuts=cuts, variables=variables)
 
 if __name__ == '__main__':
     import sys
     pipeline_printout_graph("flow.pdf", forcedtorun_tasks = [reduce, reduce_mc], no_key_legend = True)
     pipeline_run(forcedtorun_tasks=sys.argv[1:])
+

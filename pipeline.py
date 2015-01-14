@@ -30,41 +30,6 @@ variables = [
         'B_ISOLATION_BDT_Hard',
         'B_ISOLATION_BDT_Soft',
         'B_OWNPV_CHI2',
-        'Psi_M',
-        'Psi_FD_ORIVX',
-        'Psi_FDCHI2_ORIVX',
-        'D~0_M',
-        'D~0_FD_ORIVX',
-        'D~0_CosTheta',
-        'D~0_DIRA_OWNPV',
-        'muplus_isMuon',
-        'muplus_ProbNNpi',
-        'muplus_ProbNNmu',
-        'muminus_isMuon',
-        'muminus_ProbNNpi',
-        'muminus_ProbNNmu',
-        'Kplus_hasRich',
-        'Kplus_ProbNNpi',
-        'Kplus_ProbNNk',
-        'Kplus_ProbNNmu',
-        'Kplus_ProbNNp',
-        'Kplus_PX',
-        'Kplus_PY',
-        'Kplus_PZ',
-        'Kplus_PT',
-        'piminus_PX',
-        'piminus_PY',
-        'piminus_PZ',
-        'piminus_PT',
-        'Psi_PX',
-        'Psi_PY',
-        'Psi_PZ',
-        'Psi_PE',
-        'piminus_hasRich',
-        'piminus_ProbNNpi',
-        'piminus_ProbNNk',
-        'piminus_ProbNNmu',
-        'piminus_ProbNNp',
         'B_L0MuonDecision_TOS',
         'B_Hlt1TrackAllL0Decision_TOS',
         'B_Hlt1TrackMuonDecision_TOS',
@@ -76,18 +41,62 @@ variables = [
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
         'B_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
-        'Kplus_PIDK',
-        'piminus_PIDK',
+        'Psi_M',
+        'Psi_FD_ORIVX',
+        'Psi_FDCHI2_ORIVX',
+        'D~0_M',
+        'D~0_FD_ORIVX',
+        'D~0_CosTheta',
+        'D~0_DIRA_OWNPV',
+        'Kplus_hasRich',
+        'Kplus_ProbNNpi',
+        'Kplus_ProbNNk',
+        'Kplus_ProbNNmu',
+        'Kplus_ProbNNp',
+        'Kplus_PX',
+        'Kplus_PY',
+        'Kplus_PZ',
+        'Kplus_PT',
+        'Kplus_P',
         'Kplus_TRACK_GhostProb',
+        'piminus_PX',
+        'piminus_PY',
+        'piminus_PZ',
+        'piminus_PT',
+        'piminus_P',
+        'piminus_hasRich',
+        'piminus_ProbNNpi',
+        'piminus_ProbNNk',
+        'piminus_ProbNNmu',
+        'piminus_ProbNNp',
         'piminus_TRACK_GhostProb',
+        'Psi_PX',
+        'Psi_PY',
+        'Psi_PZ',
+        'Psi_PE',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
+        'muminus_ProbNNpi',
+        'muminus_ProbNNk',
+        'muminus_ProbNNmu',
+        'muminus_ProbNNp',
+        'muminus_P',
+        'muminus_PT',
         'Kplus_TRACK_CHI2NDOF',
         'piminus_TRACK_CHI2NDOF',
         'muplus_TRACK_CHI2NDOF',
         'muminus_TRACK_CHI2NDOF',
+        'muplus_ProbNNpi',
+        'muplus_ProbNNk',
+        'muplus_ProbNNmu',
+        'muplus_ProbNNp',
+        'muplus_P',
+        'muplus_PT',
         'Kplus_isMuonLoose',
         'piminus_isMuonLoose',
+        'muplus_isMuon',
+        'muminus_isMuon',
+        'nTracks',
 ]
 
 # Variables that are used in the multivariate classification
@@ -113,6 +122,10 @@ bdt_variables = [
 
 mc_variables = [
         'B_BKGCAT',
+        'Kplus_TRUEID',
+        'piminus_TRUEID',
+        'muplus_TRUEID',
+        'muminus_TRUEID',
 ]
 
 mc_selection = [
@@ -157,7 +170,26 @@ def blind_signalpeak(infile, outfile):
 
     plotting.plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
 
-@transform(reduce_mc, suffix('.root'), '.mc_cut.root')
+@transform(reduce_mc, suffix('.root'), '.pid_resampled.root')
+def resample_pid(infile, outfile):
+    import numpy as np
+    import pid_resample
+    resample = pid_resample.create_resampler()
+
+    from root_numpy import root2array, array2root
+    pids = root2array(infile, 'B2dD0MuMu')
+    arr = root2array(infile, 'B2dD0MuMu')
+
+    for part in ['Kplus', 'piminus', 'muplus', 'muminus']:
+        for pid in ['K', 'mu']:
+            new = []
+            for id, p, pt, ntracks in zip(arr[part+'_TRUEID'], arr[part+'_P'], arr[part+'_PT'], arr['nTracks']):
+                new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
+            arr = append_fields(arr, part + '_ResampledProbNN' + pid, np.array(new))
+
+    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+
+@transform(resample_pid, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
     select(infile, outfile, plots=None)
 

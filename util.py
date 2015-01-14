@@ -18,10 +18,25 @@ def binned_hist(ax, data, binedges, *args, **kwargs):
     weights = data
     return ax.hist(x, bins=binedges, weights=weights, *args, **kwargs)
 
-def load_root(fname, tree_name, *kargs, **kwargs):
+def get_matching_variables(fname, tree, patterns):
+    from fnmatch import fnmatch
+    from root_numpy import list_branches
+
+    branches = list_branches(fname, tree)
+
+    selected = []
+
+    for p in patterns:
+        for b in branches:
+            if fnmatch(b, p) and not b in selected:
+                selected.append(b)
+    return selected
+
+def load_root(fname, tree_name, variable_patterns, *kargs, **kwargs):
     from pandas import DataFrame
     from root_numpy import root2array
-    df = DataFrame(root2array(fname, tree_name, *kargs, **kwargs))
+    all_vars = get_matching_variables(fname, tree_name, variable_patterns)
+    df = DataFrame(root2array(fname, tree_name, all_vars, *kargs, **kwargs))
     return df
 
 def save_root(df, fname, tree_name, *kargs, **kwargs):

@@ -3,13 +3,20 @@ import ctypes
 import logging
 import os
 
+def setup_roofit():
+    from silence import silence
+    from ROOT import gSystem
+    logging.info('Did you know that RooFit was written by Wouter Verkerke and David Kirkby?')
+    with silence():
+        gSystem.Load('libRooFit')
+
 def setup_logging():
     logging.root.setLevel(logging.INFO)
-    fmt = logging.Formatter('%(levelname)-10s %(message)s')
+    fmt = logging.Formatter('%(levelname)-8s %(message)s')
     hand = ColorizingStreamHandler()
     hand.setFormatter(fmt)
     logging.root.addHandler(hand)
-
+    
 class ColorizingStreamHandler(logging.StreamHandler):
     # color names to indices
     color_map = {

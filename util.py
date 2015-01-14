@@ -1,4 +1,7 @@
-
+import sys
+import functools
+import timeit
+import logging
 
 def prepare_sel(selections):
     return ' && '.join(map(lambda x: '(' + x + ')', selections))
@@ -15,3 +18,27 @@ def binned_hist(ax, data, binedges, *args, **kwargs):
     weights = data
     return ax.hist(x, bins=binedges, weights=weights, *args, **kwargs)
 
+def load_root(fname, tree_name, *kargs, **kwargs):
+    from pandas import DataFrame
+    from root_numpy import root2array
+    df = DataFrame(root2array(fname, tree_name, *kargs, **kwargs))
+    return df
+
+def save_root(df, fname, tree_name, *kargs, **kwargs):
+    from root_numpy import array2root
+    array2root(df.to_records(), fname, tree_name, 'recreate', *kargs, **kwargs)
+
+def time_job(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+
+        result = [None]
+
+        def sub_wrapper():
+            result[0] = func(*args, **kwargs)
+
+        timing = timeit.timeit(sub_wrapper, number=1)
+        logging.warning('Execution of {} took {} secs'.format(func.__name__, timing))
+        
+        return result[0]
+    return wrapper

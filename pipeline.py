@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 
 import logging
-from log import setup_logging; setup_logging()
+from log import setup_logging, setup_roofit
+setup_logging();
+setup_roofit()
 import plotting
 from util import *
 
@@ -148,14 +150,14 @@ def reduce(infile, outfile):
 
     arr = append_fields(arr, 'B_TAU', calc_tau(arr))
     
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
 @transform(input_mc, suffix('.root'), '.reduced.root')
 def reduce_mc(infile, outfile):
     from root_numpy import root2array, array2root
     arr = root2array(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables + mc_variables, selection=prepare_sel(mc_selection))
     arr = append_fields(arr, 'B_TAU', calc_tau(arr))
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
 @transform(reduce, suffix('.root'), '.blinded.root')
 def blind_signalpeak(infile, outfile):
@@ -164,30 +166,35 @@ def blind_signalpeak(infile, outfile):
     width = 50
 
     selstr = '(B_M < {}) || (B_M > {})'.format(B_mass - width, B_mass + width)
-    arr = root2array(infile, 'B2dD0MuMu', selection=selstr)
+    arr = root2array(infile, 'Bd2D0MuMu', selection=selstr)
     logging.info('Events in blinded dataset: ' + str(len(arr)))
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
     plotting.plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
 
 @transform(reduce_mc, suffix('.root'), '.pid_resampled.root')
+@time_job
 def resample_pid(infile, outfile):
     import numpy as np
     import pid_resample
+    from pandas import Series
     resample = pid_resample.create_resampler()
 
-    from root_numpy import root2array, array2root
-    pids = root2array(infile, 'B2dD0MuMu')
-    arr = root2array(infile, 'B2dD0MuMu')
+    df = load_root(infile, 'Bd2D0MuMu')
+
+    # Disable ComputeIntegral error messages
+    # FIXME Find out where they are coming from
+    import ROOT
+    ROOT.gErrorIgnoreLevel = 5000
 
     for part in ['Kplus', 'piminus', 'muplus', 'muminus']:
         for pid in ['K', 'mu']:
             new = []
-            for id, p, pt, ntracks in zip(arr[part+'_TRUEID'], arr[part+'_P'], arr[part+'_PT'], arr['nTracks']):
+            for id, p, pt, ntracks in zip(df[part+'_TRUEID'], df[part+'_P'], df[part+'_PT'], df['nTracks']):
                 new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
-            arr = append_fields(arr, part + '_ResampledProbNN' + pid, np.array(new))
+            df[part + '_ProbNN' + pid] = Series(new, index=df.index)
 
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    save_root(df, outfile, 'Bd2D0MuMu')
 
 @transform(resample_pid, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
@@ -220,45 +227,45 @@ def select(infile, outfile, plots='plots/select.pdf'):
     ]
 
     pid_cuts = [
-        'Kplus_PIDK > 0',
-        'piminus_PIDK < 0',
+        'Kplus_ProbNNk > 0.5',
+        'piminus_ProbNNk < 0.5',
     ]
 
     trigger_cut = '(' + ' || '.join(trigger_lines) + ')'
 
-    arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection) + ' && ' + trigger_cut)
+    arr = root2array(infile, 'Bd2D0MuMu', selection=prepare_sel(selection) + ' && ' + trigger_cut)
 
-    if plots:
-        import matplotlib.pyplot as plt
-        from matplotlib.colors import LogNorm
-        import seaborn as sns
-        sns.set_palette("deep", desat=.6)
-        sns.set_context('talk')
+    #if plots:
+    #    import matplotlib.pyplot as plt
+    #    from matplotlib.colors import LogNorm
+    #    import seaborn as sns
+    #    sns.set_palette("deep", desat=.6)
+    #    sns.set_context('talk')
 
-        logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
+    #    logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
 
-        mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
-        plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
-        #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
-        #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
-        plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
-        plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
-        plt.axhline(0, color='r', ls='-')
-        plt.axvline(0, color='r', ls='-')
-        # idea: diagonal cut
-        #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
-        plt.xlim(-140, 140)
-        plt.tight_layout()
-        plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
-        plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
-        plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
-        plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
-        plt.savefig('plots/pid_plot.pdf')
-        plt.clf()
+    #    mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
+    #    plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
+    #    #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
+    #    #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
+    #    plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
+    #    plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
+    #    plt.axhline(0, color='r', ls='-')
+    #    plt.axvline(0, color='r', ls='-')
+    #    # idea: diagonal cut
+    #    #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
+    #    plt.xlim(-140, 140)
+    #    plt.tight_layout()
+    #    plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
+    #    plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
+    #    plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
+    #    plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
+    #    plt.savefig('plots/pid_plot.pdf')
+    #    plt.clf()
 
-    arr = root2array(infile, 'B2dD0MuMu', selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
+    arr = root2array(infile, 'Bd2D0MuMu', selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
     logging.info('Events after selection: ' + str(len(arr)))
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
     if plots:
         plotting.plot(outfile, plots, bins=100)
@@ -269,7 +276,7 @@ def add_misid(infile, outfile):
     import numpy as np
     from itertools import product
 
-    arr = root2array(infile, 'B2dD0MuMu')
+    arr = root2array(infile, 'Bd2D0MuMu')
     K_px = arr['Kplus_PX']
     K_py = arr['Kplus_PY']
     K_pz = arr['Kplus_PZ']
@@ -330,7 +337,7 @@ def add_misid(infile, outfile):
     newnames.append('B_M_HYPO_K=Kaon,pi=Missing')
 
     arr = append_fields(arr, newnames, newfields)
-    array2root(arr, outfile, 'B2dD0MuMu', 'recreate')
+    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
 @transform(select, suffix('.root'), add_inputs(select_mc), '.classified.root')
 def classify(inputs, output):
@@ -346,8 +353,8 @@ def classify(inputs, output):
     step = 50
 
     mcname_new = mcname.replace('.root', '.classified.root')
-    sidebands = root2array(fname, 'B2dD0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
-    mc = root2array(mcname, 'B2dD0MuMu', bdt_variables, step=step)
+    sidebands = root2array(fname, 'Bd2D0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
+    mc = root2array(mcname, 'Bd2D0MuMu', bdt_variables, step=step)
 
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -376,24 +383,24 @@ def classify(inputs, output):
     with open('classifier.pkl', 'wb') as f:
         f.write(s)
 
-    data_vars = root2array(fname, 'B2dD0MuMu', bdt_variables)
+    data_vars = root2array(fname, 'Bd2D0MuMu', bdt_variables)
     data_vars = np.array(data_vars.tolist())
-    data = root2array(fname, 'B2dD0MuMu')
+    data = root2array(fname, 'Bd2D0MuMu')
 
     logging.info('Apply classifier to data...')
     pred = clf.decision_function(data_vars)
     data = append_fields(data, 'classifier', pred)
-    array2root(data, output, 'B2dD0MuMu', 'recreate')
+    array2root(data, output, 'Bd2D0MuMu', 'recreate')
 
     logging.info('Apply classifier to MC...')
-    mc_vars = root2array(mcname, 'B2dD0MuMu', bdt_variables)
+    mc_vars = root2array(mcname, 'Bd2D0MuMu', bdt_variables)
     mc_vars = np.array(mc_vars.tolist())
-    mc = root2array(mcname, 'B2dD0MuMu')
+    mc = root2array(mcname, 'Bd2D0MuMu')
     pred = clf.decision_function(mc_vars)
     mc = append_fields(mc, 'classifier', pred)
-    array2root(mc, mcname_new, 'B2dD0MuMu', 'recreate')
+    array2root(mc, mcname_new, 'Bd2D0MuMu', 'recreate')
 
-@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
+#@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
 def plot_final(infile, outfile):
     cuts = [
         'B_M > 5200 && B_M < 5450',
@@ -405,5 +412,5 @@ def plot_final(infile, outfile):
 if __name__ == '__main__':
     import sys
     pipeline_printout_graph("flow.pdf", forcedtorun_tasks = [reduce, reduce_mc], no_key_legend = True)
-    pipeline_run(forcedtorun_tasks=sys.argv[1:])
+    pipeline_run(forcedtorun_tasks=sys.argv[1:], logger=logging)
 

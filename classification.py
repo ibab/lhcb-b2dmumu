@@ -30,7 +30,7 @@ def validate_classifier(clf, X, y, outputdir):
         errs = []
 
         for i, (train, test) in enumerate(skf):
-            logging.info('Running fold #{}'.format(i + 1))
+            logging.info('    Running fold #{}'.format(i + 1))
             probs = clf.fit(X[train], y[train]).predict_proba(X[test])
             fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
             plt.plot(fpr, tpr, lw=1)

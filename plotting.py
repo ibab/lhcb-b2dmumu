@@ -17,12 +17,12 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
     if variables is None:
         variables = []
 
-    arr = root2array(data, 'B2dD0MuMu', selection=prepare_sel(cuts))
+    arr = root2array(data, 'Bd2D0MuMu', selection=prepare_sel(cuts))
 
     if mcfile:
         mc = mcfile.replace('.root', '.classified.root')
-        arr_mc = root2array(mc, 'B2dD0MuMu', selection=prepare_sel(cuts))
-        total_mc = len(root2array(mc, 'B2dD0MuMu'))
+        arr_mc = root2array(mc, 'Bd2D0MuMu', selection=prepare_sel(cuts))
+        total_mc = len(root2array(mc, 'Bd2D0MuMu'))
         print(total_mc)
         #factor = float(50) / total_mc
         #factor = len(arr) / len(arr_mc)

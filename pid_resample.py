@@ -2,7 +2,6 @@
 
 def create_resampler(use_probnn=True):
     import sys
-    sys.path.append("/home/igor/Mount/eve/fhgfs/users/ashires/")
     import os
     import time
     from math import isnan, sqrt, log
@@ -22,26 +21,25 @@ def create_resampler(use_probnn=True):
             'Proton': {},
     }
 
-    def perform_resample(which_pid, true_pid, p, pt, numTracks, muons=False):
+    def perform_resample(which_pid, true_id, p, pt, numTracks, muons=False):
         pl = sqrt(p**2 - pt**2)
         eta = 0.5 * log(p + pl) - log(p - pl)
 
         try:
-            name = particles[abs(true_pid)]
+            name = particles[abs(true_id)]
         except KeyError:
             return -1
 
         if not name in Particle:
-            # FIXME 
             return -1
 
         if name == 'Muon':
             which_pid = which_pid.replace('Down', '').replace('Up', '')
-        res = Particle[name][which_pid].GetDLLhisto(p, eta, numTracks).GetRandom()
-        if isnan(res):
-            return -1
-        else:
-            return res
+        hist = Particle[name][which_pid].GetDLLhisto(p, eta, numTracks)
+
+        res = hist.GetRandom()
+
+        return res
 
     basedir = "/home/igor/Mount/eve/fhgfs/users/ashires/"
     if use_probnn:
@@ -49,12 +47,11 @@ def create_resampler(use_probnn=True):
     else :
         pid_table_path = os.path.join(basedir,"PIDEffTables_v20r1/forDLL/" )
 
-    from reader.memtest import stacksize, status, change #####* #stacksize
-    from reader.ReadEffTables import DLLclass
+    from read_eff_tables import DLLclass
 
     for part in ['Pion', 'Kaon', 'Muon']:
         for mag in ['Up', 'Down']:
-            for target in ['DLLpi', 'DLLK', 'DLLmu']:
+            for target in ['DLLK', 'DLLmu']:
                 if part == 'Muon':
                     # the muon dataset does not have polarity for some reason
                     dllClass = DLLclass(Particle=part, whichDLL=target, Mag=None, options='normal, both', tablepath=pid_table_path)

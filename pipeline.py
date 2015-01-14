@@ -194,6 +194,8 @@ def resample_pid(infile, outfile):
                 new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
             df[part + '_ProbNN' + pid] = Series(new, index=df.index)
 
+    ROOT.gErrorIgnoreLevel = 1000
+
     save_root(df, outfile, 'Bd2D0MuMu')
 
 @transform(resample_pid, suffix('.root'), '.mc_cut.root')

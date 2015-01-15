@@ -33,6 +33,14 @@ def get_matching_variables(fname, tree, patterns):
     return selected
 
 def load_root(fname, tree=None, patterns=None, *kargs, **kwargs):
+    """
+    Loads a root file into a pandas DataFrame.
+    Further *kargs and *kwargs are passed to root_numpy's root2array.
+
+    >>> df = load_root('test.root', 'MyTree', patterns=['x_*', 'y_*'], selection='x_1 > 100')
+
+    If the root file contains a branch called index, it will become the DataFrame's index.
+    """
     from pandas import DataFrame
     from root_numpy import root2array, list_trees
 
@@ -43,9 +51,11 @@ def load_root(fname, tree=None, patterns=None, *kargs, **kwargs):
         else:
             raise ValueError('More than one tree found in {}'.format(fname))
 
-    if patterns == None:
+    if not patterns:
         all_vars = None
     else:
+        # index is always loaded if it exists
+        patterns.append('index')
         all_vars = get_matching_variables(fname, tree, patterns)
 
     arr = root2array(fname, tree, all_vars, *kargs, **kwargs)

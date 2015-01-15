@@ -11,6 +11,11 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib.mlab import rec_append_fields as append_fields
 
+import numpy as np
+from pandas import DataFrame, Series
+
+BLINDED = True
+
 # Simulated data fetched from the grid
 input_mc = [
     './storage/MC/2012/Stripping20/AllStreams/DVBd2MuMuD0_MC/combined/Bd2MuMuD0.root'
@@ -23,15 +28,16 @@ input_data = [
 
 # Variables that are used in the analysis
 variables = [
-        'B_M',
+        '*_M',
+        '*_P',
+        '*_PT',
         'B_DIRA_OWNPV',
         'B_FD_OWNPV',
         'B_ENDVERTEX_CHI2',
-        'B_P',
-        'B_PT',
         'B_ISOLATION_BDT_Hard',
         'B_ISOLATION_BDT_Soft',
         'B_OWNPV_CHI2',
+
         'B_L0MuonDecision_TOS',
         'B_Hlt1TrackAllL0Decision_TOS',
         'B_Hlt1TrackMuonDecision_TOS',
@@ -43,61 +49,31 @@ variables = [
         'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
         'B_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
-        'Psi_M',
+
         'Psi_FD_ORIVX',
         'Psi_FDCHI2_ORIVX',
-        'D~0_M',
+
         'D~0_FD_ORIVX',
         'D~0_CosTheta',
         'D~0_DIRA_OWNPV',
+
+        'Kplus_ProbNN*',
         'Kplus_hasRich',
-        'Kplus_ProbNNpi',
-        'Kplus_ProbNNk',
-        'Kplus_ProbNNmu',
-        'Kplus_ProbNNp',
-        'Kplus_PX',
-        'Kplus_PY',
-        'Kplus_PZ',
-        'Kplus_PT',
-        'Kplus_P',
         'Kplus_TRACK_GhostProb',
-        'piminus_PX',
-        'piminus_PY',
-        'piminus_PZ',
-        'piminus_PT',
-        'piminus_P',
-        'piminus_hasRich',
-        'piminus_ProbNNpi',
-        'piminus_ProbNNk',
-        'piminus_ProbNNmu',
-        'piminus_ProbNNp',
-        'piminus_TRACK_GhostProb',
-        'Psi_PX',
-        'Psi_PY',
-        'Psi_PZ',
-        'Psi_PE',
-        'muplus_TRACK_GhostProb',
-        'muminus_TRACK_GhostProb',
-        'muminus_ProbNNpi',
-        'muminus_ProbNNk',
-        'muminus_ProbNNmu',
-        'muminus_ProbNNp',
-        'muminus_P',
-        'muminus_PT',
         'Kplus_TRACK_CHI2NDOF',
-        'piminus_TRACK_CHI2NDOF',
-        'muplus_TRACK_CHI2NDOF',
-        'muminus_TRACK_CHI2NDOF',
-        'muplus_ProbNNpi',
-        'muplus_ProbNNk',
-        'muplus_ProbNNmu',
-        'muplus_ProbNNp',
-        'muplus_P',
-        'muplus_PT',
         'Kplus_isMuonLoose',
+
+        'piminus_ProbNN*',
+        'piminus_hasRich',
+        'piminus_TRACK_GhostProb',
+        'piminus_TRACK_CHI2NDOF',
         'piminus_isMuonLoose',
-        'muplus_isMuon',
-        'muminus_isMuon',
+
+        'mu*s_ProbNN*',
+        'mu*_TRACK_GhostProb',
+        'mu*_TRACK_CHI2NDOF',
+        'mu*_isMuon',
+
         'nTracks',
 ]
 
@@ -108,13 +84,6 @@ bdt_variables = [
         'B_ENDVERTEX_CHI2',
         'B_DIRA_OWNPV',
         'D~0_DIRA_OWNPV',
-        'muplus_ProbNNmu',
-        'muminus_ProbNNmu',
-        'Kplus_ProbNNpi',
-        'Kplus_ProbNNk',
-        'Kplus_ProbNNp',
-        'piminus_ProbNNpi',
-        'piminus_ProbNNp',
         'Psi_FD_ORIVX',
         'Kplus_TRACK_GhostProb',
         'piminus_TRACK_GhostProb',
@@ -124,10 +93,7 @@ bdt_variables = [
 
 mc_variables = [
         'B_BKGCAT',
-        'Kplus_TRUEID',
-        'piminus_TRUEID',
-        'muplus_TRUEID',
-        'muminus_TRUEID',
+        '*_TRUEID',
 ]
 
 mc_selection = [
@@ -145,64 +111,35 @@ from ruffus import *
 
 @transform(input_data, suffix('.root'), '.reduced.root')
 def reduce(infile, outfile):
-    from root_numpy import root2array, array2root
-    arr = root2array(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables)
 
-    arr = append_fields(arr, 'B_TAU', calc_tau(arr))
-    
-    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
+    if BLINDED:
+        B_mass = 5279
+        width = 50
+        blindcut = '(B_M < {}) || (B_M > {})'.format(B_mass - width, B_mass + width)
+    else:
+        blindcut = None
 
-@transform(input_mc, suffix('.root'), '.reduced.root')
-def reduce_mc(infile, outfile):
-    from root_numpy import root2array, array2root
-    arr = root2array(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables + mc_variables, selection=prepare_sel(mc_selection))
-    arr = append_fields(arr, 'B_TAU', calc_tau(arr))
-    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
+    df = load_root(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables, selection=blindcut)
 
-@transform(reduce, suffix('.root'), '.blinded.root')
-def blind_signalpeak(infile, outfile):
-    from root_numpy import root2array, array2root
-    B_mass = 5279
-    width = 50
-
-    selstr = '(B_M < {}) || (B_M > {})'.format(B_mass - width, B_mass + width)
-    arr = root2array(infile, 'Bd2D0MuMu', selection=selstr)
-    logging.info('Events in blinded dataset: ' + str(len(arr)))
-    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
-
-    plotting.plot(outfile, 'plots/blinded.pdf', bins=200, variables=['B_M'])
-
-@transform(reduce_mc, suffix('.root'), '.pid_resampled.root')
-@time_job
-def resample_pid(infile, outfile):
-    import numpy as np
-    import pid_resample
-    from pandas import Series
-    resample = pid_resample.create_resampler()
-
-    df = load_root(infile, 'Bd2D0MuMu')
-
-    # Disable ComputeIntegral error messages
-    # FIXME Find out where they are coming from
-    import ROOT
-    ROOT.gErrorIgnoreLevel = 5000
-
-    for part in ['Kplus', 'piminus', 'muplus', 'muminus']:
-        for pid in ['K', 'mu']:
-            new = []
-            for id, p, pt, ntracks in zip(df[part+'_TRUEID'], df[part+'_P'], df[part+'_PT'], df['nTracks']):
-                new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
-            df[part + '_ProbNN' + pid] = Series(new, index=df.index)
-
-    ROOT.gErrorIgnoreLevel = 1000
+    # Add missing decay time
+    df['B_TAU'] = Series(calc_tau(df), index=df.index)
 
     save_root(df, outfile, 'Bd2D0MuMu')
 
-@transform(resample_pid, suffix('.root'), '.mc_cut.root')
+@transform(input_mc, suffix('.root'), '.reduced_mc.root')
+def reduce_mc(infile, outfile):
+    df = load_root(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables + mc_variables, selection=prepare_sel(mc_selection))
+
+    # Add missing decay time
+    df['B_TAU'] = Series(calc_tau(df), index=df.index)
+
+    save_root(df, outfile, 'Bd2D0MuMu')
+
+@transform(reduce_mc, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
     select(infile, outfile, plots=None)
 
-@transform(blind_signalpeak, suffix('.root'), '.cut.root')
+@transform(reduce, suffix('.root'), '.cut.root')
 def select(infile, outfile, plots='plots/select.pdf'):
     from root_numpy import root2array, array2root
 
@@ -271,6 +208,30 @@ def select(infile, outfile, plots='plots/select.pdf'):
 
     if plots:
         plotting.plot(outfile, plots, bins=100)
+
+@transform(select_mc, suffix('.root'), '.pid_resampled.root')
+def resample_pid(infile, outfile):
+    import numpy as np
+    import pid_resample
+    resample = pid_resample.create_resampler()
+
+    df = load_root(infile, 'Bd2D0MuMu')
+
+    # Disable ComputeIntegral error messages
+    # FIXME Find out where they are coming from
+    import ROOT
+    ROOT.gErrorIgnoreLevel = 5000
+
+    for part in ['Kplus', 'piminus', 'muplus', 'muminus']:
+        for pid in ['K', 'mu']:
+            new = []
+            for id, p, pt, ntracks in zip(df[part+'_TRUEID'], df[part+'_P'], df[part+'_PT'], df['nTracks']):
+                new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
+            df[part + '_ResampledProbNN' + pid] = Series(new, index=df.index)
+
+    ROOT.gErrorIgnoreLevel = 1000
+
+    save_root(df, outfile, 'Bd2D0MuMu')
 
 #@transform(select, suffix('.root'), '.misid.root')
 def add_misid(infile, outfile):
@@ -341,7 +302,7 @@ def add_misid(infile, outfile):
     arr = append_fields(arr, newnames, newfields)
     array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
 
-@transform(select, suffix('.root'), add_inputs(select_mc), '.classified.root')
+@transform(select, suffix('.root'), add_inputs(resample_pid), '.classified.root')
 def classify(inputs, output):
     from root_numpy import root2array, array2root
     import numpy as np

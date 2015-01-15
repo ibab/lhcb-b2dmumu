@@ -32,16 +32,34 @@ def get_matching_variables(fname, tree, patterns):
                 selected.append(b)
     return selected
 
-def load_root(fname, tree_name, variable_patterns, *kargs, **kwargs):
+def load_root(fname, tree=None, patterns=None, *kargs, **kwargs):
     from pandas import DataFrame
-    from root_numpy import root2array
-    all_vars = get_matching_variables(fname, tree_name, variable_patterns)
-    df = DataFrame(root2array(fname, tree_name, all_vars, *kargs, **kwargs))
+    from root_numpy import root2array, list_trees
+
+    if tree == None:
+        branches = list_trees(fname)
+        if len(branches) == 1:
+            tree = branches[0]
+        else:
+            raise ValueError('More than one tree found in {}'.format(fname))
+
+    if patterns == None:
+        all_vars = None
+    else:
+        all_vars = get_matching_variables(fname, tree, patterns)
+
+    arr = root2array(fname, tree, all_vars, *kargs, **kwargs)
+    if 'index' in arr.dtype.names:
+        df = DataFrame.from_records(arr, index='index')
+    else:
+        df = DataFrame.from_records(arr)
     return df
 
 def save_root(df, fname, tree_name, *kargs, **kwargs):
     from root_numpy import array2root
-    array2root(df.to_records(), fname, tree_name, 'recreate', *kargs, **kwargs)
+    logging.debug(df.columns)
+    arr = df.to_records()
+    array2root(arr, fname, tree_name, 'recreate', *kargs, **kwargs)
 
 def time_job(func):
     @functools.wraps(func)

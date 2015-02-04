@@ -6,7 +6,7 @@ import os
 def setup_roofit():
     from silence import silence
     from ROOT import gSystem
-    logging.info('Did you know that RooFit was written by Wouter Verkerke and David Kirkby?')
+    #logging.info('Did you know that RooFit was written by Wouter Verkerke and David Kirkby?')
     with silence():
         gSystem.Load('libRooFit')
 

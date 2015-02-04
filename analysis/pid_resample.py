@@ -41,7 +41,7 @@ def create_resampler(use_probnn=True):
 
         return res
 
-    basedir = "/home/igor/Mount/eve/fhgfs/users/ashires/"
+    basedir = "/fhgfs/users/ashires/"
     if use_probnn:
         pid_table_path = os.path.join(basedir,"PIDEffTables_v20r1/forProbNN/" )
     else :

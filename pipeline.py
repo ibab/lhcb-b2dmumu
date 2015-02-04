@@ -1,29 +1,30 @@
 #!/usr/bin/env python2
 
+import os
 import logging
-from log import setup_logging, setup_roofit
-setup_logging();
-setup_roofit()
-import plotting
-from util import *
-
+import numpy as np
+from pandas import DataFrame, Series
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.mlab import rec_append_fields as append_fields
 
-import numpy as np
-from pandas import DataFrame, Series
+from analysis.log import setup_logging, setup_roofit
+setup_logging();
+setup_roofit()
+from analysis import plotting
+from analysis.util import *
 
+DATASTORE='/fhgfs/users/ibabuschkin/DataStore'
 BLINDED = True
 
 # Simulated data fetched from the grid
 input_mc = [
-    './storage/MC/2012/Stripping20/AllStreams/DVBd2MuMuD0_MC/combined/Bd2MuMuD0.root'
+    os.path.join(DATASTORE, 'MC/2012/Stripping20/AllStreams/DVBd2MuMuD0_MC/combined/Bd2MuMuD0.root'),
 ]
 
 # Real data fetched from the grid
 input_data = [
-    './storage/Data/AllYears/Stripping20/Dimuon/DVBd2MuMuD0_data/combined/Bd2MuMuD0.root',
+    os.path.join(DATASTORE, 'Data/AllYears/Stripping20/Dimuon/DVBd2MuMuD0_data/combined/Bd2MuMuD0.root'),
 ]
 
 # Variables that are used in the analysis
@@ -77,7 +78,7 @@ variables = [
         'nTracks',
 ]
 
-# Variables that are used in the multivariate classification
+# Variables used in the multivariate classification
 bdt_variables = [
         'B_TAU',
         'B_ISOLATION_BDT_Soft',
@@ -89,6 +90,14 @@ bdt_variables = [
         'piminus_TRACK_GhostProb',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
+        'Kplus_ProbNNk',
+        'piminus_ProbNNk',
+        'muminus_ProbNNk',
+        'muplus_ProbNNk',
+        #'Kplus_ProbNNmu',
+        #'piminus_ProbNNmu',
+        #'muminus_ProbNNmu',
+        #'muplus_ProbNNmu',
 ]
 
 mc_variables = [
@@ -227,7 +236,7 @@ def resample_pid(infile, outfile):
             new = []
             for id, p, pt, ntracks in zip(df[part+'_TRUEID'], df[part+'_P'], df[part+'_PT'], df['nTracks']):
                 new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
-            df[part + '_ResampledProbNN' + pid] = Series(new, index=df.index)
+            df[part + '_ProbNN' + pid.lower()] = Series(new, index=df.index)
 
     ROOT.gErrorIgnoreLevel = 1000
 
@@ -313,7 +322,7 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
-    step = 50
+    step = 1
 
     mcname_new = mcname.replace('.root', '.classified.root')
     sidebands = root2array(fname, 'Bd2D0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
@@ -334,7 +343,7 @@ def classify(inputs, output):
     )
 
     logging.info('Validating classifier...')
-    from classification import validate_classifier
+    from analysis.classification import validate_classifier
     validate_classifier(clf, X, y, 'plots')
 
     logging.info('Fit classifier to data...')
@@ -343,7 +352,7 @@ def classify(inputs, output):
     logging.info('Dump classifier to disk...')
     import pickle
     s = pickle.dumps(clf)
-    with open('classifier.pkl', 'wb') as f:
+    with open('.classifier.pkl', 'wb') as f:
         f.write(s)
 
     data_vars = root2array(fname, 'Bd2D0MuMu', bdt_variables)
@@ -363,6 +372,20 @@ def classify(inputs, output):
     mc = append_fields(mc, 'classifier', pred)
     array2root(mc, mcname_new, 'Bd2D0MuMu', 'recreate')
 
+def tis_tos(infile):
+    from root_pandas import read_root
+    from numpy import any, all
+    df = read_root(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables=['*_TOS', '*_TIS'])
+
+    def getValues(df, key):
+        return any(df[filter(lambda x: x.endswith(key), df.columns)], axis=1)
+
+    TIS = getValues(df, 'TIS')
+    TOS = getValues(df, 'TOS')
+
+    eff = 1. * sum(TIS & TOS) * sum(TIS | TOS) / (sum(TOS) * sum(TIS))
+    print(eff)
+
 #@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
 def plot_final(infile, outfile):
     cuts = [
@@ -374,6 +397,6 @@ def plot_final(infile, outfile):
 
 if __name__ == '__main__':
     import sys
-    pipeline_printout_graph("flow.pdf", forcedtorun_tasks = [reduce, reduce_mc], no_key_legend = True)
+    #pipeline_printout_graph("flow.pdf", forcedtorun_tasks = [reduce, reduce_mc], no_key_legend = True)
     pipeline_run(forcedtorun_tasks=sys.argv[1:], logger=logging)
 

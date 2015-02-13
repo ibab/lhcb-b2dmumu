@@ -373,7 +373,6 @@ def fit(infile, outfile):
 
     import matplotlib.pyplot as plt
     import numpy as np
-    from missing_hep import histpoints
     from scipy.stats import expon
     import seaborn as sns
 
@@ -381,7 +380,6 @@ def fit(infile, outfile):
 
     df = read_root(infile, columns=['B_M'])
     B_M = df['B_M']
-    x, y, norm = histpoints(df.query('B_M > 5200 & B_M < 5450')['B_M'], errorbar={'markersize': 0}, xerr='binwidth')
     xl = np.linspace(5200, 5450, 200)
     #plt.plot(xl, norm * (lamb / (np.exp(lamb * 29) - np.exp(lamb * 0) + np.exp(lamb * 250) - np.exp(lamb * 129))) * np.exp(lamb * (xl - 5200)))
     #plt.plot(xl, norm * (lamb / (np.exp(lamb * 29) - np.exp(lamb * 0) + np.exp(lamb * 250) - np.exp(lamb * 129))) * np.exp(lamb * (xl - 5200)))

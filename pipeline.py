@@ -355,45 +355,116 @@ def classify(inputs, output):
     with open('.classifier.pkl', 'wb') as f:
         f.write(s)
 
-    data_vars = root2array(fname, 'Bd2D0MuMu', bdt_variables)
-    data_vars = np.array(data_vars.tolist())
-    data = root2array(fname, 'Bd2D0MuMu')
+    for inp, outp in zip(inputs, [output, inputs[1].replace('.root', '.classified.root')]):
+        df_bdt = read_root(inp, columns=bdt_variables)
+        df_data = read_root(inp)
 
-    logging.info('Apply classifier to data...')
-    pred = clf.decision_function(data_vars)
-    data = append_fields(data, 'classifier', pred)
-    array2root(data, output, 'Bd2D0MuMu', 'recreate')
+        logging.info('Apply classifier...')
+        df_data['classifier'] = clf.decision_function(df_bdt.values)
+        df_data.to_root(outp, mode='recreate')
 
-    logging.info('Apply classifier to MC...')
-    mc_vars = root2array(mcname, 'Bd2D0MuMu', bdt_variables)
-    mc_vars = np.array(mc_vars.tolist())
-    mc = root2array(mcname, 'Bd2D0MuMu')
-    pred = clf.decision_function(mc_vars)
-    mc = append_fields(mc, 'classifier', pred)
-    array2root(mc, mcname_new, 'Bd2D0MuMu', 'recreate')
+@transform(classify, suffix('.root'), '.bdt_cut.root')
+def bdt_cut(infile, outfile):
+    read_root(infile, where='classifier > -0.1').to_root(outfile, mode='recreate')
 
-def tis_tos(infile):
-    from root_pandas import read_root
-    from numpy import any, all
-    df = read_root(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables=['*_TOS', '*_TIS'])
+@originate('toy.root')
+def generate_toy(output):
+    from analysis.fit_model import model, variables
+    import ROOT
+    ff = ROOT.TFile(output, 'recreate')
+    ROOT.RooAbsData.setDefaultStorageType(ROOT.RooAbsData.Tree)
+    dset = model.generate(variables, 1e5)
+    dset.tree().Write('default')
+    ff.Write()
 
-    def getValues(df, key):
-        return any(df[filter(lambda x: x.endswith(key), df.columns)], axis=1)
+@transform(generate_toy, formatter(), 'plots/fit.pdf')
+def fit(infile, outfile):
+    import ROOT
+    from ROOT import RooDataSet, RooFit, RooArgSet, RooArgList, RooFormulaVar
+    from analysis.fit_model import model, variables
 
-    TIS = getValues(df, 'TIS')
-    TOS = getValues(df, 'TOS')
+    tf = ROOT.TFile(infile)
+    tree = tf.Get('default')
+    dset = RooDataSet('data', 'data', tree, variables)
+    #results = model.fitTo(dset, RooFit.Range('leftband,rightband'), RooFit.Save())
+    results = model.fitTo(dset, RooFit.Save())
+    results.Print('v')
+    model.getParameters(dset).writeToFile(outfile)
 
-    eff = 1. * sum(TIS & TOS) * sum(TIS | TOS) / (sum(TOS) * sum(TIS))
-    print(eff)
+    final = results.floatParsFinal()
+    lamb = final.iterator().Next().getVal()
 
-#@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from missing_hep import histpoints
+    from scipy.stats import expon
+    import seaborn as sns
+
+    sns.set_style('darkgrid')
+
+    df = read_root(infile, columns=['B_M'])
+    B_M = df['B_M']
+    x, y, norm = histpoints(df.query('B_M > 5200 & B_M < 5450')['B_M'], errorbar={'markersize': 0}, xerr='binwidth')
+    xl = np.linspace(5200, 5450, 200)
+    #plt.plot(xl, norm * (lamb / (np.exp(lamb * 29) - np.exp(lamb * 0) + np.exp(lamb * 250) - np.exp(lamb * 129))) * np.exp(lamb * (xl - 5200)))
+    #plt.plot(xl, norm * (lamb / (np.exp(lamb * 29) - np.exp(lamb * 0) + np.exp(lamb * 250) - np.exp(lamb * 129))) * np.exp(lamb * (xl - 5200)))
+    from analysis.plotting import plot_roofit
+    xlabel = '$m(B=K\\pi\\mu\\mu)\\ /\\ \\mathrm{MeV}$'
+    ax, width = plot_roofit(variables['B_M'], dset, model, components=['sig', 'bkg'], xlabel=xlabel)
+    plt.ylabel('Candidates$\\ (1\\ /\\ {:.2f}\\ \\mathrm{{MeV}})$'.format(width[0]), fontsize=14)
+    #plt.tight_layout()
+    plt.savefig(outfile)
+
+@transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
 def plot_final(infile, outfile):
     cuts = [
         'B_M > 5200 && B_M < 5450',
         'D~0_M > 1800 && D~0_M < 1940',
-        'classifier > 0.015',
+        'classifier > -0.1',
     ]
     plotting.plot(infile[0], outfile, mcfile=infile[1], cuts=cuts, variables=variables)
+
+@transform(classify, formatter(), 'plots/classifier_mass.pdf')
+def plot_bdt_mass(infile, outfile):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from pandas import qcut
+    sns.set_style('whitegrid')
+
+    df = read_root(infile, columns=['B_M', 'classifier'])
+
+    N = 10
+
+    cuts = qcut(df.classifier, N, retbins=True)[1][:-1]
+
+    left = min(df.B_M)
+
+    n, bins = np.histogram(df.B_M, bins=50)
+    upper = max(n)
+
+    for (c, color) in zip(cuts, sns.color_palette('Blues', N + 2)[2:]):
+        data = df[df.classifier > c]['B_M']
+        plt.hist(data.ravel(), bins=bins, histtype='stepfilled', color=color, lw=0, label='bdt > {:1.3f}'.format(c))
+    plt.xlim(left=left)
+    plt.ylim(0, upper)
+    plt.ylabel('Candidates')
+    plt.xlabel('$m_{B=K\\pi\\mu\\mu}$', fontsize=16)
+    plt.legend()
+    ax = plt.gca()
+    ax.grid(False)
+    plt.savefig(outfile)
+    plt.clf()
+
+@transform(classify, formatter(), 'plots/correlation.pdf')
+def plot_correlation(infile, outfile):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    plt.figure(figsize=(10,10))
+    df = read_root(infile, columns=bdt_variables + ['B_M'])
+    sns.corrplot(df.corr(), diag_names=False)
+    plt.tight_layout()
+    plt.savefig(outfile)
+    plt.clf()
 
 if __name__ == '__main__':
     import sys

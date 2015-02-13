@@ -4,6 +4,7 @@ import os
 import logging
 import numpy as np
 from pandas import DataFrame, Series
+from root_pandas import read_root
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.mlab import rec_append_fields as append_fields
@@ -29,25 +30,18 @@ input_data = [
 
 # Variables that are used in the analysis
 variables = [
-        '*_M',
-        '*_P',
-        '*_PT',
-        'B_DIRA_OWNPV',
-        'B_FD_OWNPV',
-        'B_ENDVERTEX_CHI2',
-        'B_ISOLATION_BDT_Hard',
-        'B_ISOLATION_BDT_Soft',
-        'B_OWNPV_CHI2',
+        '{B,D~0,Psi}_M',
+        '{B,D~0,Psi}_P',
+        '{B,D~0,Psi}_PT',
+        'B_{DIRA,FD}_OWNPV',
+        'B_{OWNPV,ENDVERTEX}_CHI2',
+        'B_ISOLATION_BDT_{Hard,Soft}',
 
         'B_L0MuonDecision_TOS',
         'B_Hlt1TrackAllL0Decision_TOS',
         'B_Hlt1TrackMuonDecision_TOS',
-        'B_Hlt2Topo2BodyBBDTDecision_TOS',
-        'B_Hlt2Topo3BodyBBDTDecision_TOS',
-        'B_Hlt2Topo4BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu2BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu3BodyBBDTDecision_TOS',
-        'B_Hlt2TopoMu4BodyBBDTDecision_TOS',
+        'B_Hlt2Topo{2,3,4}BodyBBDTDecision_TOS',
+        'B_Hlt2TopoMu{2,3,4}BodyBBDTDecision_TOS',
         'B_Hlt2SingleMuonDecision_TOS',
         'B_Hlt2DiMuonDetachedDecision_TOS',
 
@@ -58,22 +52,17 @@ variables = [
         'D~0_CosTheta',
         'D~0_DIRA_OWNPV',
 
-        'Kplus_ProbNN*',
-        'Kplus_hasRich',
-        'Kplus_TRACK_GhostProb',
-        'Kplus_TRACK_CHI2NDOF',
-        'Kplus_isMuonLoose',
+        '{Kplus,piminus}_ProbNN*',
+        '{Kplus,piminus}_PID*',
+        '{Kplus,piminus}_hasRich',
+        '{Kplus,piminus}_TRACK_GhostProb',
+        '{Kplus,piminus}_TRACK_CHI2NDOF',
+        '{Kplus,piminus}_isMuonLoose',
 
-        'piminus_ProbNN*',
-        'piminus_hasRich',
-        'piminus_TRACK_GhostProb',
-        'piminus_TRACK_CHI2NDOF',
-        'piminus_isMuonLoose',
-
-        'mu*s_ProbNN*',
-        'mu*_TRACK_GhostProb',
-        'mu*_TRACK_CHI2NDOF',
-        'mu*_isMuon',
+        'mu{plus,minus}_ProbNN*',
+        'mu{plus,minus}_TRACK_GhostProb',
+        'mu{plus,minus}_TRACK_CHI2NDOF',
+        'mu{plus,minus}_isMuon',
 
         'nTracks',
 ]
@@ -90,10 +79,10 @@ bdt_variables = [
         'piminus_TRACK_GhostProb',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
-        'Kplus_ProbNNk',
-        'piminus_ProbNNk',
-        'muminus_ProbNNk',
-        'muplus_ProbNNk',
+        #'Kplus_ProbNNk',
+        #'piminus_ProbNNk',
+        #'muminus_ProbNNk',
+        #'muplus_ProbNNk',
         #'Kplus_ProbNNmu',
         #'piminus_ProbNNmu',
         #'muminus_ProbNNmu',
@@ -128,21 +117,34 @@ def reduce(infile, outfile):
     else:
         blindcut = None
 
-    df = load_root(infile, 'B2XMuMu_Line_TupleDST/DecayTree', variables, selection=blindcut)
+    df = read_root(infile, 'B2XMuMu_Line_TupleDST/DecayTree', columns=variables, where=blindcut)
 
     # Add missing decay time
     df['B_TAU'] = Series(calc_tau(df), index=df.index)
 
-    save_root(df, outfile, 'Bd2D0MuMu')
+    df.to_root(outfile, mode='recreate')
 
 @transform(input_mc, suffix('.root'), '.reduced_mc.root')
 def reduce_mc(infile, outfile):
-    df = load_root(infile, 'B2XMuMu_Line_TupleMC/DecayTree', variables + mc_variables, selection=prepare_sel(mc_selection))
+    df = read_root(infile, 'B2XMuMu_Line_TupleMC/DecayTree', columns=variables + mc_variables, where=prepare_sel(mc_selection))
 
     # Add missing decay time
     df['B_TAU'] = Series(calc_tau(df), index=df.index)
+    df.to_root(outfile, mode='recreate')
 
-    save_root(df, outfile, 'Bd2D0MuMu')
+@transform(reduce, suffix('.root'), '.imputed.root')
+def impute_data(infile, outfile):
+    df = read_root(infile)
+    for var in df.columns:
+        if var == 'B_ISOLATION_BDT_Hard' or var == 'B_ISOLATION_BDT_Soft':
+            df[df[var] == -2] = np.nan
+        if 'PID' in var:
+            df[df[var] == -1000] = np.nan
+    df.to_root(outfile, mode='recreate')
+
+@transform(reduce, suffix('.root'), '.imputed_mc.root')
+def impute_mc(infile, outfile):
+    impute_data(infile, outfile)
 
 @transform(reduce_mc, suffix('.root'), '.mc_cut.root')
 def select_mc(infile, outfile):
@@ -181,7 +183,7 @@ def select(infile, outfile, plots='plots/select.pdf'):
 
     trigger_cut = '(' + ' || '.join(trigger_lines) + ')'
 
-    arr = root2array(infile, 'Bd2D0MuMu', selection=prepare_sel(selection) + ' && ' + trigger_cut)
+    arr = root2array(infile, selection=prepare_sel(selection) + ' && ' + trigger_cut)
 
     #if plots:
     #    import matplotlib.pyplot as plt
@@ -211,36 +213,12 @@ def select(infile, outfile, plots='plots/select.pdf'):
     #    plt.savefig('plots/pid_plot.pdf')
     #    plt.clf()
 
-    arr = root2array(infile, 'Bd2D0MuMu', selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
+    arr = root2array(infile, selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
     logging.info('Events after selection: ' + str(len(arr)))
-    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
+    array2root(arr, outfile, mode='recreate')
 
     if plots:
         plotting.plot(outfile, plots, bins=100)
-
-@transform(select_mc, suffix('.root'), '.pid_resampled.root')
-def resample_pid(infile, outfile):
-    import numpy as np
-    import pid_resample
-    resample = pid_resample.create_resampler()
-
-    df = load_root(infile, 'Bd2D0MuMu')
-
-    # Disable ComputeIntegral error messages
-    # FIXME Find out where they are coming from
-    import ROOT
-    ROOT.gErrorIgnoreLevel = 5000
-
-    for part in ['Kplus', 'piminus', 'muplus', 'muminus']:
-        for pid in ['K', 'mu']:
-            new = []
-            for id, p, pt, ntracks in zip(df[part+'_TRUEID'], df[part+'_P'], df[part+'_PT'], df['nTracks']):
-                new.append(resample('DLL' + pid + 'Down', id, p, pt, ntracks))
-            df[part + '_ProbNN' + pid.lower()] = Series(new, index=df.index)
-
-    ROOT.gErrorIgnoreLevel = 1000
-
-    save_root(df, outfile, 'Bd2D0MuMu')
 
 #@transform(select, suffix('.root'), '.misid.root')
 def add_misid(infile, outfile):
@@ -248,7 +226,7 @@ def add_misid(infile, outfile):
     import numpy as np
     from itertools import product
 
-    arr = root2array(infile, 'Bd2D0MuMu')
+    arr = root2array(infile)
     K_px = arr['Kplus_PX']
     K_py = arr['Kplus_PY']
     K_pz = arr['Kplus_PZ']
@@ -309,9 +287,9 @@ def add_misid(infile, outfile):
     newnames.append('B_M_HYPO_K=Kaon,pi=Missing')
 
     arr = append_fields(arr, newnames, newfields)
-    array2root(arr, outfile, 'Bd2D0MuMu', 'recreate')
+    array2root(arr, outfile, mode='recreate')
 
-@transform(select, suffix('.root'), add_inputs(resample_pid), '.classified.root')
+@transform(select, suffix('.root'), add_inputs(select_mc), '.classified.root')
 def classify(inputs, output):
     from root_numpy import root2array, array2root
     import numpy as np
@@ -322,23 +300,22 @@ def classify(inputs, output):
             'B_M > 5300'
     ]
 
-    step = 1
+    step = 100
 
     mcname_new = mcname.replace('.root', '.classified.root')
-    sidebands = root2array(fname, 'Bd2D0MuMu', bdt_variables, selection=prepare_sel(select_sidebands), step=step)
-    mc = root2array(mcname, 'Bd2D0MuMu', bdt_variables, step=step)
+    bkg = read_root(fname, columns=bdt_variables, where=prepare_sel(select_sidebands), step=step)
+    sig = read_root(mcname, columns=bdt_variables, step=step)
 
     from sklearn.tree import DecisionTreeClassifier
     from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 
-    X = np.append(np.array(sidebands), np.array(mc))
-    X = np.array(X.tolist())
-    y = np.append(np.zeros(len(sidebands)), np.ones(len(mc)))
+    X = np.vstack([bkg.values, sig.values])
+    y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
 
     clf = AdaBoostClassifier(
             DecisionTreeClassifier(max_depth=3),
             algorithm='SAMME.R',
-            n_estimators=400,
+            n_estimators=1000,
             learning_rate=0.5
     )
 

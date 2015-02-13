@@ -2,6 +2,8 @@ from joblib import Parallel, delayed
 
 import logging
 
+N_trees = 1000
+
 def run_crossval(clf, i, X_train, y_train, X_test, y_test):
     import numpy as np
     from sklearn.metrics import roc_curve, zero_one_loss
@@ -9,7 +11,7 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test):
     probs = clf.fit(X_train, y_train).predict_proba(X_test)
     fpr, tpr, thresholds = roc_curve(y_test, probs[:,1])
 
-    err = np.zeros((400,))
+    err = np.zeros((N_trees,))
     for j, y_pred in enumerate(clf.staged_predict(X_test)):
         err[j] = zero_one_loss(y_pred, y_test)
 
@@ -46,7 +48,6 @@ def validate_classifier(clf, X, y, outputdir):
         errs = []
 
         results = Parallel(n_jobs=5)(delayed(run_crossval)(clf, i, X[train], y[train], X[test], y[test]) for i, (train, test) in enumerate(skf))
-        logging.info('{}'.format(results))
         for f, t, e in results:
             plt.plot(f, t, lw=1)
 
@@ -56,7 +57,7 @@ def validate_classifier(clf, X, y, outputdir):
         #    fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
         #    plt.plot(fpr, tpr, lw=1)
 
-        #    err = np.zeros((400,))
+        #    err = np.zeros((N_trees,))
         #    for i, y_pred in enumerate(clf.staged_predict(X[test])):
         #        err[i] = zero_one_loss(y_pred, y[test])
         #    errs.append(err)
@@ -70,7 +71,7 @@ def validate_classifier(clf, X, y, outputdir):
         plt.clf()
 
         for f, t, e in results:
-            plt.plot(np.arange(400)+1, e)
+            plt.plot(np.arange(N_trees)+1, e)
         plt.ylabel('Error')
         plt.xlabel('$N_\\mathrm{estimators}$')
         plt.tight_layout()

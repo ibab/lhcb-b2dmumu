@@ -33,7 +33,7 @@ branching fractions.
   - Include D mass (D lifetime) for better control of K pi background
   - Profile likelihood ratio to account for nuisance parameters
   - CLs method to test signal/background-only hypotheses
-- Determine trigger efficiency through TISTOS
+- Determine trigger efficiency through TISTOS (`data.md`)
 - Determine PID efficiency through MC resampling
 - Determine selection efficiency of multivariate classification
 - Determine LHCb acceptance efficency

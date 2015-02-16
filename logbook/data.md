@@ -1,8 +1,11 @@
 
-# Data
+# Data retrieval and preparation
 
-- Take a look at K\*mumu selection: LHCb-INT-2013-058
-- Look at option files for creating NTuples:
- - Phys/DiLeptonTuple/python/DiLeptonTuple/DiLeptonTuple.py
- - Phys/DiLeptonTuple/options/DVBu2LLK.py
+## Stripping line: `B2XMuMu_Line`
+
+Particles location: `/Event/Dimuon/Phys/B2XMuMu_Line/Particles`
+
+Stripping20 location: http://lhcb-release-area.web.cern.ch/LHCb-release-area/DOC/stripping/config/stripping20/dimuon/strippingb2xmumu_line.html
+
+Use Stripping20 for 2012, Stripping20r1 for 2011
 

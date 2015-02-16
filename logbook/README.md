@@ -16,10 +16,11 @@ branching fractions.
 
 ## For each decay
 
-- Retrieve dataset through B2Xmumu stripping line
+- Retrieve dataset through B2Xmumu stripping line (`data.md`)
   - Calculate isolation variable
-- Retrieve signal simulation
+- Generate/retrieve signal simulation (`mc.md`, `data.md`)
 - Apply blinding by cut on B signal region
+- Apply cut on mumu invariant mass to exclude/include J/psi
 - Apply cuts to PID variables
   - Select for true Kaons/pions
 - Apply multivariate classifier (AdaBoost)
@@ -28,7 +29,7 @@ branching fractions.
   - Use PID variables?
   - Choose optimization figure (look into similar analyses)
   - Apply cut on discriminant according to optimization figure
-- Perform fit of B mass
+- Perform fit to B mass
   - Include D mass (D lifetime) for better control of K pi background
   - Profile likelihood ratio to account for nuisance parameters
   - CLs method to test signal/background-only hypotheses
@@ -36,9 +37,10 @@ branching fractions.
 - Determine PID efficiency through MC resampling
 - Determine selection efficiency of multivariate classification
 - Determine LHCb acceptance efficency
+- Determine expectation of signal yield 
 - Find normalization channel (B0→K\*J/psi?)
   - Keep selection similar
-  - Perform fit of B mass
+  - Perform fit to B mass
   - Incorporate into result of analysis to reduce systematics
       - Use known branching fraction to calculate result
       - Or: only calculate ratio of branching fractions
@@ -46,5 +48,5 @@ branching fractions.
 - Calculate systematic uncertainties
   - Number of simulated signal candidates
   - Choice of binning scheme for PID MC resampling
-  - Systematics related to 
+  - …
 

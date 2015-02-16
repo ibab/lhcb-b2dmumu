@@ -5,12 +5,12 @@
 
 Determination of
 
-    - B0→D~0mumu
-    - B0→D~0J/psi
-    - (B+→D\*+mumu)
-    - (B+→D\*+J/psi)
-    - (B→Ds+mumu)
-    - (B→Ds+J/psi)
+- B0→D~0mumu
+- B0→D~0J/psi
+- (B+→D\*+mumu)
+- (B+→D\*+J/psi)
+- (B→Ds+mumu)
+- (B→Ds+J/psi)
 
 branching fractions.
 

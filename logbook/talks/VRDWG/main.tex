@@ -1,26 +1,98 @@
 
-\documentclass[compress,aspectratio=1610]{beamer}
+\documentclass[compress,aspectratio=43]{beamer}
 
-\usepackage[english]{babel}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{english}
 \usepackage[english]{isodate}
 \isodate
 \usepackage{multicol}
+\usepackage{feynmp-auto}
 
 \usetheme{vertex}
 
 \linespread{1.1}
 
 \title{$B\to D\mu\mu$}
-\subtitle{Theory and Analysis prospects}
+\subtitle{Theory and Analysis outline}
 \date{\today}
-\institute{Rare Decay Working Group Meeting}
+\institute{Very Rare Decay WG Meeting}
 \author{Igor Babuschkin}
 
 \begin{document}
 
 \maketitle
 
-\begin{frame}
+\begin{frame}{The decay $B^0\to\overline{D}^0\mu^+\mu^-$}
+  \centering
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{fmffile}{b2dmumu}
+        \centering
+        \unitlength=1mm
+        \begin{fmfgraph*}(40, 25)
+          \fmfcmd{%
+            vardef cross_bar (expr p, len, ang) =
+            ((-len/2,0)--(len/2,0))
+              rotated (ang + angle direction length(p)/2 of p)
+              shifted point length(p)/2 of p
+            enddef;
+            style_def crossed_before expr p =
+              cdraw p;
+              cfill (harrow (p, .4));
+              ccutdraw cross_bar (p, 4mm, 45);
+              ccutdraw cross_bar (p, 4mm, -45)
+            enddef;
+            style_def crossed_after expr p =
+              cdraw p;
+              cfill (harrow (p, .9));
+              ccutdraw cross_bar (p, 4mm, 45);
+              ccutdraw cross_bar (p, 4mm, -45)
+            enddef;
+            style_def crossed_wiggly expr p =
+              cdraw (wiggly p);
+              ccutdraw cross_bar (p, 4mm, 45);
+              ccutdraw cross_bar (p, 4mm, -45)
+            enddef; }
+          \fmfleft{i1,i2}
+          \fmfright{o1,o2}
+          \fmf{crossed_before}{i1,v1}
+          \fmf{crossed_after}{v1,o1}
+          \fmf{crossed_before}{i2,v2}
+          \fmf{crossed_after}{v2,o2}
+          \fmf{boson,label=$W$}{v1,v2}
+          \fmfv{label=$\overline{b}$}{i1}
+          \fmfv{label=$\overline{c}$}{o1}
+          \fmfv{label=$d$}{i2}
+          \fmfv{label=$u$}{o2}
+        \end{fmfgraph*}
+
+        \centering
+        \vspace{3em}
+        \begin{fmfgraph*}(20, 15)
+          \fmfleft{i1}
+          \fmfright{o1,o2}
+          \fmf{photon}{i1,v1}
+          \fmf{fermion}{o1,v1,o2}
+          \fmfv{label=$\gamma/W$,decoration.size=0.2w,decoration.shape=cross}{i1}
+          \fmfv{label=$\mu^-$}{o2}
+          \fmfv{label=$\mu^+$}{o1}
+        \end{fmfgraph*}
+
+      \end{fmffile}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \begin{itemize}
+        \item No penguin loop
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Evans et al.}
+\end{frame}
+
+\begin{frame}{Kim et al.}
 \end{frame}
 
 \end{document}

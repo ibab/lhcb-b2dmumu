@@ -24,7 +24,7 @@ branching fractions.
 - Apply cuts to PID variables
   - Select for true Kaons/pions
 - Apply multivariate classifier (AdaBoost)
-  - Use decay topology/kinematics variables
+  - Use decay topology/kinematic variables
   - Use isolation variable
   - Use PID variables?
   - Choose optimization figure (look into similar analyses)
@@ -34,7 +34,7 @@ branching fractions.
   - Profile likelihood ratio to account for nuisance parameters
   - CLs method to test signal/background-only hypotheses
 - Determine trigger efficiency through TISTOS (`data.md`)
-- Determine PID efficiency through MC resampling
+- Determine PID efficiency through PIDCalib
 - Determine selection efficiency of multivariate classification
 - Determine LHCb acceptance efficency
 - Determine expectation of signal yield 

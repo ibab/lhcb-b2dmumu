@@ -30,7 +30,7 @@ Enddecay
 CDecay B-sig
 #
 Decay MyD*+
-  1.000    MyD0    pi+    D_DALITZ;
+  1.000    MyD0    pi+    VSS;
 Enddecay
 CDecay MyD*-
 #

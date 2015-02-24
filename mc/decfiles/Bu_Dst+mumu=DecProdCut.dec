@@ -1,6 +1,6 @@
-# EventType: 12175022
+# EventType: 12175041
 #
-# Descriptor: [B+ -> (D*(2010)+ -> (D0 -> K- pi+) pi+)) mu+ mu-]cc
+# Descriptor: [B+ -> (D*(2010)+ -> (D0 -> K- pi+) pi+) mu+ mu-]cc
 #
 # NickName: Bu_Dst+mumu=DecProdCut
 #
@@ -9,6 +9,7 @@
 # Documentation: Decay file for B+->D*(2010)+Mu+Mu- 
 # EndDocumentation
 #
+# CPUTime: < 1 min
 # PhysicsWG: RD
 # Tested: Yes
 # Responsible: Igor Babuschkin

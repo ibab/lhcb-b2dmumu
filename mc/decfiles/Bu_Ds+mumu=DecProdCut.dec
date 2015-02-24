@@ -1,4 +1,4 @@
-# EventType: 12275016
+# EventType: 12275031
 #
 # Descriptor: [B+ -> (D_s- => K+ K- pi-) mu+ mu-]cc
 #
@@ -9,6 +9,7 @@
 # Documentation: Decay file for B+->Ds+Mu+Mu- 
 # EndDocumentation
 #
+# CPUTime: < 1 min
 # PhysicsWG: RD
 # Tested: yes
 # Responsible: Igor Babuschkin

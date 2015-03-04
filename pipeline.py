@@ -72,21 +72,21 @@ bdt_variables = [
         'B_TAU',
         'B_ISOLATION_BDT_Soft',
         'B_ENDVERTEX_CHI2',
-        'B_DIRA_OWNPV',
+        #'B_DIRA_OWNPV',
         'D~0_DIRA_OWNPV',
         'Psi_FD_ORIVX',
         'Kplus_TRACK_GhostProb',
         'piminus_TRACK_GhostProb',
         'muplus_TRACK_GhostProb',
         'muminus_TRACK_GhostProb',
-        #'Kplus_ProbNNk',
-        #'piminus_ProbNNk',
-        #'muminus_ProbNNk',
-        #'muplus_ProbNNk',
+        'Kplus_ProbNNk',
+        'piminus_ProbNNk',
+        'muminus_ProbNNk',
+        'muplus_ProbNNk',
         #'Kplus_ProbNNmu',
         #'piminus_ProbNNmu',
-        #'muminus_ProbNNmu',
-        #'muplus_ProbNNmu',
+        'muminus_ProbNNmu',
+        'muplus_ProbNNmu',
 ]
 
 mc_variables = [
@@ -185,33 +185,35 @@ def select(infile, outfile, plots='plots/select.pdf'):
 
     arr = root2array(infile, selection=prepare_sel(selection) + ' && ' + trigger_cut)
 
-    #if plots:
-    #    import matplotlib.pyplot as plt
-    #    from matplotlib.colors import LogNorm
-    #    import seaborn as sns
-    #    sns.set_palette("deep", desat=.6)
-    #    sns.set_context('talk')
+    if plots:
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import LogNorm
+        import seaborn as sns
+        sns.set_palette("deep", desat=.6)
+        sns.set_context('talk')
+        sns.set_style('white')
 
-    #    logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
+        logging.info('Plotting Kplus_PIDK vs. piminus_PIDK')
 
-    #    mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
-    #    plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
-    #    #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
-    #    #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
-    #    plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
-    #    plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
-    #    plt.axhline(0, color='r', ls='-')
-    #    plt.axvline(0, color='r', ls='-')
-    #    # idea: diagonal cut
-    #    #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
-    #    plt.xlim(-140, 140)
-    #    plt.tight_layout()
-    #    plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
-    #    plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
-    #    plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
-    #    plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
-    #    plt.savefig('plots/pid_plot.pdf')
-    #    plt.clf()
+        mask = (arr['Kplus_PIDK'] > -999) & (arr['piminus_PIDK'] > -999)
+        plt.hist2d(arr['Kplus_PIDK'][mask], arr['piminus_PIDK'][mask], bins=50, norm=LogNorm())
+        plt.xlim(-140, 140)
+        #jp = sns.jointplot(arr['Kplus_PIDK'], arr['piminus_PIDK'], kind='hex', joint_kws={'norm': LogNorm()})
+        #jp.set_axis_labels('$K^{+}_\\mathrm{DLLk}}$', '$\\pi^{-}_\\mathrm{DLLk}}$')
+        plt.xlabel('$K^{+}_{\\mathrm{DLL}K\\pi}}$')
+        plt.ylabel('$\\pi^{-}_{\\mathrm{DLL}K\\pi}$')
+        plt.axhline(0, color='r', ls='-')
+        plt.axvline(0, color='r', ls='-')
+        # idea: diagonal cut
+        #plt.plot([-16, 80], [-10, 50], 'r--', alpha=0.6)
+        plt.tight_layout()
+        plt.text(50, 120, 'True $K$ & False $\\pi$', color='r', fontsize=18)
+        plt.text(50, -140, 'True $K$ & True $\\pi$', color='r', fontsize=18)
+        plt.text(-130, 120, 'False $K$ & False $\\pi$', color='r', fontsize=18)
+        plt.text(-130, -140, 'False $K$ & True $\\pi$', color='r', fontsize=18)
+        plt.tight_layout()
+        plt.savefig('plots/pid_plot.pdf')
+        plt.clf()
 
     arr = root2array(infile, selection=prepare_sel(selection + pid_cuts) + ' && ' + trigger_cut)
     logging.info('Events after selection: ' + str(len(arr)))
@@ -297,10 +299,10 @@ def classify(inputs, output):
     mcname = inputs[1]
 
     select_sidebands = [
-            'B_M > 5300'
+            '(B_M > 6000)',
     ]
 
-    step = 100
+    step = 1
 
     mcname_new = mcname.replace('.root', '.classified.root')
     bkg = read_root(fname, columns=bdt_variables, where=prepare_sel(select_sidebands), step=step)
@@ -316,7 +318,7 @@ def classify(inputs, output):
             DecisionTreeClassifier(max_depth=3),
             algorithm='SAMME.R',
             n_estimators=1000,
-            learning_rate=0.5
+            learning_rate=1
     )
 
     logging.info('Validating classifier...')
@@ -348,9 +350,10 @@ def bdt_cut(infile, outfile):
 def generate_toy(output):
     from analysis.fit_model import model, variables
     import ROOT
+    ROOT.RooRandom.randomGenerator().SetSeed(0)
     ff = ROOT.TFile(output, 'recreate')
     ROOT.RooAbsData.setDefaultStorageType(ROOT.RooAbsData.Tree)
-    dset = model.generate(variables, 1e5)
+    dset = model.generate(variables, 800)
     dset.tree().Write('default')
     ff.Write()
 
@@ -378,6 +381,12 @@ def fit(infile, outfile):
 
     sns.set_style('darkgrid')
 
+    labels={
+        'sig': 'Signal',
+        'bkg': 'Combinatorial',
+        'prompt': '$B^0\\to K^+\\pi^-\\mu\\mu$',
+    }
+
     df = read_root(infile, columns=['B_M'])
     B_M = df['B_M']
     xl = np.linspace(5200, 5450, 200)
@@ -385,10 +394,18 @@ def fit(infile, outfile):
     #plt.plot(xl, norm * (lamb / (np.exp(lamb * 29) - np.exp(lamb * 0) + np.exp(lamb * 250) - np.exp(lamb * 129))) * np.exp(lamb * (xl - 5200)))
     from analysis.plotting import plot_roofit
     xlabel = '$m(B=K\\pi\\mu\\mu)\\ /\\ \\mathrm{MeV}$'
-    ax, width = plot_roofit(variables['B_M'], dset, model, components=['sig', 'bkg'], xlabel=xlabel)
+    ax, width = plot_roofit(variables['B_M'], dset, model, components=['sig', 'bkg', 'prompt'], xlabel=xlabel, labels=labels)
+    plt.legend()
     plt.ylabel('Candidates$\\ (1\\ /\\ {:.2f}\\ \\mathrm{{MeV}})$'.format(width[0]), fontsize=14)
     #plt.tight_layout()
-    plt.savefig(outfile)
+    plt.savefig('plots/fit_bmass.pdf')
+    plt.clf()
+    from analysis.plotting import plot_roofit
+    xlabel = '$m(\\overline{D}=K\\pi)\\ /\\ \\mathrm{MeV}$'
+    ax, width = plot_roofit(variables['D~0_M'], dset, model, components=['sig', 'bkg', 'prompt'], xlabel=xlabel, labels=labels)
+    plt.legend()
+    plt.ylabel('Candidates$\\ (1\\ /\\ {:.2f}\\ \\mathrm{{MeV}})$'.format(width[0]), fontsize=14)
+    plt.savefig('plots/fit_dmass.pdf')
 
 @transform(classify, formatter(), add_inputs(select_mc), 'plots/final.pdf')
 def plot_final(infile, outfile):
@@ -402,20 +419,37 @@ def plot_final(infile, outfile):
 @transform(classify, formatter(), 'plots/classifier_mass.pdf')
 def plot_bdt_mass(infile, outfile):
     import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
     import seaborn as sns
     from pandas import qcut
     sns.set_style('whitegrid')
+    plt.figure(figsize=(16,10))
 
-    df = read_root(infile, columns=['B_M', 'classifier'])
+    df = read_root(infile, where='B_M < 6000', columns=['B_M', 'classifier'])
+    sns.jointplot(df['B_M'], df['classifier'], kind='hex', joint_kws={'norm': LogNorm()}, stat_func=None)
+    plt.savefig('plots/partial_mass_hist.pdf')
+    plt.clf()
 
+    # Partial dependence
+    #df['bin'], bins = qcut(df.B_M, 10, labels=np.arange(10), retbins=True)
+    #binned = df.groupby('bin')
+    #binned.index = bins[:-1] + np.diff(bins)/2
+    #mean = binned.classifier.median()
+    #lower = binned.classifier.aggregate(lambda x: np.percentile(x, 5))
+    #upper = binned.classifier.aggregate(lambda x: np.percentile(x, 95))
+    #plt.errorbar(binned.index, mean, yerr=(lower, upper), fmt='o')
+    #plt.savefig('plots/partial_dep_mass.pdf')
+    #plt.clf()
+
+    # Response in mass
     N = 10
 
-    cuts = qcut(df.classifier, N, retbins=True)[1][:-1]
+    cuts = qcut(df.classifier[df.classifier > 0.0], N, retbins=True)[1][:-1]
 
     left = min(df.B_M)
 
     n, bins = np.histogram(df.B_M, bins=50)
-    upper = max(n)
+    upper = 1000
 
     for (c, color) in zip(cuts, sns.color_palette('Blues', N + 2)[2:]):
         data = df[df.classifier > c]['B_M']
@@ -435,7 +469,7 @@ def plot_correlation(infile, outfile):
     import matplotlib.pyplot as plt
     import seaborn as sns
     plt.figure(figsize=(10,10))
-    df = read_root(infile, columns=bdt_variables + ['B_M'])
+    df = read_root(infile, columns=bdt_variables)
     sns.corrplot(df.corr(), diag_names=False)
     plt.tight_layout()
     plt.savefig(outfile)

@@ -48,20 +48,20 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
 
         logging.info('Plotting m_B vs. q^2')
         jp = sns.jointplot(arr['B_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m_{B^0}$', '$q^2_{\\mu\\mu}$')
+        jp.set_axis_labels('$m(B^0)$', '$m(\\mu^+\\mu^-)$')
         plt.tight_layout()
         pdf.savefig()
         plt.clf()
 
         logging.info('Plotting m_D vs. q^2')
         jp = sns.jointplot(arr['D~0_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m_{\\bar{D}^0}$', '$q^2_{\\mu\\mu}$')
+        jp.set_axis_labels('$m_(\\bar{D}^0)$', '$m(\\mu^+\\mu^-)$')
         plt.tight_layout()
         pdf.savefig()
         plt.clf()
 
         
-def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_params=None, norm=None, log=False, binning=None):
+def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_params=None, norm=None, log=False, binning=None, labels=None):
     if not extra_params:
         extra_params = []
     if not norm:
@@ -80,7 +80,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     xmax, ymax = box.xmax, box.ymax
 
     gs = GridSpec(2, 1, height_ratios=[7, 1], left=xmin, right=xmax, bottom=ymin, top=ymax)
-    gs.update(hspace=0)
+    gs.update(hspace=0.12)
 
     xpos, width, y, yerr = get_binned_data(var, data, extra_params=extra_params, binning=binning)
     x = linspace(var.getMin(), var.getMax(), 200)
@@ -93,22 +93,27 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     ax = plt.subplot(gs[0])
 
     if components:
-        for c in comps:
-            plt.plot(x, c(x), '--', dashes=[8,3])
+        for c, name in zip(comps, components):
+            if labels:
+                plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False, label=labels[name])
+            else:
+                plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False)
 
-    plt.plot(x, f(x), 'r-')
+    plt.plot(x, f(x), 'r-', zorder=95, clip_on=False)
     if log:
         ax.set_yscale('log')
         ax.set_ylim(max(0.1, min(y)), 1.2 * max(y))
         yerr[0] = y - maximum(1e-1, y - yerr[0])
     else:
-        ax.set_ylim(0, 1.1 * max(y))
-        plt.gca().yaxis.set_major_locator(MaxNLocator(prune='lower'))
+        pass
+        #ax.set_ylim(0, 1.1 * max(y))
+        #plt.gca().yaxis.set_major_locator(MaxNLocator(prune='lower'))
 
-    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=4, linewidth=1.5)
+    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=4, linewidth=1.5, clip_on=False, capsize=0)
     plt.setp(ax.get_xticklabels(), visible=False)
 
     bx = plt.subplot(gs[1], sharex=ax)
+    plt.setp(bx, zorder=-10)# Make sure the main histogram can draw over the pull plot
     pull = calc_pull(xpos, f, y, yerr)
 
     plt.fill_between([var.getMin(), var.getMax()], 2, 1, facecolor='#bbbbbb', linewidth=0, edgecolor='#bbbbbb')
@@ -118,7 +123,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     plt.bar(xpos-width/2, pull, width, color=color, linewidth=0.8)
 
     #plt.axhline(0, color='black')
-    plt.axhline(3, color='black')
+    #plt.axhline(3, color='black')
     plt.ylabel('Normed\nResiduals')
 
     if xlabel:

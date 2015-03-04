@@ -15,9 +15,13 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test):
     for j, y_pred in enumerate(clf.staged_predict(X_test)):
         err[j] = zero_one_loss(y_pred, y_test)
 
+    err_train = np.zeros((N_trees,))
+    for j, y_pred in enumerate(clf.staged_predict(X_train)):
+        err_train[j] = zero_one_loss(y_pred, y_train)
+
     logging.info('    Finished fold #{}'.format(i + 1))
 
-    return fpr, tpr, err
+    return fpr, tpr, err, err_train
 
 
 def validate_classifier(clf, X, y, outputdir):
@@ -47,9 +51,10 @@ def validate_classifier(clf, X, y, outputdir):
 
         errs = []
 
+        plt.figure(figsize=(10, 10))
         results = Parallel(n_jobs=5)(delayed(run_crossval)(clf, i, X[train], y[train], X[test], y[test]) for i, (train, test) in enumerate(skf))
-        for f, t, e in results:
-            plt.plot(f, t, lw=1)
+        for f, t, _, _ in results:
+            plt.plot(1 - f, t, lw=2)
 
         #for i, (train, test) in enumerate(skf):
         #    logging.info('    Running fold #{}'.format(i + 1))
@@ -62,17 +67,20 @@ def validate_classifier(clf, X, y, outputdir):
         #        err[i] = zero_one_loss(y_pred, y[test])
         #    errs.append(err)
 
-        plt.ylim(0.8, 1.0)
-        plt.xlim(0.0, 0.2)
+        plt.ylim(0.6, 1.0)
+        plt.xlim(0.8, 1.0)
         plt.ylabel('True positive rate')
-        plt.xlabel('False positive rate')
+        plt.xlabel('True negative rate')
         plt.tight_layout()
         pdf.savefig()
         plt.clf()
 
-        for f, t, e in results:
+        import seaborn as sns
+        sns.set_context('talk')
+        for f, t, e, e_train in results:
             plt.plot(np.arange(N_trees)+1, e)
-        plt.ylabel('Error')
+            plt.plot(np.arange(N_trees)+1, e_train, alpha=0.5)
+        plt.ylabel('Zero-one loss')
         plt.xlabel('$N_\\mathrm{estimators}$')
         plt.tight_layout()
         pdf.savefig()

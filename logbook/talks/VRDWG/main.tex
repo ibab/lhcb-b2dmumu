@@ -18,6 +18,15 @@
 
 \linespread{1.3}
 
+\newcommand{\beginbackup}{
+   \newcounter{framenumbervorappendix}
+   \setcounter{framenumbervorappendix}{\value{framenumber}}
+}
+\newcommand{\backupend}{
+   \addtocounter{framenumbervorappendix}{-\value{framenumber}}
+   \addtocounter{framenumber}{\value{framenumbervorappendix}} 
+}
+
 \title{Search for $B\to D\mu\mu$}
 \subtitle{Theory and Analysis outline}
 \date{\today}
@@ -89,10 +98,9 @@
     \begin{column}{0.70\textwidth}
       \begin{itemize}
         \item $W$ exchange (no penguin loop)
-        % Why is this decay interesting?
         \item Two conflicting theoretical predictions:
-        \item Evans et al. [1999] ($q^2 > \SI{1}{GeV}$)\\ $\mathrm{BR}(B^0\to \overline{D}^0 e^+e^-) = 2.6\times10^{-9}$
-        \item Kim et al. [2011] ($q^2 \in [1,5]\,\si{GeV}$) \\ $\mathrm{BR}(B^0\to \overline{D}^0 \mu^+\mu^-) = \left(9.7^{+4.2}_{-3.2}\right)\times10^{-6}$
+        \item Evans et al. [1999] ($q^2 > \SI{1}{GeV^2}$)\\ $\mathrm{BR}(B^0\to \overline{D}^0 e^+e^-) = 2.6\times10^{-9}$
+        \item Kim et al. [2011] ($q^2 \in [1,5]\,\si{GeV^2}$) \\ $\mathrm{BR}(B^0\to \overline{D}^0 \mu^+\mu^-) = \left(9.7^{+4.2}_{-3.2}\right)\times10^{-6}$
       \end{itemize}
     \end{column}
   \end{columns}
@@ -104,6 +112,7 @@
     \item In absence of lattice QCD calculations, matrix elements $β$ and $β_8$ are approximated
     \item BR for $B^0\to D^{(*)0}e^+e^-$ is calculated
     \item Also give predictions for $B^+\to D_{\!(s)}^{\ (*)+}e^+e^-$ (smaller BR) in a different paper
+    \item Use these to get an idea of expected yields
   \end{itemize}
 \end{frame}
 
@@ -112,6 +121,7 @@
     \item Perturbative QCD approach
     \item Make use of model-dependent wave functions to derive result
     \item No mention of calculation by Evans et al.
+    \item We should treat this optimistic result with care
   \end{itemize}
 \end{frame}
 
@@ -129,43 +139,59 @@
     \end{column}
     \begin{column}{0.7\textwidth}
       \begin{itemize}
-        \item $\mathrm{BR}(D^{0}\to K^-\pi^+) = \SI{3.87 \pm 0.05}{\percent}$
-        \item $\mathrm{BR}(D^+\to K^-\pi^+\pi^+) = \SI{9.13 \pm 0.19}{\percent}$
-        \item $\mathrm{BR}(D_s^+\to K^+K^-\pi^+) = \SI{5.49 \pm 0.27}{\percent}$
-        \item $\mathrm{BR}(D^{*0} \to D^0\pi^0) = \SI{61.9 \pm 2.9}{\percent}$
-        \item $\mathrm{BR}(D^{*+} \to D^0\pi^+) = \SI{67.7 \pm 0.5}{\percent}$
-        \item $\mathrm{BR}(D_s^{+*}\to D_s^+\pi^0) = \SI{5.8 \pm 0.7}{\percent}$
-        \item Looked at \cite{evans1}\cite{evans2} for $B$ decay BRs
+        %\item $\mathrm{BR}(D^{0}\to K^-\pi^+) = \SI{3.87 \pm 0.05}{\percent}$
+        %\item $\mathrm{BR}(D^+\to K^-\pi^+\pi^+) = \SI{9.13 \pm 0.19}{\percent}$
+        %\item $\mathrm{BR}(D_s^+\to K^+K^-\pi^+) = \SI{5.49 \pm 0.27}{\percent}$
+        %\item $\mathrm{BR}(D^{*0} \to D^0\pi^0) = \SI{61.9 \pm 2.9}{\percent}$
+        %\item $\mathrm{BR}(D^{*+} \to D^0\pi^+) = \SI{67.7 \pm 0.5}{\percent}$
+        %\item $\mathrm{BR}(D_s^{+*}\to D_s^+\pi^0) = \SI{5.8 \pm 0.7}{\percent}$
+        \item Use conservative theory estimates (Evans, \cite{evans1}\cite{evans2}) for $B$ decay BRs
         \item (All $B$ BRs for $q^2 > \SI{1}{GeV^2}$)
+        \item Take $D$ branching fractions from PDG
       \end{itemize}
     \end{column}
   \end{columns}
+  Calculate yields not including selection efficiencies:
+  \begin{equation*}
+    N = \mathcal{L}\,\sigma_{b\overline{b}}\,2 f_d\,ε_\text{geom}\,ε_\text{trig}\,ε_\text{strip}\,\text{BR}_B\,\text{BR}_D
+  \end{equation*}
 \end{frame}
 
-\begin{frame}{Expected number of candidates (cont.)}
+\begin{frame}[shrink=20]{Expected number of candidates (cont.)}
+  \begin{itemize}
+    \item BRs used: Evans (\cite{evans1}\cite{evans2})
+  \end{itemize}
   \centering
   \begin{tabular}{l S S}
     \toprule
-    Decay & {\text{Predicted BR}} \cite{evans1}\cite{evans2} & {\text{Expected yield}} \\
+    Decay & {\text{Predicted BR}} & {\text{Expected yield}} \\
     \midrule
-    $B^0\to \overline{D}^0\mu\mu$ & 2.6e-9 & 1.8 \\
+    $\mathbf{B^0\to \overline{D}^0\mu\mu}$ & 2.6e-9 & 1.8 \\
     $B^0\to \overline{D}^{*0}\mu\mu$ & 1.4e-8 & 6.1 \\
     $B^+\to D^+\mu\mu$ & 2.5e-12 & 0.41e-2 \\
-    $B^+\to D^{+*}\mu\mu$ & 1.0e-11 & 0.48e-2 \\
-    $B^+\to D_s^+\mu\mu$ & 4.3e-11 & 0.17e-2 \\
+    $\mathbf{B^+\to D^{+*}\mu\mu}$ & 1.0e-11 & 0.48e-2 \\
+    $\mathbf{B^+\to D_s^+\mu\mu}$ & 4.3e-11 & 0.17e-2 \\
     $B^+\to D_s^{+*}\mu\mu$ & 2.0e-10 & 0.12e-1 \\
     \bottomrule
   \end{tabular}
   \begin{itemize}
-    \item Other interesting possibility: $B_c \to D_s^+\mu\mu$ (but BR $\~10^{-7}$ \cite{ebert})
+    \item Other interesting possibility: $B_c \to D_s^+\mu\mu$
+      \begin{itemize}
+        \item but BR $\sim 10^{-7}$ (Ebert\cite{ebert})
+        \item investigate if measurement is feasible
+      \end{itemize}
+    \item Also: Most resonant modes ($D J/\psi$) not yet observed
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Trigger and Stripping}
   \begin{itemize}
+    \item Use standard muon trigger lines
     \item Stripping line: \texttt{StrippingB2XMuMu\_Line}
-    \item Final states with $2\mu$ and additionally $X=\phi,J/\psi,K,K^*,D^{*+},D,...$
-    \item Cuts: mostly loose vertex quality cuts
+      \begin{itemize}
+        \item Final states with $2\mu$ and additionally $X=\phi,J/\psi,K,K^*,D^{*+},D,...$
+        \item Cuts: mostly loose vertex quality cuts
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -177,54 +203,71 @@
 \begin{frame}{Preselection}
   \begin{itemize}
     \item {\small Cut on PID variables and \texttt{isMuonLoose} to select Kaon/Pion:}
-    \item {\small Resample PID variables from data for MC}
   \end{itemize}
   \centering
-  \includegraphics[width=0.8\textwidth]{../../../plots/pid_plot.pdf}
+  \includegraphics[width=0.65\textwidth,trim=0 4em 0 0,clip]{../../../plots/pid_plot.pdf}
+  \begin{itemize}
+    \item Resampling of PID variables from data in progress
+    \item Preselection can be improved: cut on $D^0$ mass?
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Multivariate selection: variables}
+\begin{frame}[shrink=20]{Multivariate selection: variables}
   \begin{itemize}
-    \item Currently: mostly kinematic variables
-    \item Also: Isolation discriminant used for $B^0\to K^{*0}\mu\mu$
+    \item Signal proxy: $B^0\to \overline{D}^0\mu\mu$ MC12
+    \item Background proxy: Upper $B$ mass sideband
+    \item Choice of variables inspired by $B^0\to K^*\mu\mu$ selection
+    \item Work planned to optimize this (look at measures beyond BDT importance)
+    \item Use Isolation discriminant from $B^0\to K^{*0}\mu\mu$ analysis
   \end{itemize}
   \centering
-  \includegraphics[trim=0 0 0 7em,clip,width=0.7\textwidth]{../../../plots/correlation.pdf}
+  \includegraphics[trim=0 4em 0 8em,clip,width=0.65\textwidth]{../../../plots/correlation.pdf}
 \end{frame}
 
-\begin{frame}{Multivariate selection: cross-validation}
+\begin{frame}[shrink=20]{Multivariate selection: cross-validation, ROC curves}
   \begin{itemize}
-    \item Use $k$-fold validation to assess quality of classifier (BDT):
+    \item Use $k$-fold validation to assess quality of classifier (BDT)
+    \item ROC curves for each of the $k=5$ test samples
   \end{itemize}
+
   \centering
-  \includegraphics[width=0.65\textwidth,page=1]{../../../plots/classifier.pdf}
+  \includegraphics[width=0.60\textwidth,page=1]{../../../plots/classifier.pdf}
+
+  \begin{itemize}
+    \item It's strange that these deviate significantly $\rightarrow$ needs to be understood
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Multivariate selection: Cuts on classifier}
   \centering
-  \includegraphics[width=\textwidth]{../../../plots/classifier_mass.pdf}
+  \includegraphics[width=0.8\textwidth]{../../../plots/classifier_mass.pdf}
+  \begin{itemize}
+    \item {\small Classifier seems to be correlated with mass $\rightarrow$ needs to be fixed}
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Statistical model}
+\begin{frame}{Suspected physical background: $B^0\to K^+\pi^-\mu\mu$}
   \begin{itemize}
-    \item Currently in development
-    \item Suspected problem: $B^0\to K^+\pi^-\mu^+\mu^-$ peaking under signal
+      \item Nonresonant contribution is a problem for $B^0\to J/\psi \overline{D}^0$
       \begin{itemize}
+        \item See note \texttt{LHCB-ANA-2012-111}
+        \item How to deal with this? $D^0$ lifetime cut removes a lot of signal
         \item Idea: Include $D^0$ mass (and optionally $D^0$ decay time) into fit 
+        \item Use $B^0\to K^+\pi^-\mu\mu$ (exists) to determine shape
       \end{itemize}
-    \item Infer signal mass shape from simulation
-    \item First goal: Build model and fit Toy MC:
+    \item Started to investigate with toy MC (simultaneous fit)
   \end{itemize}
   \centering
-  \includegraphics[width=0.70\textwidth,trim=0 0 0 4em,clip]{../../../plots/fit.pdf}
+  \includegraphics[width=0.5\textwidth,trim=0 0 0 4em,clip]{../../../plots/fit_bmass.pdf}
+  \includegraphics[width=0.5\textwidth,trim=0 0 0 4em,clip]{../../../plots/fit_dmass.pdf}
 \end{frame}
 
 \begin{frame}{Measurement of branching fraction}
-  Efficencies to take into account:
+  Needed are:
   \begin{itemize}
     \item trigger efficiency (use TISTOS on control channel)
     \item stripping efficiency (MC)
-    \item LHCb acceptance efficency (MC)
+    \item LHCb acceptance efficiency (MC)
     \item preselection efficiency (use PIDCalib/Resampling?)
     \item selection efficiency of BDT
   \end{itemize}
@@ -238,22 +281,39 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Outlook}
+\begin{frame}[shrink=20]{Outlook}
   \begin{itemize}
-    \item Analysis of $B^0\to \overline{D}^0 \mu\mu$ is progressing well
-    \item Will be extended to look at the resonant mode $B^0\to J/\psi\overline{D}^0$ (same dataset, currently not observed)
-    \item Could be extended to other modes (e.g. $B^+\to D^{*+}\mu\mu$, $B^+\to D_s^+\mu\mu$)
+    \item Analysis of $B\to D \mu^+\mu^-$ has started
+    \item Many possible final states to look at
+    \item Restrict to most promising ones:
+    \begin{itemize}
+      \item $B^0 \to \overline{D}^0\mu\mu$ is progressing
+      \item $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$ need simulation
+      \item Also look at currently unobserved resonant modes (same dataset)
+      \item Decfiles for nonresonant modes ($\mu\mu$) all released. Need to look into resonant ($J/\psi$)
+    \end{itemize}
+    \item We would like to request moderate signal MC samples for these channels (resonant/nonresonant)\\ 
+      $\Rightarrow$ Use these to define exactly which channels should be covered
   \end{itemize}
-  Judging from theory predictions (Evans): Expect to set limits
+  Judging from theory prediction (Evans): Expect to set limits
   \begin{itemize}
     \item But: The BR could be underestimated!
   \end{itemize}
 \end{frame}
 
-\begin{frame}[allowframebreaks]{Bibliography}
+\begin{frame}[shrink=20]{Bibliography}
   \small
   \printbibliography
 \end{frame}
+
+\appendix
+\beginbackup
+
+\begin{frame}{Test for overtraining}
+  \centering
+  \includegraphics[width=0.7\textwidth,page=2]{../../../plots/classifier.pdf}
+\end{frame}
+\backupend
 
 \end{document}
 

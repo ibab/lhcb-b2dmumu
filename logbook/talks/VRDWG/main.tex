@@ -110,7 +110,7 @@
 \begin{frame}{Kim et al.}
   \begin{itemize}
     \item Perturbative QCD approach
-    \item Make use of model-dependent \enquote{wave functions} to derive result
+    \item Make use of model-dependent wave functions to derive result
     \item No mention of calculation by Evans et al.
   \end{itemize}
 \end{frame}
@@ -154,19 +154,18 @@
     $B^+\to D^{+*}\mu\mu$ & 1.0e-11 & 0.48e-2 \\
     $B^+\to D_s^+\mu\mu$ & 4.3e-11 & 0.17e-2 \\
     $B^+\to D_s^{+*}\mu\mu$ & 2.0e-10 & 0.12e-1 \\
-    $B_c\to D_s^+\mu\mu$ & ? & ? \\
-    $B_c\to D_s^{*+}\mu\mu$ & ? & ? \\
     \bottomrule
   \end{tabular}
+  \begin{itemize}
+    \item Other interesting possibility: $B_c \to D_s^+\mu\mu$ (but BR $\~10^{-7}$ \cite{ebert})
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Trigger and Stripping}
   \begin{itemize}
-    \item TODO: List trigger lines
-  \end{itemize}
-  \begin{itemize}
     \item Stripping line: \texttt{StrippingB2XMuMu\_Line}
-    \item TODO: List stripping cuts here
+    \item Final states with $2\mu$ and additionally $X=\phi,J/\psi,K,K^*,D^{*+},D,...$
+    \item Cuts: mostly loose vertex quality cuts
   \end{itemize}
 \end{frame}
 
@@ -201,7 +200,7 @@
   \includegraphics[width=0.65\textwidth,page=1]{../../../plots/classifier.pdf}
 \end{frame}
 
-\begin{frame}{Multivariate selection: partial dependence on $B^0$ mass}
+\begin{frame}{Multivariate selection: Cuts on classifier}
   \centering
   \includegraphics[width=\textwidth]{../../../plots/classifier_mass.pdf}
 \end{frame}
@@ -224,20 +223,18 @@
   Efficencies to take into account:
   \begin{itemize}
     \item trigger efficiency (use TISTOS on control channel)
-    \item stripping efficiency (how?, MC?)
-    \item LHCb acceptance efficency
-    \item preselection efficiency (use PIDCalib?)
+    \item stripping efficiency (MC)
+    \item LHCb acceptance efficency (MC)
+    \item preselection efficiency (use PIDCalib/Resampling?)
     \item selection efficiency of BDT
   \end{itemize}
   $\Rightarrow$ Use signal yield and efficiencies to derive BR estimate.
   \begin{itemize}
-    \item Use normalization channel, but which one?
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Systematic uncertainties}
-  \begin{itemize}
-    \item TODO
+    \item Choose normalization/control channel:
+      \begin{itemize}
+        \item $B^0\to K^{*0}\mu^+\mu^-$ $\Rightarrow$ Similar behaviour
+        \item $B^0 \to K^{*0}J\!/\!\psi$ $\Rightarrow$ Larger statistics
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -253,7 +250,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Bibliography}
+\begin{frame}[allowframebreaks]{Bibliography}
   \small
   \printbibliography
 \end{frame}

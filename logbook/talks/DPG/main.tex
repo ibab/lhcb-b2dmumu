@@ -27,15 +27,35 @@
    \addtocounter{framenumber}{\value{framenumbervorappendix}} 
 }
 
-\title{Search for $B\to D\mu\mu$ at LHCb}
+\title{Search for $B\!\to\! D\mu\mu$\\ at LHCb}
 \subtitle{ }
 \date{\today}
-\institute{DPG Frühjahrstagung}
-\author[Igor Babuschkin]{\small \textbf{Igor Babuschkin} \and Julian Wishahi \and Alex Shires \and Johannes Albrecht}
+\institute{\small \inst{1}TU Dortmund}
+\author[Igor Babuschkin]{\footnotesize \textbf{Igor Babuschkin}\inst{1} \and Julian Wishahi\inst{1} \and Alex Shires\inst{1} \and Johannes Albrecht\inst{1}}
 
 \begin{document}
 
 \maketitle
+
+\begin{frame}[shrink=10]{The LHCb detector}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \vspace{1em}
+      \includegraphics[width=\textwidth,trim=3em 0 0 0,clip]{lhcb.pdf}
+      \begin{itemize}
+        \item Forward arm spectrometer designed to study heavy quark decays
+      \end{itemize}
+    \end{column}
+  \begin{column}{0.35\textwidth}
+    \begin{itemize}
+      \item Good impact parameter resolution: \SI{20}{\micro\metre}
+      \item Invariant mass resolution: \SI{8}{MeV} ($B\to J/\psi X$)
+      \item Excellent particle identification: \SI{95}{\percent} Kaon ID efficiency
+      \item Versatile \& efficient trigger
+    \end{itemize}
+  \end{column}
+  \end{columns}
+\end{frame}
 
 \begin{frame}{The decay $B^0\to\overline{D}^0\mu^+\mu^-$}
   \centering
@@ -97,7 +117,7 @@
     \end{column}
     \begin{column}{0.70\textwidth}
       \begin{itemize}
-        \item $W$ exchange (no penguin loop)
+        \item $W$ exchange topology
         \item Two conflicting theoretical predictions:
         \item Evans et al. [1999] ($q^2 > \SI{1}{GeV^2}$)\\ $\mathrm{BR}(B^0\to \overline{D}^0 e^+e^-) = 2.6\times10^{-9}$
         \item Kim et al. [2011] ($q^2 \in [1,5]\,\si{GeV^2}$) \\ $\mathrm{BR}(B^0\to \overline{D}^0 \mu^+\mu^-) = \left(9.7^{+4.2}_{-3.2}\right)\times10^{-6}$
@@ -124,12 +144,6 @@
 %    \item We should treat this optimistic result with care
 %  \end{itemize}
 %\end{frame}
-
-\begin{frame}{The LHCb detector}
-  \includegraphics[width=0.9\textwidth]{lhcb.pdf}
-
-  TODO: list properties
-\end{frame}
 
 \begin{frame}{Expected number of candidates}
   \begin{columns}
@@ -186,22 +200,22 @@
         \item but BR $\sim 10^{-7}$ (Ebert\cite{ebert})
         \item investigate if measurement is feasible
       \end{itemize}
-    \item Also: Most resonant modes ($D J/\psi$) not yet observed
+    \item Also: Most resonant modes ($B\!\to\! D J/\psi$) not yet observed
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Trigger and Stripping}
   \begin{itemize}
-    \item Use standard muon trigger lines
-    \item Stripping line: \texttt{StrippingB2XMuMu\_Line}
+    \item Make use of muon trigger strategies
+    \item Stripping requirements:
       \begin{itemize}
-        \item Final states with $2\mu$ and additionally $X=\phi,J/\psi,K,K^*,D^{*+},D,...$
+        \item Final state $K^+\pi^-\mu^+\mu^-$
         \item Cuts: mostly loose vertex quality cuts
       \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Preparation: Blind signal region, Remove $J/\psi$}
+\begin{frame}{Preparation: Blind signal region, Remove $J/\psi$ resonance}
   \centering
   \includegraphics[width=0.75\textwidth,page=80]{../../../plots/select.pdf}
 \end{frame}
@@ -211,10 +225,10 @@
     \item {\small Cut on Particle ID variables to select Kaon/Pion:}
   \end{itemize}
   \centering
-  \includegraphics[width=0.65\textwidth,trim=0 4em 0 0,clip]{../../../plots/pid_plot.pdf}
+  \includegraphics[width=0.65\textwidth,trim=0 1em 0 0,clip]{../../../plots/pid_plot.pdf}
   \begin{itemize}
-    \item Resampling of PID variables from data in progress
-    \item Preselection can be improved: cut on $D^0$ mass
+    \item PID differences between data and simulation\\
+      $\Rightarrow$ resample PID variables from data (in progress)
   \end{itemize}
 \end{frame}
 
@@ -235,14 +249,9 @@
     \item Use $k$-fold validation to assess quality of classifier (BDT)
     \item ROC curves for each of the $k=5$ test samples
   \end{itemize}
-
   \centering
-  \includegraphics[width=0.60\textwidth,page=1]{../../../plots/classifier.pdf}
-\end{frame}
-
-\begin{frame}{Multivariate selection: Cuts on classifier}
-  \centering
-  \includegraphics[width=0.8\textwidth]{../../../plots/classifier_mass.pdf}
+  \includegraphics[width=0.50\textwidth,page=1]{../../../plots/classifier.pdf}
+  \includegraphics[width=0.50\textwidth]{../../../plots/classifier_mass.pdf}
 \end{frame}
 
 \begin{frame}{Suspected physical background: $B^0\to K^+\pi^-\mu\mu$}
@@ -262,10 +271,10 @@
   Needed are:
   \begin{itemize}
     \item trigger efficiency (use TISTOS on control channel)
-    \item stripping efficiency (MC)
-    \item LHCb acceptance efficiency (MC)
-    \item preselection efficiency (use PIDCalib/Resampling?)
-    \item selection efficiency of BDT
+    \item stripping efficiency (Simulation)
+    \item LHCb acceptance efficiency (Simulation)
+    \item preselection efficiency (calibrate PID from data)
+    \item selection efficiency of classifier (cross-validation)
   \end{itemize}
   $\Rightarrow$ Use signal yield and efficiencies to derive BR estimate.
   \begin{itemize}
@@ -277,14 +286,14 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[shrink=20]{Outlook}
+\begin{frame}{Outlook}
   \begin{itemize}
     \item Analysis of $B\to D \mu^+\mu^-$ has been started
     \item Many possible final states to look at
     \item Restrict to most promising ones:
     \begin{itemize}
       \item $B^0 \to \overline{D}^0\mu\mu$ is progressing
-      \item $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$
+      \item Investigate $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$
       \item Also look at currently unobserved resonant modes (same dataset)
     \end{itemize}
   \end{itemize}
@@ -294,13 +303,13 @@
   \end{itemize}
 \end{frame}
 
+\appendix
+\beginbackup
+
 \begin{frame}[shrink=20]{Bibliography}
   \small
   \printbibliography
 \end{frame}
-
-\appendix
-\beginbackup
 
 \begin{frame}{Test for overfitting}
   \centering

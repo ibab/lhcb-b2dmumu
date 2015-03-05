@@ -27,7 +27,7 @@
    \addtocounter{framenumber}{\value{framenumbervorappendix}} 
 }
 
-\title{Search for $B\to D\mu\mu$}
+\title{Search for $B\to D\mu\mu$ at LHCb}
 \subtitle{ }
 \date{\today}
 \institute{DPG Frühjahrstagung}
@@ -106,23 +106,29 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Evans et al.}
-  \begin{itemize}
-    \item Use effective field theory approach to separate decay into short/long distance interactions
-    \item In absence of lattice QCD calculations, matrix elements $β$ and $β_8$ are approximated
-    \item BR for $B^0\to D^{(*)0}e^+e^-$ is calculated
-    \item Also give predictions for $B^+\to D_{\!(s)}^{\ (*)+}e^+e^-$ (smaller BR) in a different paper
-    \item Use these to get an idea of expected yields
-  \end{itemize}
-\end{frame}
+%\begin{frame}{Evans et al.}
+%  \begin{itemize}
+%    \item Use effective field theory approach to separate decay into short/long distance interactions
+%    \item In absence of lattice QCD calculations, matrix elements $β$ and $β_8$ are approximated
+%    \item BR for $B^0\to D^{(*)0}e^+e^-$ is calculated
+%    \item Also give predictions for $B^+\to D_{\!(s)}^{\ (*)+}e^+e^-$ (smaller BR) in a different paper
+%    \item Use these to get an idea of expected yields
+%  \end{itemize}
+%\end{frame}
+%
+%\begin{frame}{Kim et al.}
+%  \begin{itemize}
+%    \item Perturbative QCD approach
+%    \item Make use of model-dependent wave functions to derive result
+%    \item No mention of calculation by Evans et al.
+%    \item We should treat this optimistic result with care
+%  \end{itemize}
+%\end{frame}
 
-\begin{frame}{Kim et al.}
-  \begin{itemize}
-    \item Perturbative QCD approach
-    \item Make use of model-dependent wave functions to derive result
-    \item No mention of calculation by Evans et al.
-    \item We should treat this optimistic result with care
-  \end{itemize}
+\begin{frame}{The LHCb detector}
+  \includegraphics[width=0.9\textwidth]{lhcb.pdf}
+
+  TODO: list properties
 \end{frame}
 
 \begin{frame}{Expected number of candidates}
@@ -202,13 +208,13 @@
 
 \begin{frame}{Preselection}
   \begin{itemize}
-    \item {\small Cut on PID variables and \texttt{isMuonLoose} to select Kaon/Pion:}
+    \item {\small Cut on Particle ID variables to select Kaon/Pion:}
   \end{itemize}
   \centering
   \includegraphics[width=0.65\textwidth,trim=0 4em 0 0,clip]{../../../plots/pid_plot.pdf}
   \begin{itemize}
     \item Resampling of PID variables from data in progress
-    \item Preselection can be improved: cut on $D^0$ mass?
+    \item Preselection can be improved: cut on $D^0$ mass
   \end{itemize}
 \end{frame}
 
@@ -232,29 +238,19 @@
 
   \centering
   \includegraphics[width=0.60\textwidth,page=1]{../../../plots/classifier.pdf}
-
-  \begin{itemize}
-    \item It's strange that these deviate significantly $\rightarrow$ needs to be understood
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{Multivariate selection: Cuts on classifier}
   \centering
   \includegraphics[width=0.8\textwidth]{../../../plots/classifier_mass.pdf}
-  \begin{itemize}
-    \item {\small Classifier seems to be correlated with mass $\rightarrow$ needs to be fixed}
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{Suspected physical background: $B^0\to K^+\pi^-\mu\mu$}
   \begin{itemize}
-      \item Nonresonant contribution is a problem for $B^0\to J/\psi \overline{D}^0$
-      \begin{itemize}
-        \item See note \texttt{LHCB-ANA-2012-111}
-        \item How to deal with this? $D^0$ lifetime cut removes a lot of signal
-        \item Idea: Include $D^0$ mass (and optionally $D^0$ decay time) into fit 
-        \item Use $B^0\to K^+\pi^-\mu\mu$ (exists) to determine shape
-      \end{itemize}
+      \item Peaks directly below signal in $B$ mass
+      \item $D^0$ lifetime cut would remove a lot of signal
+      \item Idea: Include $D^0$ mass (and optionally $D^0$ decay time) into fit 
+      \item Use $B^0\to K^+\pi^-\mu\mu$ Monte Carlo to determine shape
     \item Started to investigate with toy MC (simultaneous fit)
   \end{itemize}
   \centering
@@ -283,17 +279,14 @@
 
 \begin{frame}[shrink=20]{Outlook}
   \begin{itemize}
-    \item Analysis of $B\to D \mu^+\mu^-$ has started
+    \item Analysis of $B\to D \mu^+\mu^-$ has been started
     \item Many possible final states to look at
     \item Restrict to most promising ones:
     \begin{itemize}
       \item $B^0 \to \overline{D}^0\mu\mu$ is progressing
-      \item $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$ need simulation
+      \item $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$
       \item Also look at currently unobserved resonant modes (same dataset)
-      \item Decfiles for nonresonant modes ($\mu\mu$) all released. Need to look into resonant ($J/\psi$)
     \end{itemize}
-    \item We would like to request moderate signal MC samples for these channels (resonant/nonresonant)\\ 
-      $\Rightarrow$ Use these to define exactly which channels should be covered
   \end{itemize}
   Judging from theory prediction (Evans): Expect to set limits
   \begin{itemize}
@@ -309,7 +302,7 @@
 \appendix
 \beginbackup
 
-\begin{frame}{Test for overtraining}
+\begin{frame}{Test for overfitting}
   \centering
   \includegraphics[width=0.7\textwidth,page=2]{../../../plots/classifier.pdf}
 \end{frame}

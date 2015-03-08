@@ -3,7 +3,7 @@
 
 \usepackage{fontspec}
 \usepackage{polyglossia}
-\setmainlanguage{english}
+\setmainlanguage{german}
 \usepackage[english]{isodate}
 \isodate
 \usepackage{multicol}
@@ -13,6 +13,8 @@
 \usepackage{booktabs}
 \usepackage{biblatex}
 \addbibresource{main.bib}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,shadows,arrows,calc}
 
 \usetheme{vertex}
 
@@ -27,37 +29,17 @@
    \addtocounter{framenumber}{\value{framenumbervorappendix}} 
 }
 
-\title{Search for $B\!\to\! D\mu\mu$\\ at LHCb}
+\title{\LARGE Suche nach seltenen $B\!\to\! D\mu\mu$-Zerfällen\\ am LHCb-Experiment}
 \subtitle{ }
-\date{\today}
-\institute{\small \inst{1}TU Dortmund}
-\author[Igor Babuschkin]{\footnotesize \textbf{Igor Babuschkin}\inst{1} \and Julian Wishahi\inst{1} \and Alex Shires\inst{1} \and Johannes Albrecht\inst{1}}
+\institute{TU Dortmund, Experimentelle Physik V}
+\date{\small DPG Frühjahrstagung Wuppertal 2015}
+\author[Igor Babuschkin]{\footnotesize \textbf{Igor Babuschkin} \and Julian Wishahi \and Alex Shires \and Johannes Albrecht}
 
 \begin{document}
 
 \maketitle
 
-\begin{frame}[shrink=10]{The LHCb detector}
-  \begin{columns}
-    \begin{column}{0.7\textwidth}
-      \vspace{1em}
-      \includegraphics[width=\textwidth,trim=3em 0 0 0,clip]{lhcb.pdf}
-      \begin{itemize}
-        \item Forward arm spectrometer designed to study heavy quark decays
-      \end{itemize}
-    \end{column}
-  \begin{column}{0.35\textwidth}
-    \begin{itemize}
-      \item Good impact parameter resolution: \SI{20}{\micro\metre}
-      \item Invariant mass resolution: \SI{8}{MeV} ($B\to J/\psi X$)
-      \item Excellent particle identification: \SI{95}{\percent} Kaon ID efficiency
-      \item Versatile \& efficient trigger
-    \end{itemize}
-  \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{The decay $B^0\to\overline{D}^0\mu^+\mu^-$}
+\begin{frame}{Der Zerfall $B^0\to\overline{D}^0\mu^+\mu^-$}
   \centering
   \begin{columns}
     \begin{column}{0.35\textwidth}
@@ -115,14 +97,37 @@
 
       \end{fmffile}
     \end{column}
-    \begin{column}{0.70\textwidth}
+    \begin{column}{0.75\textwidth}
       \begin{itemize}
-        \item $W$ exchange topology
-        \item Two conflicting theoretical predictions:
-        \item Evans et al. [1999] ($q^2 > \SI{1}{GeV^2}$)\\ $\mathrm{BR}(B^0\to \overline{D}^0 e^+e^-) = 2.6\times10^{-9}$
-        \item Kim et al. [2011] ($q^2 \in [1,5]\,\si{GeV^2}$) \\ $\mathrm{BR}(B^0\to \overline{D}^0 \mu^+\mu^-) = \left(9.7^{+4.2}_{-3.2}\right)\times10^{-6}$
+        \item $W$-Austausch
+        \item Zwei widersprüchliche Vorhersagen:
+        \begin{itemize}
+          \item Evans et al. \\$\mathrm{BR}(B^0\to \overline{D}^0 e^+e^-) = 2.6\times10^{-9}$ ($q^2 > \SI{1}{GeV^2}$)\\{} [Nucl.Phys. B577 (2000) 240-260]
+          \item Kim et al. \\$\mathrm{BR}(B^0\to \overline{D}^0 \mu^+\mu^-) = \left(9.7^{+4.2}_{-3.2}\right)\times10^{-6}$ ($q^2\in [1,5]\,\si{GeV^2}$)\\{} [JHEP 1110 (2011) 152]
+        \end{itemize}
+        \item Messung bei LHCb kann hier Klarheit schaffen
       \end{itemize}
     \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[shrink=10]{Der LHCb-Detektor}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \vspace{1em}
+      \includegraphics[width=\textwidth,trim=3em 0 0 0,clip]{lhcb.pdf}
+      \begin{itemize}
+        \item Vorwärts-Spektrometer entwickelt zur Untersuchung schwerer Quarks
+      \end{itemize}
+    \end{column}
+  \begin{column}{0.35\textwidth}
+    \begin{itemize}
+      \item Gute Stoßparameter-Auflösung: \SI{20}{\micro\metre}
+      \item Auflösung der invarianten Masse: \SI{8}{MeV} ($B\to J\!/\!\psi \phi$)
+      \item Exzellente Teilchenidentifikation: \SI{95}{\percent} Kaon ID-Effizienz gegen \SI{5}{\percent}
+      \item Flexibler Trigger
+    \end{itemize}
+  \end{column}
   \end{columns}
 \end{frame}
 
@@ -145,170 +150,226 @@
 %  \end{itemize}
 %\end{frame}
 
-\begin{frame}{Expected number of candidates}
-  \begin{columns}
-    \begin{column}{0.4\textwidth}
-      \begin{itemize}
-        \item $\mathcal{L} = \SI{3.189}{\per\femto\barn}$
-        \item $σ_{b\overline{b}} = \SI{295 \pm 29}{\micro\barn}$
-        \item $f_d \approx \num{0.4}$
-        \item $ε_\text{geom} \approx \num{0.15}$
-        \item $ε_\text{trig} \approx \num{0.8}$
-        \item $ε_\text{strip} \approx \num{0.2}$
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.7\textwidth}
-      \begin{itemize}
-        %\item $\mathrm{BR}(D^{0}\to K^-\pi^+) = \SI{3.87 \pm 0.05}{\percent}$
-        %\item $\mathrm{BR}(D^+\to K^-\pi^+\pi^+) = \SI{9.13 \pm 0.19}{\percent}$
-        %\item $\mathrm{BR}(D_s^+\to K^+K^-\pi^+) = \SI{5.49 \pm 0.27}{\percent}$
-        %\item $\mathrm{BR}(D^{*0} \to D^0\pi^0) = \SI{61.9 \pm 2.9}{\percent}$
-        %\item $\mathrm{BR}(D^{*+} \to D^0\pi^+) = \SI{67.7 \pm 0.5}{\percent}$
-        %\item $\mathrm{BR}(D_s^{+*}\to D_s^+\pi^0) = \SI{5.8 \pm 0.7}{\percent}$
-        \item Use conservative theory estimates (Evans, \cite{evans1}\cite{evans2}) for $B$ decay BRs
-        \item (All $B$ BRs for $q^2 > \SI{1}{GeV^2}$)
-        \item Take $D$ branching fractions from PDG
-      \end{itemize}
-    \end{column}
-  \end{columns}
-  Calculate yields not including selection efficiencies:
+\begin{frame}{Wie viele Zerfälle kann man bei LHCb erwarten?}
   \begin{equation*}
-    N = \mathcal{L}\,\sigma_{b\overline{b}}\,2 f_d\,ε_\text{geom}\,ε_\text{trig}\,ε_\text{strip}\,\text{BR}_B\,\text{BR}_D
+    N = \mathcal{L}\,\sigma_{b\overline{b}}\,2 f_d\,ε\,\text{BR}_B\,\text{BR}_D
   \end{equation*}
+  Betrachte Zerfälle der Form $B\to D\mu\mu$:\\
+  Welche $D$-Endzustände sollten betrachtet werden?
+  \begin{itemize}
+    \item Bei LHCb gut zu beobachten:
+      \begin{itemize}
+        \item $D^{0}\to K^-\pi^+$
+        \item $D^+\to K^-\pi^+\pi^+$
+        \item $D_s^+\to K^+K^-\pi^+$
+        \item $D^{*+} \to D^0\pi^+ \to K^-\pi^+\pi^+$
+      \end{itemize}
+    \item Schwierig zu beobachten (Photonen):
+      \begin{itemize}
+        \item $D^{*0} \to D^0\pi^0 \to K^-\pi^+\gamma\gamma$
+        \item $D_s^{+*}\to D_s^+\gamma \to K^+K^-\pi^+\gamma$
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 
-\begin{frame}[shrink=20]{Expected number of candidates (cont.)}
-  \begin{itemize}
-    \item BRs used: Evans (\cite{evans1}\cite{evans2})
-  \end{itemize}
+\begin{frame}{Wie viele Zerfälle kann man bei LHCb erwarten?}
+  Nutze Vorhersagen von Evans et al.
+  \vspace{0.5em}
+
   \centering
   \begin{tabular}{l S S}
     \toprule
-    Decay & {\text{Predicted BR}} & {\text{Expected yield}} \\
+    Zerfall & {\text{Vorhergesagtes BR}} & {\text{Erwartete Ereignisse}} \\
     \midrule
-    $\mathbf{B^0\to \overline{D}^0\mu\mu}$ & 2.6e-9 & 1.8 \\
-    $B^0\to \overline{D}^{*0}\mu\mu$ & 1.4e-8 & 6.1 \\
-    $B^+\to D^+\mu\mu$ & 2.5e-12 & 0.41e-2 \\
-    $\mathbf{B^+\to D^{+*}\mu\mu}$ & 1.0e-11 & 0.48e-2 \\
-    $\mathbf{B^+\to D_s^+\mu\mu}$ & 4.3e-11 & 0.17e-2 \\
-    $B^+\to D_s^{+*}\mu\mu$ & 2.0e-10 & 0.12e-1 \\
+    $\mathbf{B^0\!\to\! \overline{D}^0\mu\mu}$ & 2.6e-9 & 1.8 \\
+    %$B^0\to \overline{D}^{*0}\mu\mu$ & 1.4e-8 & 6.1 \\
+    $B^+\!\to\! D^+\mu\mu$ & 2.5e-12 & 0.41e-2 \\
+    $B^+\!\to\! D^{+*}\mu\mu$ & 1.0e-11 & 0.48e-2 \\
+    $B^+\!\to\! D_s^+\mu\mu$ & 4.3e-11 & 0.17e-2 \\
+    %$B^+\to D_s^{+*}\mu\mu$ & 2.0e-10 & 0.12e-1 \\
+    $B_c\!\to\!D_s^+\mu\mu$ & ? & ? \\
     \bottomrule
   \end{tabular}
   \begin{itemize}
-    \item Other interesting possibility: $B_c \to D_s^+\mu\mu$
-      \begin{itemize}
-        \item but BR $\sim 10^{-7}$ (Ebert\cite{ebert})
-        \item investigate if measurement is feasible
-      \end{itemize}
-    \item Also: Most resonant modes ($B\!\to\! D J/\psi$) not yet observed
+    %\item BR $\sim 10^{-7}$ (Ebert et al.)
+    \item Außerdem: Viele resonante Moden ($B\!\to\! J\!/\!\psi D$) noch nicht beobachtet
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Trigger and Stripping}
-  \begin{itemize}
-    \item Make use of muon trigger strategies
-    \item Stripping requirements:
-      \begin{itemize}
-        \item Final state $K^+\pi^-\mu^+\mu^-$
-        \item Cuts: mostly loose vertex quality cuts
-      \end{itemize}
-  \end{itemize}
+\begin{frame}{Analysestrategie: $B^0\to \overline{D}^0\mu\mu$}
+  \linespread{0.9}
+  \begin{tikzpicture}[
+      analysis/.style={rectangle,draw,fill=blue!20},
+      line width=1.2pt,
+      align=center,
+      node distance=0.5cm]
+
+      \node[text width=11em,analysis] (collision) at (0,0) {Kollision};
+      \node[text width=11em,analysis,below=of collision] (trigger) {Trigger};
+      \node[text width=11em,analysis,below=of trigger] (stripping) {Vorselektion};
+      \node[text width=11em,analysis,below=of stripping] (vorselektion) {Massenvetos/PID};
+      \node[text width=11em,analysis,below=of vorselektion] (multivariat) {Finale Analyse-Selektion};
+      \node[text width=11em,analysis,below=of multivariat] (fit) {Bestimmung des Limits};
+
+      \uncover<1->{
+      \node[node distance=1.5cm,right=of collision] (collision_text) {\SI{3}{fb^{-1}} Daten bei\\ $\sqrt{s}=7\,\text{und}\,\SI{8}{TeV}$};
+      \draw[-] (collision.east) -- (collision_text.west);
+      }
+
+      \uncover<2->{
+      \node[below=of collision_text] (trigger_text) {Muon- und Dimuon-\\ Kandidaten};
+      \draw[-] (trigger.east) -- (trigger_text.west);
+      }
+
+      \uncover<3->{
+      \node[below=of trigger_text] (stripping_text) {Generische Vorselektion\\ von $K^+\pi^-\mu^+\mu^-$};
+      \draw[-] (stripping.east) -- (stripping_text.west);
+      }
+
+      \draw[->] (collision.south) -- (trigger.north);
+      \draw[->] (trigger.south) -- (stripping.north);
+      \draw[->] (stripping.south) -- (vorselektion.north);
+      \draw[->] (vorselektion.south) -- (multivariat.north);
+      \draw[->] (multivariat.south) -- (fit.north);
+
+      \uncover<4->{
+      \draw[red,thick] ($(vorselektion.north west)+(-0.2,0.2)$)  rectangle ($(fit.south east)+(0.2,-0.2)$);
+      \node[below=of stripping_text] (more_text) {Mehr Details im Folgenden};
+      \draw[-,color=red] ($(fit.south east)+(0.2,+1)$) -- (more_text.west);
+      }
+  \end{tikzpicture}
+  \linespread{1.3}
 \end{frame}
 
-\begin{frame}{Preparation: Blind signal region, Remove $J/\psi$ resonance}
+\begin{frame}{Massenvetos: Signalbereich und $J\!/\!\psi$-Resonanz}
   \centering
-  \includegraphics[width=0.75\textwidth,page=80]{../../../plots/select.pdf}
+  \includegraphics[width=0.45\textwidth]{../../../plots/b_mass.pdf}
+  \includegraphics[width=0.45\textwidth]{../../../plots/mumu_mass.pdf}
+
+  \begin{itemize}
+    \item Messung soll blind durchgeführt werden: Schnitt auf $B^0$-Masse
+    \item Ausschluss von $J\!/\!\psi$ durch Schnitt auf $m(\mu\mu)$
+    \item Phasenraum endet bei $m(\mu\mu)\approx \SI{3.4}{GeV}$ $\Rightarrow$ Weiterer Schnitt
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Preselection}
+\begin{frame}[shrink=10]{Vorselektion}
   \begin{itemize}
-    \item {\small Cut on Particle ID variables to select Kaon/Pion:}
+    \item {\small Schnitte auf Teilchenidentifikations-Variablen um Kaon/Pion zu selektieren:}
   \end{itemize}
   \centering
-  \includegraphics[width=0.65\textwidth,trim=0 1em 0 0,clip]{../../../plots/pid_plot.pdf}
+  \includegraphics[width=0.65\textwidth]{../../../plots/pid_plot.pdf}
   \begin{itemize}
-    \item PID differences between data and simulation\\
-      $\Rightarrow$ resample PID variables from data (in progress)
+    \item Wird gemeinsam mit multivariater Selektion optimiert
   \end{itemize}
 \end{frame}
 
-\begin{frame}[shrink=20]{Multivariate selection: variables}
+\begin{frame}{Multivariate Selektion}
   \begin{itemize}
-    \item Signal proxy: $B^0\to \overline{D}^0\mu\mu$ MC12
-    \item Background proxy: Upper $B$ mass sideband
-    \item Choice of variables inspired by $B^0\to K^*\mu\mu$ selection
-    \item Work planned to optimize this (look at measures beyond BDT importance)
-    \item Use Isolation discriminant from $B^0\to K^{*0}\mu\mu$ analysis
+    \item Klassifizierer: Adaboosted Decision Tree
+    \item Nutze Signal-Simulation und oberes Massen-Seitenband als Trainingsgrundlage
+    \item Variablen: TODO Liste der wichtigsten Variablen
+  \end{itemize}
+  TODO: Plots der wichtigsten Variablen auf Signal/Untergrund
+\end{frame}
+
+%\begin{frame}[shrink=20]{Multivariate selection: cross-validation, ROC curves}
+%  \begin{itemize}
+%    \item Use $k$-fold validation to assess quality of classifier (BDT)
+%    \item ROC curves for each of the $k=5$ test samples
+%  \end{itemize}
+%  \centering
+%  \includegraphics[width=0.50\textwidth,page=1]{../../../plots/classifier.pdf}
+%  \includegraphics[width=0.50\textwidth]{../../../plots/classifier_mass.pdf}
+%\end{frame}
+
+\begin{frame}[shrink=10]{Nach Selektion: Physikalische Untergründe}
+  \begin{itemize}
+    \item Kombinatorischer Untergrund effektiv reduziert
+    \item \textbf{Aber:} Genaue Kenntnis der physikalischen Untergründe notwendig
+  \end{itemize}
+  
+  {\small Kanal $B^0\!\to\! \overline{D}^0 J\!/\!\psi$ bereits im Rahmen von [PhysRevD.87.112012] untersucht:}
+
+  \includegraphics[width=\textwidth]{vanya2.pdf}
+  \begin{itemize}
+    \item Hier: Nichtresonanter Untergrund $B^0\!\to\! K^+\pi^- J\!/\!\psi$
+    \item Schnitt auf Lebenszeit des $D^0$ schließt $K^-\pi^+$ aus
+    \item Aber: Verlust von Signaleffizienz $> \SI{50}{\percent}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[shrink=10]{Entwicklung des statistischen Modells}
+  \begin{itemize}
+    \item Idee: Gleichzeitige Beschreibung von $B$-Masse, $D$-Masse und $D$-Lebensdauer
+    \item Entwicklung gestützt von Toy-Simulation
+    \item Formen von Signal und $B^0\to K^+\pi^-\mu\mu$ lassen sich aus Simulation ableiten
   \end{itemize}
   \centering
-  \includegraphics[trim=0 4em 0 8em,clip,width=0.65\textwidth]{../../../plots/correlation.pdf}
+  \includegraphics[width=0.5\textwidth]{../../../plots/fit_dmass.pdf}
+  \includegraphics[width=0.5\textwidth]{../../../plots/fit_bmass.pdf}
 \end{frame}
 
-\begin{frame}[shrink=20]{Multivariate selection: cross-validation, ROC curves}
-  \begin{itemize}
-    \item Use $k$-fold validation to assess quality of classifier (BDT)
-    \item ROC curves for each of the $k=5$ test samples
-  \end{itemize}
-  \centering
-  \includegraphics[width=0.50\textwidth,page=1]{../../../plots/classifier.pdf}
-  \includegraphics[width=0.50\textwidth]{../../../plots/classifier_mass.pdf}
-\end{frame}
+%\begin{frame}{Measurement of branching fraction}
+%  Needed are:
+%  \begin{itemize}
+%    \item trigger efficiency (use TISTOS on control channel)
+%    \item stripping efficiency (Simulation)
+%    \item LHCb acceptance efficiency (Simulation)
+%    \item preselection efficiency (calibrate PID from data)
+%    \item selection efficiency of classifier (cross-validation)
+%  \end{itemize}
+%  $\Rightarrow$ Use signal yield and efficiencies to derive BR estimate.
+%  \begin{itemize}
+%    \item Choose normalization/control channel:
+%      \begin{itemize}
+%        \item $B^0\to K^{*0}\mu^+\mu^-$ $\Rightarrow$ Similar behaviour
+%        \item $B^0 \to K^{*0}J\!/\!\psi$ $\Rightarrow$ Larger statistics
+%      \end{itemize}
+%  \end{itemize}
+%\end{frame}
 
-\begin{frame}{Suspected physical background: $B^0\to K^+\pi^-\mu\mu$}
+\begin{frame}{Ausblick}
   \begin{itemize}
-      \item Peaks directly below signal in $B$ mass
-      \item $D^0$ lifetime cut would remove a lot of signal
-      \item Idea: Include $D^0$ mass (and optionally $D^0$ decay time) into fit 
-      \item Use $B^0\to K^+\pi^-\mu\mu$ Monte Carlo to determine shape
-    \item Started to investigate with toy MC (simultaneous fit)
-  \end{itemize}
-  \centering
-  \includegraphics[width=0.5\textwidth,trim=0 0 0 4em,clip]{../../../plots/fit_bmass.pdf}
-  \includegraphics[width=0.5\textwidth,trim=0 0 0 4em,clip]{../../../plots/fit_dmass.pdf}
-\end{frame}
-
-\begin{frame}{Measurement of branching fraction}
-  Needed are:
-  \begin{itemize}
-    \item trigger efficiency (use TISTOS on control channel)
-    \item stripping efficiency (Simulation)
-    \item LHCb acceptance efficiency (Simulation)
-    \item preselection efficiency (calibrate PID from data)
-    \item selection efficiency of classifier (cross-validation)
-  \end{itemize}
-  $\Rightarrow$ Use signal yield and efficiencies to derive BR estimate.
-  \begin{itemize}
-    \item Choose normalization/control channel:
-      \begin{itemize}
-        \item $B^0\to K^{*0}\mu^+\mu^-$ $\Rightarrow$ Similar behaviour
-        \item $B^0 \to K^{*0}J\!/\!\psi$ $\Rightarrow$ Larger statistics
-      \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Outlook}
-  \begin{itemize}
-    \item Analysis of $B\to D \mu^+\mu^-$ has been started
-    \item Many possible final states to look at
-    \item Restrict to most promising ones:
+    \item Suche nach $B\!\to\! D \mu^+\mu^-$-Zerfällen in LHCb-Daten begonnen
+    \item Zerfälle, die betrachtet werden können:
     \begin{itemize}
-      \item $B^0 \to \overline{D}^0\mu\mu$ is progressing
-      \item Investigate $B^+ \to D^{+*}\mu\mu$,\ $B^+ \to D_s^{+}\mu\mu$,\ $B_c^+\to D_s^+\mu\mu$
-      \item Also look at currently unobserved resonant modes (same dataset)
+      \item $B^0\!\to\!\overline{D}^0\mu\mu$ (momentan untersucht)
+      \item $B_c^+\!\to\! D_s^+\mu\mu,\ \  B^+\!\to\! D^{*+}\mu\mu,\ \ B^+\!\to\! D_s^{+}\mu\mu$
+      \item Resonante Moden (z.B. $B^0\!\to\! J\!/\!\psi \overline{D}^0$)
     \end{itemize}
   \end{itemize}
-  Judging from theory prediction (Evans): Expect to set limits
-  \begin{itemize}
-    \item But: The BR could be underestimated!
-  \end{itemize}
+  Nach Vorhersage von Evans: Setzen von oberen Schranken erwartet
 \end{frame}
 
 \appendix
 \beginbackup
 
-\begin{frame}[shrink=20]{Bibliography}
-  \small
-  \printbibliography
+\begin{frame}
+  \centering
+  \Huge Anhang
+\end{frame}
+
+\begin{frame}[shrink=20]{Wie wurden die erwarteten Ereigniszahlen ermittelt?}
+  \begin{equation*}
+    N = \mathcal{L}\,\sigma_{b\overline{b}}\,2 f_d\,ε\,\text{BR}_B\,\text{BR}_D
+  \end{equation*}
+  \begin{itemize}
+    \item $\text{BR}_B$: Vorhersagen von Evans et al.
+    \item $\text{BR}_D$: Aus PDG entnommmen:
+    \begin{itemize}
+      \item $\mathrm{BR}(D^{0}\to K^-\pi^+) = \SI{3.87 \pm 0.05}{\percent}$
+      \item $\mathrm{BR}(D^+\to K^-\pi^+\pi^+) = \SI{9.13 \pm 0.19}{\percent}$
+      \item $\mathrm{BR}(D_s^+\to K^+K^-\pi^+) = \SI{5.49 \pm 0.27}{\percent}$
+      \item $\mathrm{BR}(D^{*0} \to D^0\pi^0) = \SI{61.9 \pm 2.9}{\percent}$
+      \item $\mathrm{BR}(D^{*+} \to D^0\pi^+) = \SI{67.7 \pm 0.5}{\percent}$
+      \item $\mathrm{BR}(D_s^{+*}\to D_s^+\pi^0) = \SI{5.8 \pm 0.7}{\percent}$
+    \end{itemize}
+    \item $\mathcal{L} = \num{3.189}(\SI{1.000\pm0.035}{\per\femto\barn})$ [arxiv:1110.2866]
+    \item $σ_{b\overline{b}} = 295 \pm 29\,\si{\micro\barn}$
+    \item $f_d \approx \num{0.4}$
+    \item $ε\approx \SI{2.5}{\percent}$
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Test for overfitting}

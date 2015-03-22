@@ -4,8 +4,6 @@
 B -> D mu mu main analysis pipeline
 """
 
-DATASTORE='/fhgfs/users/ibabuschkin/DataStore'
-BLINDED = True
 
 from ruffus import *
 
@@ -22,6 +20,14 @@ from analysis import plotting
 from analysis.util import *
 from analysis.push import notify
 from plot_tasks import *
+
+
+try:
+    DATASTORE = os.environ['DATASTORE']
+except KeyError:
+    DATASTORE='/fhgfs/users/ibabuschkin/DataStore'
+
+BLINDED = True
 
 # Simulated data fetched from the grid (used for training selection and calculating efficiencies)
 input_mc = [

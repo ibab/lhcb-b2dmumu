@@ -13,7 +13,10 @@ To repeat the analysis, install the dependencies with
 pip install -r ./requirements.txt
 ```
 
-Modify the path to the datastore in `pipeline.py`.
+Define the path to the datastore:
+```
+export DATASTORE=/path/to/data/
+```
 
 Run the analysis pipeline with
 ```

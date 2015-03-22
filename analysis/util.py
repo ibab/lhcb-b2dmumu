@@ -8,7 +8,7 @@ from fnmatch import fnmatch
 from root_numpy import list_branches
 
 def prepare_sel(selections):
-    return ' && '.join(map(lambda x: '(' + x + ')', selections))
+    return ' & '.join(map(lambda x: '(' + x + ')', selections))
 
 def calc_tau(arr):
     from scipy.constants import c

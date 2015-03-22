@@ -9,9 +9,8 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
     import matplotlib.pyplot as plt
     from matplotlib.colors import LogNorm
     from matplotlib.backends.backend_pdf import PdfPages
-    import seaborn as sns
-    sns.set_palette("deep", desat=.6)
-    sns.set_context('talk')
+    #sns.set_palette("deep", desat=.6)
+    #sns.set_context('talk')
 
     if cuts is None:
         cuts = []
@@ -22,22 +21,20 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
     arr = read_root(data, where=prepare_sel(cuts))
 
     if mcfile:
-        mc = mcfile.replace('.root', '.classified.root')
-        arr_mc = read_root(mc, where=prepare_sel(cuts))
-        factor = 0.01
+        arr_mc = read_root(mcfile, where=prepare_sel(cuts))
 
     logging.info('Saving plots to {}'.format(plotfile))
     with PdfPages(plotfile) as pdf:
         for col in arr.columns:
             logging.debug('Plotting ' + col)
             x = arr[col]
-            n, bine, _ = plt.hist(x.values, histtype='stepfilled', bins=bins, alpha=0.7, color='grey')
+            n, bine, _ = plt.hist(x.values, histtype='stepfilled', bins=bins, color='blue')
 
             if mcfile:
                 x_mc = arr_mc[col]
                 if col in arr_mc.columns:
                     n_mc, edges = np.histogram(arr_mc[col], bine)
-                    binned_hist(plt.gca(), factor * n_mc, edges, histtype='stepfilled', alpha=0.7)
+                    binned_hist(plt.gca(), n_mc, edges, histtype='stepfilled', alpha=0.7)
 
                     #plt.hist(x_mc, histtype='stepfilled', bins=bins, alpha=0.8, normed=True)
             #plt.yscale('log')
@@ -46,19 +43,19 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
             pdf.savefig()
             plt.clf()
 
-        logging.info('Plotting m_B vs. q^2')
-        jp = sns.jointplot(arr['B_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m(B^0)$', '$m(\\mu^+\\mu^-)$')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
+        #logging.info('Plotting m_B vs. q^2')
+        #jp = sns.jointplot(arr['B_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()}, stat_func=None)
+        #jp.set_axis_labels('$m(B^0)$', '$m(\\mu^+\\mu^-)$')
+        #plt.tight_layout()
+        #pdf.savefig()
+        #plt.clf()
 
-        logging.info('Plotting m_D vs. q^2')
-        jp = sns.jointplot(arr['D~0_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()})
-        jp.set_axis_labels('$m_(\\bar{D}^0)$', '$m(\\mu^+\\mu^-)$')
-        plt.tight_layout()
-        pdf.savefig()
-        plt.clf()
+        #logging.info('Plotting m_D vs. q^2')
+        #jp = sns.jointplot(arr['D~0_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()}, stat_func=None)
+        #jp.set_axis_labels('$m_(\\bar{D}^0)$', '$m(\\mu^+\\mu^-)$')
+        #plt.tight_layout()
+        #pdf.savefig()
+        #plt.clf()
 
         
 def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_params=None, norm=None, log=False, binning=None, labels=None):
@@ -73,6 +70,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
     from matplotlib.ticker import MaxNLocator
+    import matplotlib as mpl
 
     cax = plt.gca()
     box = cax.get_position()
@@ -82,13 +80,15 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     gs = GridSpec(2, 1, height_ratios=[7, 1], left=xmin, right=xmax, bottom=ymin, top=ymax)
     gs.update(hspace=0.12)
 
-    xpos, width, y, yerr = get_binned_data(var, data, extra_params=extra_params, binning=binning)
+    frame = var.frame()
+
+    xpos, width, y, yerr = get_binned_data(var, frame, data, extra_params=extra_params, binning=binning)
     x = linspace(var.getMin(), var.getMax(), 200)
 
     if not components:
-        f = get_function(var, model, data, norm=norm, extra_params=extra_params)
+        f = get_function(var, frame, model, norm=norm, extra_params=extra_params)
     else:
-        f, comps = get_function(var, model, data, components=components, norm=norm, extra_params=extra_params)
+        f, comps = get_function(var, frame, model, components=components, norm=norm, extra_params=extra_params)
 
     ax = plt.subplot(gs[0])
 
@@ -109,7 +109,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
         #ax.set_ylim(0, 1.1 * max(y))
         #plt.gca().yaxis.set_major_locator(MaxNLocator(prune='lower'))
 
-    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=4, linewidth=1.5, clip_on=False, capsize=0)
+    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=4, linewidth=1.5, clip_on=False, capsize=3)
     plt.setp(ax.get_xticklabels(), visible=False)
 
     bx = plt.subplot(gs[1], sharex=ax)
@@ -124,10 +124,10 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
 
     #plt.axhline(0, color='black')
     #plt.axhline(3, color='black')
-    plt.ylabel('Normed\nResiduals')
+    plt.ylabel('Normalized\nResiduals')
 
     if xlabel:
-        plt.xlabel(xlabel, fontsize=16)
+        plt.xlabel(xlabel, ha='right', x=0.9)
 
     plt.xlim(var.getMin(), var.getMax())
     plt.ylim(-3, 3)
@@ -152,16 +152,13 @@ def calc_pull(x, f, y, yerr):
 
     return pull
 
-def get_function(x, model, data, components=None, norm=1, numcpus=1, extra_params=None):
+def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_params=None):
     if not extra_params:
         extra_params = []
 
     from numpy import vectorize
     from ROOT import RooCurve, Double, RooFit
 
-    frame = x.frame()
-
-    data.plotOn(frame)
     model.plotOn(frame, RooFit.NumCPU(numcpus), *extra_params)
 
     if components:
@@ -178,7 +175,7 @@ def get_function(x, model, data, components=None, norm=1, numcpus=1, extra_param
     else:
         return funcs[0]
 
-def get_binned_data(x, data, extra_params=None, binning=None):
+def get_binned_data(x, frame, data, extra_params=None, binning=None):
     if not extra_params:
         extra_params = []
     if binning:
@@ -187,8 +184,6 @@ def get_binned_data(x, data, extra_params=None, binning=None):
 
     from numpy import array
     from ROOT import RooHist, Double
-
-    frame = x.frame()
 
     data.plotOn(frame, *extra_params)
 

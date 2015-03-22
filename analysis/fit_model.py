@@ -40,8 +40,8 @@ sig = RooProdPdf('sig', 'sig', sig_bmass, sig_dmass)
 bkg = RooProdPdf('bkg', 'bkg', bkg_bmass, bkg_dmass)
 prompt = RooProdPdf('prompt', 'prompt', prompt_bmass, prompt_dmass)
 
-theta1 = RooRealVar('theta1', 'theta1', 0.10, 0, 1)
-theta2 = RooRealVar('theta2', 'theta2', 0.3, 0, 1)
+theta1 = RooRealVar('theta1', 'theta1', 0.20, 0, 1)
+theta2 = RooRealVar('theta2', 'theta2', 0.5, 0, 1)
 
 model = RooAddPdf('model', 'model', RooArgList(sig, bkg, prompt), RooArgList(theta1, theta2))
 variables = RooArgSet(mass_b, mass_d)

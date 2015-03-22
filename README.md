@@ -6,6 +6,20 @@ During the course of my project, I will be looking for the rare decay Bd → Dba
 
 Should the decay be found, a measurement of its branching fraction might be possible.
 
+## Setup
+
+To repeat the analysis, install the dependencies with
+```
+pip install -r ./requirements.txt
+```
+
+Modify the path to the datastore in `pipeline.py`.
+
+Run the analysis pipeline with
+```
+python pipeline.py
+```
+
 ## Repository layout
 
 The top level of the repository contains

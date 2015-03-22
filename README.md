@@ -1,10 +1,8 @@
-# B→Dμμ Analysis
+# Search for B→Dμμ at LHCb
 
-This is the repository for my master's project at TU Dortmund.
-
-During the course of my project, I will be looking for the rare decay Bd → Dbar mu mu and similar decays with [LHCb](http://lhcb.web.cern.ch/lhcb/) data.
-
-Should the decay be found, a measurement of its branching fraction might be possible.
+Rare decays of the form B→Dμμ could provide an opportunity to check our understanding of the Standard Model and provide hints of New Physics.
+None of the possible B→Dμμ decays have previously been discovered.
+With the help of the LHCb detector at CERN, we might now be able to discover and study these decays for the first time.
 
 ## Setup
 
@@ -30,5 +28,6 @@ The top level of the repository contains
  - The entry point to the analysis pipeline: `pipeline.py`
  - The `logbook` directory containing information on how the analysis was planned and performed
  - The `lhcb` directory containing customized LHCb software and configuration for fetching all analysed data from the grid
+ - The `analysis` python package containing code used by the analysis pipeline
 
 

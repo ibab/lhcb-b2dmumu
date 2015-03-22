@@ -1,13 +1,14 @@
 from joblib import Parallel, delayed
 
-import logging
+from analysis.log import get_logger
+logger = get_logger()
 
 N_trees = 1000
 
 def run_crossval(clf, i, X_train, y_train, X_test, y_test):
     import numpy as np
     from sklearn.metrics import roc_curve, zero_one_loss
-    logging.info('    Running fold #{}'.format(i + 1))
+    logger.info('    Running fold #{}'.format(i + 1))
     probs = clf.fit(X_train, y_train).predict_proba(X_test)
     fpr, tpr, thresholds = roc_curve(y_test, probs[:,1])
 
@@ -22,7 +23,7 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test):
     sig_response = clf.decision_function(X_test[y_test == 1])
     bkg_response = clf.decision_function(X_test[y_test == 0])
 
-    logging.info('    Finished fold #{}'.format(i + 1))
+    logger.info('    Finished fold #{}'.format(i + 1))
 
     results = {
             'fpr': fpr,
@@ -37,8 +38,7 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test):
 
     return results
 
-
-def validate_classifier(clf, X, y, outputdir):
+def validate_classifier(clf, X, y, outputdir, name):
     import numpy as np
     from sklearn.cross_validation import StratifiedKFold
     from sklearn.metrics import roc_curve, auc, zero_one_loss
@@ -48,8 +48,8 @@ def validate_classifier(clf, X, y, outputdir):
     #sns.set_palette('deep', desat=.6)
     #sns.set_context('talk')
 
-    with PdfPages(outputdir + '/classifier.pdf') as pdf:
-        logging.info('Calculating correlation...')
+    with PdfPages(outputdir + '/' + name + '_classifier.pdf') as pdf:
+        logger.info('Calculating correlation...')
         import pandas
         #corr = pandas.DataFrame(sidebands).corr()
         #sns.heatmap(corr, vmax=.8, linewidths=0, square=True)
@@ -57,7 +57,7 @@ def validate_classifier(clf, X, y, outputdir):
         #pdf.savefig()
         #plt.clf()
 
-        logging.info('Running x-validation...')
+        logger.info('Running x-validation...')
         skf = StratifiedKFold(y, 10)
 
         mean_fpr = np.linspace(0, 1, 200)
@@ -79,7 +79,7 @@ def validate_classifier(clf, X, y, outputdir):
         plt.plot(1 - fpr_, tpr_, lw=2, color='black')
 
         #for i, (train, test) in enumerate(skf):
-        #    logging.info('    Running fold #{}'.format(i + 1))
+        #    logger.info('    Running fold #{}'.format(i + 1))
         #    probs = clf.fit(X[train], y[train]).predict_proba(X[test])
         #    fpr, tpr, thresholds = roc_curve(y[test], probs[:,1])
         #    plt.plot(fpr, tpr, lw=1)
@@ -122,7 +122,7 @@ def validate_classifier(clf, X, y, outputdir):
         pdf.savefig()
         plt.clf()
 
-        #logging.info('Plot importances...')
+        #logger.info('Plot importances...')
         #imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: x[1])
         #plt.barh(np.arange(len(imp)), [entr[1] for entr in imp], 0.30, align='center')
         #plt.yticks(np.arange(len(imp)), [entr[0] for entr in imp])

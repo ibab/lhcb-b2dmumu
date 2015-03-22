@@ -11,12 +11,17 @@ def setup_roofit():
         gSystem.Load('libRooFit')
 
 def setup_logging():
-    logging.root.setLevel(logging.INFO)
+    logger = logging.getLogger('analysis')
+    logger.setLevel(logging.INFO)
     fmt = logging.Formatter('%(levelname)-8s %(message)s')
     hand = ColorizingStreamHandler()
     hand.setFormatter(fmt)
-    logging.root.addHandler(hand)
-    
+    logger.addHandler(hand)
+    return logger
+
+def get_logger():
+    return logging.getLogger('analysis')
+
 class ColorizingStreamHandler(logging.StreamHandler):
     # color names to indices
     color_map = {

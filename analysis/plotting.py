@@ -1,5 +1,6 @@
 from util import *
-import logging
+from analysis.log import get_logger
+logger = get_logger()
 from root_pandas import read_root
 from missing_hep import histpoints
 
@@ -23,10 +24,10 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
     if mcfile:
         arr_mc = read_root(mcfile, where=prepare_sel(cuts))
 
-    logging.info('Saving plots to {}'.format(plotfile))
+    logger.info('Saving plots to {}'.format(plotfile))
     with PdfPages(plotfile) as pdf:
         for col in arr.columns:
-            logging.debug('Plotting ' + col)
+            logger.debug('Plotting ' + col)
             x = arr[col]
             n, bine, _ = plt.hist(x.values, histtype='stepfilled', bins=bins, color='blue')
 
@@ -43,14 +44,14 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
             pdf.savefig()
             plt.clf()
 
-        #logging.info('Plotting m_B vs. q^2')
+        #logger.info('Plotting m_B vs. q^2')
         #jp = sns.jointplot(arr['B_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()}, stat_func=None)
         #jp.set_axis_labels('$m(B^0)$', '$m(\\mu^+\\mu^-)$')
         #plt.tight_layout()
         #pdf.savefig()
         #plt.clf()
 
-        #logging.info('Plotting m_D vs. q^2')
+        #logger.info('Plotting m_D vs. q^2')
         #jp = sns.jointplot(arr['D~0_M'], arr['Psi_M'], kind='hex', joint_kws={'norm': LogNorm()}, stat_func=None)
         #jp.set_axis_labels('$m_(\\bar{D}^0)$', '$m(\\mu^+\\mu^-)$')
         #plt.tight_layout()

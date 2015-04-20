@@ -1,0 +1,28 @@
+# Δm fit
+
+B_M[5200, 5350]
+
+# Signal Mass
+sigMassMean[5279.3, 5200, 5400]
+Gaussian::sigGaussian1(B_M, sigMassMean, sigMassSigma1[10, 7, 16])
+Gaussian::sigGaussian2(B_M, sigMassMean, sigMassSigma2[17, 14, 20])
+Gaussian::sigGaussian3(B_M, sigMassMean, sigMassSigma3[30, 20, 40])
+
+sigMassTemp12[0.3, 0.0, 1.0]
+sigMassTemp23[0.6, 0.0, 1.0]
+
+expr::sigGaussianFrac2('(1 - @0) * @1', sigMassTemp12, sigMassTemp23)
+
+SUM::sigMassPdf(sigMassTemp12 * sigGaussian1, sigGaussianFrac2 * sigGaussian2, sigGaussian3)
+
+# Background Mass
+expr::bkgMassExpoVar('5279 - B_M', B_M)
+#expr::lbgMassExpoVar('5279 - B_M', B_M)
+Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0, 2])
+#Exponential::lbgMassPdf(lbgMassExpoVar, lbgMassSlope[0.005, 0, 2])
+
+# Total
+SUM::model(sigYield[1000, 0, 300000] * sigMassPdf, bkgYield[1000, 0, 300000] * bkgMassPdf)
+#, lbgYield[1000, 0, 100000] * lbgMassPdf)
+
+# vim: ft=python

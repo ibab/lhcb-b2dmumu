@@ -86,10 +86,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     xpos, width, y, yerr = get_binned_data(var, frame, data, extra_params=extra_params, binning=binning)
     x = linspace(var.getMin(), var.getMax(), 200)
 
-    if not components:
-        f = get_function(var, frame, model, norm=norm, extra_params=extra_params)
-    else:
-        f, comps = get_function(var, frame, model, components=components, norm=norm, extra_params=extra_params)
+    f, comps = get_function(var, frame, model, components=components, norm=norm, extra_params=extra_params)
 
     ax = plt.subplot(gs[0])
 
@@ -171,10 +168,7 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
         curr = frame.getObject(idx)
         funcs.append(vectorize(lambda x, curr=curr: norm * curr.Eval(x)))
     
-    if len(funcs) > 1:
-        return funcs[0], funcs[1:]
-    else:
-        return funcs[0]
+    return funcs[0], funcs[1:]
 
 def get_binned_data(x, frame, data, extra_params=None, binning=None):
     if not extra_params:
@@ -202,8 +196,8 @@ def get_binned_data(x, frame, data, extra_params=None, binning=None):
 
     ret = 0
     i = 0
+    ret = data.GetPoint(i, d1, d2)
     while ret != -1:
-        ret = data.GetPoint(i, d1, d2)
         x.append(float(d1))
         y.append(float(d2))
         x_err_low.append(data.GetErrorXlow(i))
@@ -211,6 +205,7 @@ def get_binned_data(x, frame, data, extra_params=None, binning=None):
         y_err_low.append(data.GetErrorYlow(i))
         y_err_high.append(data.GetErrorYhigh(i))
         i += 1
+        ret = data.GetPoint(i, d1, d2)
 
     width = array(x_err_low) + array(x_err_high)
     return array(x), width, array(y), array([y_err_low, y_err_high])

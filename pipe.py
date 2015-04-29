@@ -1,6 +1,7 @@
 
 from datapipe import *
 
+import sys
 import os
 import logging
 import numpy as np
@@ -115,8 +116,6 @@ class Reduce(Task):
     treename = Input(default='DecayTree')
     # Remove signal region
     blinded = Input(default=False)
-    # Force signal events on MC
-    force_signal = Input(default=False)
 
     def outputs(self):
         name = os.path.basename(self.infile.path())
@@ -133,8 +132,8 @@ class Reduce(Task):
             width = 50
             cut.add('(B_M < {}) || (B_M > {})'.format(B_mass - width, B_mass + width))
 
-        if self.force_signal:
-            cut.add('B_BKGCAT == 10')
+        if 'B_BKGCAT' in self.columns:
+            cut.add('B_BKGCAT <= 10')
 
         df = read_root(self.infile.path(), self.treename, columns=self.columns, where=cut.get())
 
@@ -262,9 +261,14 @@ classifier_variables = [
 class ApplyCut(Task):
     infile = Input()
     cuts = Input()
+    key = Input(default='')
 
     def outputs(self):
-        return LocalFile(self.infile.path().replace('.root', '.ApplyCut.root'))
+        if self.key is '':
+            keystr = ''
+        else:
+            keystr = '_{}'.format(self.key)
+        return LocalFile(self.infile.path().replace('.root', '.ApplyCut{}.root'.format(keystr)))
 
     def run(self):
         from analysis.util import prepare_sel
@@ -278,7 +282,7 @@ class TrainClassifier(Task):
     folds = Input(default=5)
 
     def outputs(self):
-        return LocalFile(DATASTORE + self.name + '.pickle')
+        return PyTarget('clf')
 
     def run(self):
         from analysis.util import prepare_sel
@@ -305,11 +309,9 @@ class TrainClassifier(Task):
         X = np.vstack([bkg.values, sig.values])
         y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
 
-        logger.warn('Running fit()')
         clf.fit(X, y)
-        logger.warn('Dumping classifier')
 
-        joblib.dump(clf, self.outputs().path())
+        self.outputs().set(clf)
 
 class ApplyClassifier(Task):
     infile = Input()
@@ -320,7 +322,7 @@ class ApplyClassifier(Task):
         return LocalFile(self.infile.path().replace('.root', '.ApplyClassifier_{}.root'.format(self.name)))
     
     def run(self):
-        clf = joblib.load(self.clf.path())
+        clf = self.clf.get()
         data = read_root(self.infile.path(), columns=classifier_variables)
         def logit(x):
             return np.log(x / (1 - x))
@@ -335,20 +337,24 @@ class RooFit(Task):
     infile = Input()
     model = Input()
     plot_var = Input(default='B_M')
+    key = Input(default=0)
 
     def outputs(self):
-        return [LocalFile(DATASTORE + 'results.params'), PyTarget('workspace')]
+        return [LocalFile(DATASTORE + 'results_{}.params'.format(self.key)), PyTarget('workspace_{}'.format(self.key))]
 
     def run(self):
         out_params, out_ws = self.outputs()
         out_params = out_params.path()
 
+        import ROOT
         from analysis.fit import mle, assemble_model, load_tree
 
         ws = assemble_model(self.model.path())
         model = ws.pdf('model')
         data = load_tree(ws, self.infile.path(), 'default', '')
-        mle(model, data, out_params=out_params, numcpus=20)
+
+        ROOT.SetOwnership(ws, False)
+        mle(model, data, start_params="models/Bd_KstJpsi.params", out_params=out_params, numcpus=20)
         out_ws.set(ws)
 
 class PlotFit(Task):
@@ -372,6 +378,73 @@ class PlotFit(Task):
         plt.savefig(self.outputs().path())
         plt.clf()
 
+class CalcSWeights(Task):
+    infile = Input()
+    inws = Input()
+
+    def outputs(self):
+        return LocalFile(self.infile.path().replace('.root', '.' + self.__class__.__name__ + '.root'))
+
+    def run(self):
+        from analysis.fit import add_weights, load_tree
+        from root_numpy import tree2rec
+        import ROOT
+        ROOT.RooAbsData.setDefaultStorageType(ROOT.RooAbsData.Tree)
+        ws = self.inws.get()
+        model = ws.pdf('model')
+        data = load_tree(ws, self.infile.path(), 'default', '')
+        sdata = add_weights(model, data, ['sigYield', 'bkgYield'])
+        tf = ROOT.TFile(self.outputs().path(), 'recreate')
+        tt = data.tree()
+        tt.Write('default')
+        tf.Write()
+        ROOT.SetOwnership(ws, False)
+
+class CalcROCFromWeights(Task):
+
+    infile = Input()
+    inweights = Input()
+
+    def outputs(self):
+        return LocalFile(DATASTORE + 'weighted_roc.pdf'), LocalFile(DATASTORE + 'sig_eff.pdf'), LocalFile(DATASTORE + 'bkg_eff.pdf')
+    
+    def run(self):
+        import pandas as pd
+        df = read_root(self.infile.path())
+        weights = read_root(self.inweights.path())
+
+        assert len(df) == len(weights), 'length of data and weights must match'
+
+        logger.warn('df: {}, weights: {}'.format(len(df), len(weights)))
+
+        df['sigweights'] = pd.Series(weights['sigYield_sw'].ravel(), index=df.index)
+        df['bkgweights'] = pd.Series(weights['bkgYield_sw'].ravel(), index=df.index)
+
+        total_sig = df.sigweights.sum()
+        total_bkg = df.bkgweights.sum()
+
+        logger.warn('total_sig: {}'.format(total_sig))
+        logger.warn('total_bkg: {}'.format(total_bkg))
+
+        x = []
+        y = []
+        cuts = np.linspace(-15, 10, 200)
+
+        for c in cuts:
+            x.append(df['bkgweights'][df.classifier > c].sum())
+            y.append(df['sigweights'][df.classifier > c].sum())
+
+        import matplotlib.pyplot as plt
+        plt.plot(1 - x / total_bkg, y / total_sig, 'b-')
+        plt.savefig(self.outputs()[0].path())
+        plt.clf()
+        plt.plot(cuts, y, 'b-')
+        plt.savefig(self.outputs()[1].path())
+        plt.clf()
+        plt.plot(cuts, x, 'b-')
+        plt.savefig(self.outputs()[2].path())
+        plt.clf()
+
 class MergeROOT(Task):
     inputfiles = Input()
     outputname = Input()
@@ -381,7 +454,7 @@ class MergeROOT(Task):
 
     def run(self):
         from sh import hadd
-        print(hadd('-f', self.outputs().path(), *list(map(lambda x: x.path(), self.inputfiles))))
+        print(hadd('-f', self.outputs().path(), *list(map(lambda x: x.path(), self.inputfiles)), _out=sys.stdout, _err=sys.stderr))
 
 if __name__ == '__main__':
     # B0->D~0mumu
@@ -391,7 +464,7 @@ if __name__ == '__main__':
     selected_b2dmumu     = Select(triggered_b2dmumu).outputs()
 
     input_b2dmumu_mc     = LocalFile('/fhgfs/users/ibabuschkin/DataStore/MC/2012/Stripping20/AllStreams/DVBd2MuMuD0_MC/combined/SIM_Bd2D0mumu.root')
-    reduced_b2dmumu_mc   = Reduce(input_b2dmumu_mc, variables_b2dmumu + mc_variables, treename='B2XMuMu_Line_TupleMC/DecayTree', force_signal=True).outputs()
+    reduced_b2dmumu_mc   = Reduce(input_b2dmumu_mc, variables_b2dmumu + mc_variables, treename='B2XMuMu_Line_TupleMC/DecayTree').outputs()
     resampled_b2dmumu_mc = ResamplePID(reduced_b2dmumu_mc).outputs()
     triggered_b2dmumu_mc = ApplyTrigger(resampled_b2dmumu_mc).outputs()
     selected_b2dmumu_mc  = Select(triggered_b2dmumu_mc).outputs()
@@ -402,12 +475,21 @@ if __name__ == '__main__':
     input_b2kstmumu = LocalFile('/fhgfs/users/ibabuschkin/DataStore/tmp/DATA_Kstmumu.root')
 
     reduced_b2kstmumu = Reduce(input_b2kstmumu, variables_b2kstmumu).outputs()
-    classified_b2kstmumu = ApplyClassifier(reduced_b2kstmumu, clf).outputs()
-    triggered_b2kstmumu = ApplyTrigger(classified_b2kstmumu).outputs()
-    cut_b2kstmumu = ApplyCut(triggered_b2kstmumu, ['B_M > 5200', 'B_M < 5350', 'Kstar_M > 896 - 60', 'Kstar_M < 896 + 60', 'Psi_M > 3000', 'Psi_M < 3200']).outputs()
+    triggered_b2kstmumu = ApplyTrigger(reduced_b2kstmumu).outputs()
+    cut_b2kstmumu = ApplyCut(triggered_b2kstmumu, ['B_M > 5180', 'B_M < 5380', 'Kstar_M > 896 - 150', 'Kstar_M < 896 + 150', 'Psi_M > 3000', 'Psi_M < 3200']).outputs()
+    classified_b2kstmumu = ApplyClassifier(cut_b2kstmumu, clf).outputs()
     model = LocalFile('models/Bd_KstJpsi.model')
-    fit_b2kstmumu = RooFit(cut_b2kstmumu, model).outputs()
+    fit_b2kstmumu = RooFit(classified_b2kstmumu, model).outputs()
     plot_b2kstmumu = PlotFit(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
+    weighted_b2kstmumu = CalcSWeights(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
+    roc_plot  = CalcROCFromWeights(classified_b2kstmumu, weighted_b2kstmumu).outputs()
 
-    require([plot_b2kstmumu])
+    require(roc_plot)
+    #require(roc_plot)
+    #ret = []
+    #for i, c in enumerate(np.linspace(0, 5, 10)):
+    #    cut = ApplyCut(classified_b2kstmumu, cuts=['classifier > {}'.format(c)], key=i).outputs()
+    #    fit = RooFit(cut, model, key=i).outputs()
+    #    ret.append(fit)
+    #require(ret)
 

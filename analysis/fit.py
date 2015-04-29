@@ -216,3 +216,22 @@ def load_tree(w, fname, treename, cutstring=''):
     data = RooDataSet('data', 'data', tree, args)
 
     return data
+
+def add_weights(model, data, yield_names):
+    iter = model.getParameters(data).iterator()
+    yields = []
+    next = iter.Next()
+    while next:
+        if not next.GetName() in yield_names:
+            next.setConstant(True)
+        else:
+            yields.append(next)
+        next = iter.Next()
+
+    from ROOT import RooStats, RooDataSet, RooArgList
+    sdata = RooStats.SPlot("SPlot", "SPlot", data, model, RooArgList(*yields))
+    #components = []
+    #for name in yield_names:
+    #    components.append(RooDataSet(data.GetName(), data.GetTitle(), data, data.get(), '', name + '_sw'))
+    #return components
+

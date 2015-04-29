@@ -1,6 +1,0 @@
-project DaVinci_v36r2
-
-use DAVINCI DAVINCI_v36r2 
-
-build_strategy with_installarea
-structure_strategy without_version_directory

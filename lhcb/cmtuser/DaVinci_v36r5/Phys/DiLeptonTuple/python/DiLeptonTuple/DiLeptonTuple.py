@@ -306,43 +306,6 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
 #    tuple.addTupleTool("TupleToolPropertime")
     if ( "/Event/Phys/" == head): # not reading stripping output
         tts = tuple.addTupleTool("TupleToolStripping")
-        tts.StrippingList = [ 
-            "StrippingBetaSBd2JpsiKsDetachedLineDecision", 
-            "StrippingBetaSBd2JpsiKsPrescaledLineDecision", 
-            "StrippingBetaSBd2JpsiKstarDetachedLineDecision", 
-            "StrippingBetaSBd2JpsiKstarPrescaledLineDecision", 
-            "StrippingBetaSBs2ChicPhi_Chic2KKPiPiNominalLineDecision", 
-            "StrippingBetaSBs2ChicPhi_Chic2PiPiPiPiNominalLineDecision", 
-            "StrippingBetaSBs2EtacPhiNominalLineDecision", 
-            "StrippingBetaSBs2JpsiEtaDetachedLineDecision", 
-            "StrippingBetaSBs2JpsiEtaPrescaledLineDecision", 
-            "StrippingBetaSBs2JpsiKstarLineDecision", 
-            "StrippingBetaSBs2JpsiPhiDetachedLineDecision", 
-            "StrippingBetaSBs2JpsiPhiPrescaledLineDecision", 
-            "StrippingBetaSBs2JpsieePhiDetachedLineDecision", 
-            "StrippingBetaSBs2JpsieePhiLineDecision", 
-            "StrippingBetaSBs2Jpsif0LineDecision", 
-            "StrippingBetaSBs2K0stK0stNominalLineDecision", 
-            "StrippingBetaSBs2KstKstNominalLineDecision", 
-            "StrippingBetaSBs2KstKstSameChargeLineDecision", 
-            "StrippingBetaSBs2PhiKstNominalLineDecision", 
-            "StrippingBetaSBs2PhiPhiLineDecision", 
-            "StrippingBetaSBs2PhiPhiWideLineDecision", 
-            "StrippingBetaSBs2Q2Body4piLineDecision", 
-            "StrippingBetaSBu2JpsiKDetachedLineDecision", 
-            "StrippingBetaSBu2JpsiKNoPIDDetachedLineDecision", 
-            "StrippingBetaSBu2JpsiKPrescaledLineDecision", 
-            "StrippingBetaSJpsi2MuMuDetachedLineDecision", 
-            "StrippingBetaSJpsi2MuMuLineDecision", 
-            "StrippingBetaSLambdab2JpsiLambdaUnbiasedLineDecision", 
-            "StrippingBu2LLK_eeLineDecision", 
-            "StrippingBu2LLK_mmLineDecision", 
-            "StrippingBd2KstarMuMu_BdToKstarMuMuLineDecision", 
-            "StrippingBd2KstarMuMu_BdToKstarMuMuLowPLineDecision", 
-            "StrippingBd2KstarMuMu_BdToKstarMuMuSSLineDecision", 
-            "StrippingBd2KstarMuMu_BdToKstarMuMuSSLowPLineDecision", 
-            "StrippingBd2KstarMuMu_BuToKMuMuLineDecision", 
-            "StrippingBd2KstarMuMu_BuToKMuMuSSLineDecision" ]
 
     tuple.addTupleTool("TupleToolPhotonInfo")
     tuple.addTupleTool("TupleToolPi0Info")

@@ -4,6 +4,44 @@
 ! Purpose     : Option-steered tuples. 
 !-----------------------------------------------------------------------------
 
+!======================= DecayTreeTuple v4r14 2015-04-22 =====================
+
+! 2015-04-13 - Olivier Deschamps
+  - TupleToolCaloHypo : add basic CaloHypo::CaloPosition() information 
+  - TupleToolSubMass  : add vertex information for all final-stat particle combination
+
+! 2015-03-20 - Komarov Ilya
+ - Added TupleToolTwoParticleMatching tool (.cpp and .h)
+   This tool allows to match candidates from different locations in dst
+   (Originally was developed for matching of Tesla and stripping candidates)
+  . Match candidates basing on track similarity
+  . Fills tuple with output of chosen tuple tools form matched candidates
+  . Not all tools are supported yet
+
+! 2015-03-20 - Eduardo Rodrigues
+ - Fixed trivial typo in TupleToolGeometry.cpp.
+
+! 2015-03-19 - Eduardo Rodrigues
+ - TupleToolGeometry: refitter algo. made configurable property, set to
+   LoKi::PVReFitter by default, and a public instance by default.
+
+!======================= DecayTreeTuple v4r13 2015-01-16 =====================
+
+! 2015-01-16 - Eduardo Rodrigues
+ - Added python/DecayTreeTuple/__init__.py to please CMake.
+
+!========================= DecayTreeTuple v4r12 2014-12-15 =========================
+
+! 2014-12-10 - Olli Lupton
+ - More changes to TupleToolSwimmingInfo:
+  . Handle events where multiple candidates were swum. This is more complicated
+    because there is no longer a 1:1 mapping from tracks to swimming reports.
+  . Write the generic 'extra' information stored in TPs to the tuple.
+  . Remove properties 'ReportsLocation', 'UseExtraLocation' and 'ExtraLocation'.
+    Replace with 'RelationsLocation'. With the new multiple-candidate-aware
+    Phys/Swimming version then the 'ExtraLocation' hack is redundant.
+  . General cleaning up.
+
 !========================= DecayTreeTuple v4r11 2014-10-30 =========================
 
 ! 2014-10-03 - Olivier Deschamps

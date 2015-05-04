@@ -303,7 +303,7 @@ def addTuple(name="", decay="", addendum="", head="/Event/Phys/", dtf=True, reso
         vtxiso = tuple.B.addTupleTool("TupleToolVtxIsoln")
         tuple.B.TupleToolApplyIsolationHard.OutputLevel = 3 
         tuple.B.TupleToolApplyIsolationSoft.OutputLevel = 3 
-#    tuple.addTupleTool("TupleToolPropertime")
+    tuple.addTupleTool("TupleToolPropertime")
     if ( "/Event/Phys/" == head): # not reading stripping output
         tts = tuple.addTupleTool("TupleToolStripping")
 

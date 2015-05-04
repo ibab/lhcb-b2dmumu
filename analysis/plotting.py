@@ -122,7 +122,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
 
     #plt.axhline(0, color='black')
     #plt.axhline(3, color='black')
-    plt.ylabel('Normalized\nResiduals')
+    plt.ylabel('$\\frac{\\hat{\\mu}_i -  \\mu_i}{\\sigma_i}$')
 
     if xlabel:
         plt.xlabel(xlabel, ha='right', x=0.9)
@@ -132,7 +132,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     bx.get_yaxis().set_ticks([-3, 0, 3])
 
     plt.sca(ax)
-    return ax, width
+    return gs, ax, width
 
 def calc_pull(x, f, y, yerr):
     from numpy import zeros, NaN

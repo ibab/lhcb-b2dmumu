@@ -11,7 +11,9 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test, name, trees):
     from sklearn.base import clone
     logger.info('    Running fold #{}'.format(i + 1))
     clf = clone(clf)
+    logger.warn('after clone')
     probs = clf.fit(X_train, y_train).predict_proba(X_test)
+    logger.warn('after fit')
     fpr, tpr, thresholds = roc_curve(y_test, probs[:,1])
 
     err = np.zeros((trees,))

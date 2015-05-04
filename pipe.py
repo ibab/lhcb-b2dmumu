@@ -160,10 +160,10 @@ class ResamplePID(Task):
         __import__('__main__').Resampler = Resampler # for pickle
 
         resamplers = {                                                                                                        
-            'Kplus': '/fhgfs/groups/e5/lhcb/PIDCalib/Kaon_Stripping20_MagnetUp.pkl',
-            'piminus': '/fhgfs/groups/e5/lhcb/PIDCalib/Pi_Stripping20_MagnetUp.pkl',
-            'muplus': '/fhgfs/groups/e5/lhcb/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
-            'muminus': '/fhgfs/groups/e5/lhcb/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
+            'Kplus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Kaon_Stripping20_MagnetUp.pkl',
+            'piminus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Pi_Stripping20_MagnetUp.pkl',
+            'muplus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
+            'muminus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
         }
 
         nametrans_pid = {'PIDK': 'CombDLLK',
@@ -292,7 +292,7 @@ class TrainClassifier(Task):
         from rep.classifiers.tmva import TMVAClassifier
 
         classifiers = {
-          'xgboost':  XGBoostClassifier(n_estimators=200, max_depth=12, verbose=1),
+          'xgboost':  XGBoostClassifier(n_estimators=200, max_depth=10, verbose=0),
         }
 
         clf = classifiers[self.name]
@@ -333,9 +333,31 @@ class ApplyClassifier(Task):
         data[self.name] = pred
         data.to_root(self.outputs().path())
 
+class KFoldCrossValidation(Task):
+    signal = Input()
+    background = Input()
+    clf = Input()
+
+    def outputs(self):
+        return LocalFile(DATASTORE + 'crossval.pdf')
+    
+    def run(self):
+
+        from analysis.classification import evaluate_classifier
+
+        clf = self.clf.get()
+        sig = read_root(self.signal.path(), columns=classifier_variables).dropna()
+        bkg = read_root(self.background.path(), columns=classifier_variables).dropna()
+
+        X = np.vstack([bkg.values, sig.values])
+        y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
+
+        evaluate_classifier(clf, X, y, DATASTORE, name='classifier', folds=5)
+
 class RooFit(Task):
     infile = Input()
     model = Input()
+    params = Input(default=None)
     plot_var = Input(default='B_M')
     key = Input(default=0)
 
@@ -354,13 +376,14 @@ class RooFit(Task):
         data = load_tree(ws, self.infile.path(), 'default', '')
 
         ROOT.SetOwnership(ws, False)
-        mle(model, data, start_params="models/Bd_KstJpsi.params", out_params=out_params, numcpus=20)
+        mle(model, data, start_params=self.params.path(), out_params=out_params, numcpus=20)
         out_ws.set(ws)
 
 class PlotFit(Task):
     infile = Input()
     inws = Input()
     plot_var = Input(default='B_M')
+    components = Input(default=[])
 
     def outputs(self):
         return LocalFile(DATASTORE + 'plot.pdf')
@@ -374,7 +397,10 @@ class PlotFit(Task):
         model = ws.pdf('model')
         data = load_tree(ws, self.infile.path(), 'default', '')
         v = ws.var(self.plot_var)
-        ax, width = plot_roofit(v, data, model, components=['sigGaussian1', 'sigGaussian2', 'sigGaussian3', 'bkgMassPdf'], numcpus=20)
+        plt.figure(figsize=(12, 8))
+        gs, ax, width = plot_roofit(v, data, model, components=self.components, numcpus=20, xlabel='$m(K^+\\!\\pi^-\\!\\mu^+\\!\\mu^-)$')
+        plt.ylabel('Candidates')
+        gs.tight_layout(plt.gcf())
         plt.savefig(self.outputs().path())
         plt.clf()
 
@@ -413,12 +439,12 @@ class CalcROCFromWeights(Task):
         df = read_root(self.infile.path())
         weights = read_root(self.inweights.path())
 
-        assert len(df) == len(weights), 'length of data and weights must match'
-
         logger.warn('df: {}, weights: {}'.format(len(df), len(weights)))
+        df['sigweights'] = weights['sigYield_sw'].ravel()
+        df['bkgweights'] = weights['bkgYield_sw'].ravel()
 
-        df['sigweights'] = pd.Series(weights['sigYield_sw'].ravel(), index=df.index)
-        df['bkgweights'] = pd.Series(weights['bkgYield_sw'].ravel(), index=df.index)
+
+        assert len(df) == len(weights), 'length of data and weights must match'
 
         total_sig = df.sigweights.sum()
         total_bkg = df.bkgweights.sum()
@@ -436,6 +462,11 @@ class CalcROCFromWeights(Task):
 
         import matplotlib.pyplot as plt
         plt.plot(1 - x / total_bkg, y / total_sig, 'b-')
+        plt.xlim(0, 1)
+        plt.ylim(0, 1)
+        plt.ylabel('Signal efficiency')
+        plt.xlabel('Background rejection')
+        plt.tight_layout()
         plt.savefig(self.outputs()[0].path())
         plt.clf()
         plt.plot(cuts, y, 'b-')
@@ -444,17 +475,6 @@ class CalcROCFromWeights(Task):
         plt.plot(cuts, x, 'b-')
         plt.savefig(self.outputs()[2].path())
         plt.clf()
-
-class MergeROOT(Task):
-    inputfiles = Input()
-    outputname = Input()
-
-    def outputs(self):
-        return LocalFile(DATASTORE + self.outputname)
-
-    def run(self):
-        from sh import hadd
-        print(hadd('-f', self.outputs().path(), *list(map(lambda x: x.path(), self.inputfiles)), _out=sys.stdout, _err=sys.stderr))
 
 if __name__ == '__main__':
     # B0->D~0mumu
@@ -471,25 +491,21 @@ if __name__ == '__main__':
 
     clf = TrainClassifier(signal=selected_b2dmumu_mc, background=selected_b2dmumu).outputs()
 
+    crossval = KFoldCrossValidation(signal=selected_b2dmumu_mc, background=selected_b2dmumu, clf=clf).outputs()
+
     # B->K*mumu
     input_b2kstmumu = LocalFile('/fhgfs/users/ibabuschkin/DataStore/tmp/DATA_Kstmumu.root')
 
     reduced_b2kstmumu = Reduce(input_b2kstmumu, variables_b2kstmumu).outputs()
     triggered_b2kstmumu = ApplyTrigger(reduced_b2kstmumu).outputs()
-    cut_b2kstmumu = ApplyCut(triggered_b2kstmumu, ['B_M > 5180', 'B_M < 5380', 'Kstar_M > 896 - 150', 'Kstar_M < 896 + 150', 'Psi_M > 3000', 'Psi_M < 3200']).outputs()
+    cut_b2kstmumu = ApplyCut(triggered_b2kstmumu, ['B_M > 5100', 'B_M < 5500', 'Kstar_M > 896 - 150', 'Kstar_M < 896 + 150', 'Psi_M > 3000', 'Psi_M < 3200']).outputs()
     classified_b2kstmumu = ApplyClassifier(cut_b2kstmumu, clf).outputs()
-    model = LocalFile('models/Bd_KstJpsi.model')
-    fit_b2kstmumu = RooFit(classified_b2kstmumu, model).outputs()
-    plot_b2kstmumu = PlotFit(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
+    model = LocalFile('models/Bd_KstJpsi_CBall.model')
+    init_params = LocalFile('models/Bd_KstJpsi_CBall.params')
+    fit_b2kstmumu = RooFit(classified_b2kstmumu, model, params=init_params).outputs()
+    plot_b2kstmumu = PlotFit(cut_b2kstmumu, fit_b2kstmumu[1], components=['sigMassPdf1', 'sigMassPdf2', 'bkgMassPdf']).outputs()
     weighted_b2kstmumu = CalcSWeights(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
     roc_plot  = CalcROCFromWeights(classified_b2kstmumu, weighted_b2kstmumu).outputs()
 
     require(roc_plot)
-    #require(roc_plot)
-    #ret = []
-    #for i, c in enumerate(np.linspace(0, 5, 10)):
-    #    cut = ApplyCut(classified_b2kstmumu, cuts=['classifier > {}'.format(c)], key=i).outputs()
-    #    fit = RooFit(cut, model, key=i).outputs()
-    #    ret.append(fit)
-    #require(ret)
 

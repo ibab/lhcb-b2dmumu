@@ -1,20 +1,19 @@
-# Δm fit
+# B->K*J/psi fit
 
-B_M[5180, 5380]
+B_M[5100, 5500]
 
 # Signal Mass
-RooCBShape::sigMassPdf(B_M, sigMassMean[5200, 5400], sigMassSigma[20, 100], alpha[0, 100], n[0, 1000])
+sigMassMean[5200, 5400]
+RooCBShape::sigMassPdf1(B_M, sigMassMean, sigMassSigma1[30, 50], alpha1[1, 0, 600], n1[1, 0, 4000])
+RooCBShape::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[5, 30], alpha2[1, 0, 600], n2[1, 0, 4000])
+SUM::sigMassPdf(sigFrac[0, 1] * sigMassPdf1, sigMassPdf2)
 
-#SUM::sigMassPdf(sigMassTemp12 * sigGaussian1, sigGaussianFrac2 * sigGaussian2, sigGaussian3)
-
-# Background Mass
-expr::bkgMassExpoVar('5279 - B_M', B_M)
-#expr::lbgMassExpoVar('5279 - B_M', B_M)
-Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0, 2])
-#Exponential::lbgMassPdf(lbgMassExpoVar, lbgMassSlope[0.005, 0, 2])
+## Background Mass
+p1[-0.0001, -0.00018181818, 1]
+RooPolynomial::bkgMassPdf(B_M, {p1})
 
 # Total
-SUM::model(sigYield[300000, 0, 400000] * sigMassPdf, bkgYield[50000, 0, 200000] * bkgMassPdf)
+SUM::model(sigYield[450000, 0, 600000] * sigMassPdf, bkgYield[360000, 0, 500000] * bkgMassPdf)
 #, lbgYield[1000, 0, 100000] * lbgMassPdf)
 
 # vim: ft=python

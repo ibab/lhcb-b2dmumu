@@ -14,7 +14,7 @@ logger = logging.getLogger('analysis')
 from analysis.log import setup_roofit
 setup_roofit()
 
-DATASTORE='/fhgfs/users/ibabuschkin/DataStore/tmp/'
+DATASTORE='./store/tmp/'
 
 variables_b2kstmumu = [
         '{B,Kstar,Psi}_M',
@@ -109,6 +109,18 @@ class Cut:
 
     def get(self):
         return self.cutstring
+
+class RootAppend(Task):
+    infiles = Input()
+    outname = Input()
+
+    def outputs(self):
+        return LocalFile(DATASTORE + self.outname)
+
+    def run(self):
+        from sh import hadd
+        out = hadd(['-f'] + [self.outputs().path()] + map(lambda x: x.path(), self.infiles))
+        print(out)
 
 class Reduce(Task):
     infile = Input()
@@ -477,8 +489,16 @@ class CalcROCFromWeights(Task):
         plt.clf()
 
 if __name__ == '__main__':
+
+    inputs_b2dmumu = [
+            LocalFile('./store/DATA_Bd_D0mumu_MU11.root'),
+            LocalFile('./store/DATA_Bd_D0mumu_MD11.root'),
+            LocalFile('./store/DATA_Bd_D0mumu_MU12.root'),
+            LocalFile('./store/DATA_Bd_D0mumu_MD12.root'),
+    ]
+
     # B0->D~0mumu
-    input_b2dmumu        = LocalFile('/fhgfs/users/ibabuschkin/DataStore/Data/AllYears/Stripping20/Dimuon/DVBd2MuMuD0_data/combined/DATA_Bd2D0mumu.root')
+    input_b2dmumu        = RootAppend(inputs_b2dmumu, 'DATA_B2D0mumu_ALL.root').outputs()
     reduced_b2dmumu      = Reduce(input_b2dmumu, variables_b2dmumu, treename='B2XMuMu_Line_TupleDST/DecayTree', blinded=True).outputs()
     triggered_b2dmumu    = ApplyTrigger(reduced_b2dmumu).outputs()
     selected_b2dmumu     = Select(triggered_b2dmumu).outputs()
@@ -507,5 +527,5 @@ if __name__ == '__main__':
     weighted_b2kstmumu = CalcSWeights(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
     roc_plot  = CalcROCFromWeights(classified_b2kstmumu, weighted_b2kstmumu).outputs()
 
-    require(roc_plot)
+    require(selected_b2dmumu)
 

@@ -7,16 +7,6 @@ from root_numpy import root2array, list_trees
 from fnmatch import fnmatch
 from root_numpy import list_branches
 
-from luigi import LocalTarget
-
-class RootTarget(LocalTarget):
-    def __init__(self, path, tree):
-        super(RootTarget, self).__init__(path)
-        self.tree = tree
-
-    def add_step(self, name):
-        return RootTarget(self.path.replace('.root', '.{}.root'.format(name)), 'default')
-
 def prepare_sel(selections):
     return ' & '.join(map(lambda x: '(' + x + ')', selections))
 

@@ -3,35 +3,31 @@ from joblib import Parallel, delayed
 from analysis.log import get_logger
 logger = get_logger()
 
-N_trees = 1000
-
-def run_crossval(clf, i, X_train, y_train, X_test, y_test, name, trees):
+def run_crossval(clf, i, X_train, y_train, X_test, y_test, name, test):
     import numpy as np
     from sklearn.metrics import roc_curve, zero_one_loss
     from sklearn.base import clone
     logger.info('    Running fold #{}'.format(i + 1))
     clf = clone(clf)
-    logger.warn('after clone')
     probs = clf.fit(X_train, y_train).predict_proba(X_test)
-    logger.warn('after fit')
     fpr, tpr, thresholds = roc_curve(y_test, probs[:,1])
 
-    err = np.zeros((trees,))
-    err_train = np.zeros((trees,))
+    err = []
+    err_train = []
     try:
         logger.info('    Calculating staged predict #{} (test)'.format(i + 1))
         for j, y_pred in enumerate(clf.staged_predict_proba(X_test)):
             p = y_pred[:,1]
             p[p > 0.5] = 1
             p[p <= 0.5] = 0
-            err[j] = zero_one_loss(p, y_test)
+            err.append(zero_one_loss(p, y_test))
 
         logger.info('    Calculating staged predict #{} (train)'.format(i + 1))
         for j, y_pred in enumerate(clf.staged_predict_proba(X_train)):
             p = y_pred[:,1]
             p[p > 0.5] = 1
             p[p <= 0.5] = 0
-            err_train[j] = zero_one_loss(p, y_train)
+            err_train.append(zero_one_loss(p, y_train))
 
     except AttributeError as e:
         logger.warn('staged_predict_proba not supported on {}'.format(name))
@@ -48,13 +44,14 @@ def run_crossval(clf, i, X_train, y_train, X_test, y_test, name, trees):
             'sig_proba': sig_proba,
             'bkg_proba': bkg_proba,
             'y_test': y_test,
+            'test': test,
             'probs': probs[:,1],
             'clf': clf,
     }
 
     return results
 
-def evaluate_classifier(clf, X, y, outputdir, name, folds=10, trees=1000):
+def evaluate_classifier(clf, X, y, outputdir, name, folds=10):
     import numpy as np
     from sklearn.cross_validation import StratifiedKFold
     from sklearn.metrics import roc_curve, auc, zero_one_loss
@@ -82,7 +79,7 @@ def evaluate_classifier(clf, X, y, outputdir, name, folds=10, trees=1000):
         errs = []
 
         plt.figure(figsize=(10, 10))
-        results = Parallel(n_jobs=folds)(delayed(run_crossval)(clf, i, X[train], y[train], X[test], y[test], name, trees) for i, (train, test) in enumerate(skf))
+        results = Parallel(n_jobs=1)(delayed(run_crossval)(clf, i, X[train], y[train], X[test], y[test], name, test) for i, (train, test) in enumerate(skf))
 
         total_y_test = []
         total_probs = []
@@ -118,8 +115,8 @@ def evaluate_classifier(clf, X, y, outputdir, name, folds=10, trees=1000):
         #import seaborn as sns
         #sns.set_context('talk')
         for res in results:
-            plt.plot(np.arange(trees)+1, res['err'], color='blue', alpha=0.6)
-            plt.plot(np.arange(trees)+1, res['err_train'], color='green', alpha=0.6)
+            plt.plot(res['err'], color='blue', alpha=0.6)
+            plt.plot(res['err_train'], color='green', alpha=0.6)
         plt.ylabel('Zero-one loss')
         plt.xlabel('$N_\\mathrm{estimators}$')
         plt.tight_layout()
@@ -135,8 +132,8 @@ def evaluate_classifier(clf, X, y, outputdir, name, folds=10, trees=1000):
         def logit(x):
             return np.log(x / (1 - x))
 
-        plt.hist(logit(np.hstack(total_signal)), range=(-20, 20), bins=100, alpha=0.6, color='blue', histtype='stepfilled', normed=True, label='Signal (Simulation)')
-        plt.hist(logit(np.hstack(total_bkg)), range=(-20, 20), bins=100, alpha=0.6, color='red', histtype='stepfilled', normed=True, label='Background (Sidebands)')
+        plt.hist(logit(np.hstack(total_signal)), range=(-15, 10), bins=100, alpha=0.6, color='blue', histtype='stepfilled', normed=True, label='Signal (Simulation)')
+        plt.hist(logit(np.hstack(total_bkg)), range=(-15, 10), bins=100, alpha=0.6, color='red', histtype='stepfilled', normed=True, label='Background (Sidebands)')
         plt.xlabel('Classifier', ha='right', x=1)
         plt.ylabel('Candidates (normalized)', ha='right', y=1)
         plt.legend(loc='best')
@@ -146,7 +143,7 @@ def evaluate_classifier(clf, X, y, outputdir, name, folds=10, trees=1000):
         logger.warn(np.hstack(total_bkg))
         logger.warn('Assign from: {}'.format(len(np.hstack(total_bkg))))
 
-        return logit(np.hstack(total_bkg)), logit(np.hstack(total_signal)), clfs
+        return results
 
         #logger.info('Plot importances...')
         #imp = sorted(zip(sidebands.dtype.names, clf.feature_importances_), key=lambda x: x[1])

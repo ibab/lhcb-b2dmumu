@@ -13,7 +13,6 @@ setup.*
 .ruffus_history.sqlite
 __pycache__/
 *.pyc
-*.pkl
 
 plots/*
 .datapipe/

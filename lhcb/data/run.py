@@ -1,9 +1,10 @@
 
 decays = {
-    'Bd_D0mumu':   '[B0   -> ^(D~0 -> ^K+ ^pi-) ^(J/psi(1S) -> ^mu+ ^mu-) ]CC',
+    #'Bd_D0mumu':   '[B0   -> ^(D~0 -> ^K+ ^pi-) ^(J/psi(1S) -> ^mu+ ^mu-) ]CC',
     #'Bc_Ds+mumu':  '[B_c+ -> ^(D_s+ -> ^K+ ^K- ^pi+) ^(J/psi(1S) -> ^mu+ ^mu-)]CC',
     #'Bu_Ds+mumu':  '[B+   -> ^(D_s+ -> ^K+ ^K- ^pi+) ^(J/psi(1S) -> ^mu+ ^mu-]CC',
-    'Bu_Dst+mumu': '[B+   -> ^(D*(2010)+ -> ^(D0 -> ^K- ^pi+) ^pi+) ^(J/psi(1S) -> ^mu+ ^mu-)]CC',
+    #'Bu_Dst+mumu': '[B+   -> ^(D*(2010)+ -> ^(D0 -> ^K- ^pi+) ^pi+) ^(J/psi(1S) -> ^mu+ ^mu-)]CC',
+    'Bd_KstJpsi':   '[B0   -> ^(K*(892)0 -> ^K+ ^pi-) ^(J/psi(1S) -> ^mu+ ^mu-) ]CC',
 }
 
 stream = "/LHCb/Collision{year}/Beam{energy}GeV-VeloClosed-{polarity}/Real Data/Reco14/Stripping{stripping}/90000000/DIMUON.DST"

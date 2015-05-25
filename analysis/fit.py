@@ -123,7 +123,7 @@ def get_values(model, variables):
         exit(1)
     return result, result_err
 
-def mle(model, data, start_params='None', out_params='result.params', numcpus=1, strategy=1, fit=True, extended=False):
+def mle(model, data, start_params='None', out_params='result.params', numcpus=1, strategy=1, fit=True, extended=False, extra_params=None):
     from ROOT import RooFit
     if start_params == 'None':
         logger.warning('Not reading in initial parameters. Using defaults from model.')
@@ -135,6 +135,9 @@ def mle(model, data, start_params='None', out_params='result.params', numcpus=1,
         model.getParameters(data).readFromFile(start_params)
     logger.info('Starting fit')
     if fit:
+        if not extra_params:
+            extra_params = []
+
         results = model.fitTo(
                 data,
                 RooFit.NumCPU(numcpus),
@@ -143,6 +146,7 @@ def mle(model, data, start_params='None', out_params='result.params', numcpus=1,
                 RooFit.Strategy(2),
                 RooFit.Minimizer('Minuit2'),
                 RooFit.Save(True),
+                *extra_params
         )
         logger.info('Finished fit')
     else:

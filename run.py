@@ -80,7 +80,6 @@ variables_b2dmumu = [
 
         '{Kplus,piminus,muplus,muminus}_ProbNN*',
         '{Kplus,piminus,muplus,muminus}_PID*',
-        '{Kplus,piminus,muplus,muminus}_hasRich',
         '{Kplus,piminus,muplus,muminus}_TRACK_GhostProb',
         '{Kplus,piminus,muplus,muminus}_TRACK_CHI2NDOF',
         '{Kplus,piminus,muplus,muminus}_isMuonLoose',
@@ -141,8 +140,12 @@ class Reduce(Task):
 
         if self.blinded:
             B_mass = 5279
-            width = 50
-            cut.add('(B_M < {}) || (B_M > {})'.format(B_mass - width, B_mass + width))
+            D_mass = 1864.84
+            B_width = 50
+            D_width = 50
+            #cut.add('((B_M < {}) || (B_M > {})) || ((D~0_M < {}) || (D~0_M > {}))'.format(B_mass - B_width, B_mass + B_width, D_mass - D_width, D_mass + D_width))
+            #cut.add('((D~0_M < {}) || (D~0_M > {}))'.format(D_mass - D_width, D_mass + D_width))
+            cut.add('((B_M < {}) || (B_M > {}))'.format(B_mass - B_width, B_mass + B_width))
 
         if 'B_BKGCAT' in self.columns:
             cut.add('B_BKGCAT <= 10')
@@ -151,6 +154,7 @@ class Reduce(Task):
 
         df['B_TAU'] = pd.Series(calc_tau(df), index=df.index)
         logger.info('Initial events: {}'.format(len(df)))
+
         df['B_DiraAngle'] = np.arccos(df['B_DIRA_OWNPV'])
         df['B_ENDVERTEX_CHI2_NDOF'] = df['B_ENDVERTEX_CHI2'] / df['B_ENDVERTEX_NDOF']
         for var in df.columns:
@@ -172,10 +176,10 @@ class ResamplePID(Task):
         __import__('__main__').Resampler = Resampler # for pickle
 
         resamplers = {                                                                                                        
-            'Kplus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Kaon_Stripping20_MagnetUp.pkl',
-            'piminus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Pi_Stripping20_MagnetUp.pkl',
-            'muplus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
-            'muminus': '/fhgfs/groups/e5/lhcb/analysis/Common/PIDCalib/Mu_Stripping20_MagnetUp.pkl',
+            'Kplus': './store/resamplers/Kaon_Stripping20_MagnetUp.pkl',
+            'piminus': './store/resamplers/Pi_Stripping20_MagnetUp.pkl',
+            'muplus':  './store/resamplers/Mu_Stripping20_MagnetUp.pkl',
+            'muminus': './store/resamplers/Mu_Stripping20_MagnetUp.pkl',
         }
 
         nametrans_pid = {'PIDK': 'CombDLLK',
@@ -188,16 +192,22 @@ class ResamplePID(Task):
                               }
 
         df = read_root(self.infile.path())
+
         for particle, path in resamplers.items():
             resampler = pickle.load(open(path))
             part = nametrans_particle[particle]
             for pid in ['PIDK', 'PIDmu']:
                 key = '{particle}_{pid}'.format(particle=particle, pid=pid)
                 df[key + '_OLD'] = df[key]
-                df[key] = resampler[part + '_' + nametrans_pid[pid]].sample(df[[particle + '_P', particle + '_ETA', 'nTracks']].values.T)
+                res = resampler[part + '_' + nametrans_pid[pid]].sample(df[[particle + '_P', particle + '_ETA', 'nTracks']].values.T)
+                df[key] = res
                 logger.info('Resampled {} for {}'.format(pid, particle))
-        df.to_root(self.outputs().path(), 'default')
 
+        # TODO reuse these dropped samples by resampling them
+        df = df.query('Kplus_PIDK > -5')
+        df = df.query('muplus_PIDmu > -3')
+        df = df.query('muminus_PIDmu > -3')
+        df.to_root(self.outputs().path(), 'default')
 
 class ApplyTrigger(Task):
     infile = Input()
@@ -263,10 +273,11 @@ classifier_variables = [
         'B_P',
         'B_PT',
         'B_ISOLATION_BDT_Soft',
-        'Kplus_PIDK',
-        'piminus_PIDK',
-        'muplus_PIDmu',
-        'muminus_PIDmu',
+        '{Kplus,piminus}_PIDK',
+        '{muplus,muminus}_PIDmu',
+        #'{Kplus,piminus,muplus,muminus}_PID{K,mu}',
+        '{Kplus,piminus,muplus,muminus}_isMuon',
+        #'{Kplus,piminus,muplus,muminus}_TRACK_CHI2NDOF',
         #'D~0_CosTheta',
 ]
 
@@ -297,6 +308,7 @@ class TrainClassifier(Task):
         return PyTarget('clf')
 
     def run(self):
+
         from analysis.util import prepare_sel
         from sklearn.tree import DecisionTreeClassifier
         from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -304,7 +316,7 @@ class TrainClassifier(Task):
         from rep.classifiers.tmva import TMVAClassifier
 
         classifiers = {
-          'xgboost':  XGBoostClassifier(n_estimators=200, max_depth=10, verbose=0),
+          'xgboost':  XGBoostClassifier(n_estimators=300, gamma=2, max_depth=7, verbose=1, nthreads=4),
         }
 
         clf = classifiers[self.name]
@@ -314,9 +326,11 @@ class TrainClassifier(Task):
         ]
 
         step = 1
-
-        bkg = read_root(self.background.path(), columns=classifier_variables, where=prepare_sel(select_sidebands), step=step).dropna()
+        bkg = read_root(self.background.path(), columns=classifier_variables, where=prepare_sel(select_sidebands), step=4*step).dropna()
         sig = read_root(self.signal.path(), columns=classifier_variables, step=step).dropna()
+
+        logger.info('Signal events: {}'.format(len(sig)))
+        logger.info('Backg. events: {}'.format(len(bkg)))
 
         X = np.vstack([bkg.values, sig.values])
         y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
@@ -340,7 +354,6 @@ class ApplyClassifier(Task):
             return np.log(x / (1 - x))
 
         pred = logit(clf.predict_proba(data.values)[:,1])
-
         data = read_root(self.infile.path())
         data[self.name] = pred
         data.to_root(self.outputs().path())
@@ -351,70 +364,184 @@ class KFoldCrossValidation(Task):
     clf = Input()
 
     def outputs(self):
-        return LocalFile(DATASTORE + 'crossval.pdf')
+        return LocalFile(self.signal.path().replace('.root', '.KFoldCrossValidation.root'))
     
     def run(self):
-
         from analysis.classification import evaluate_classifier
 
-        clf = self.clf.get()
-        sig = read_root(self.signal.path(), columns=classifier_variables).dropna()
-        bkg = read_root(self.background.path(), columns=classifier_variables).dropna()
+        clf = self.clf
+        step = 1
 
-        X = np.vstack([bkg.values, sig.values])
-        y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
+        sig = read_root(self.signal.path(), columns=classifier_variables, step=step).dropna()
+        bkg = read_root(self.background.path(), columns=classifier_variables, step=step * 5).dropna()
+        data = pd.concat([sig, bkg], keys=['sig', 'bkg'])
 
-        evaluate_classifier(clf, X, y, DATASTORE, name='classifier', folds=5)
+        X = data.values.astype('float32')
+        y = np.append(np.ones(len(sig)), np.zeros(len(bkg)))
+
+        from sklearn.cross_validation import StratifiedKFold
+        from sklearn.metrics import roc_auc_score
+        from sklearn.base import clone
+        from scipy.special import logit
+
+        classifiers = []
+        data['signal'] = y
+        data['fold'] = 0
+        data['decision'] = 0.
+        data['proba'] = 0.
+
+        skf = StratifiedKFold(y, n_folds=5, shuffle=True, random_state=0)
+        for i, (train, test) in enumerate(skf):
+            classifier = clone(clf)
+            logger.info('Training fold {}'.format(i))
+            classifier.fit(X[train], y[train])
+            logger.info('Predicting fold {}'.format(i))
+            proba = classifier.predict_proba(X[test])[:,1]
+            data['fold'].values[test] = i + 1
+            data['proba'].values[test] = proba
+
+            data['decision'].values[test] = logit(proba)
+            classifiers.append(classifier)
+
+        score = roc_auc_score(data['signal'], data['decision'])
+        logger.info('ROC AUC: {}'.format(score))
+        data.to_root(self.outputs().path())
 
 class RooFit(Task):
     infile = Input()
     model = Input()
-    params = Input(default=None)
-    plot_var = Input(default='B_M')
+    model_name = Input(default='model')
+    params = Input(default='')
     key = Input(default=0)
+    fix_params = Input(default='')
+    censor = Input(default='')
 
     def outputs(self):
-        return [LocalFile(DATASTORE + 'results_{}.params'.format(self.key)), PyTarget('workspace_{}'.format(self.key))]
+        return [LocalFile(DATASTORE + 'results_{}.params'.format(self.key)),
+                PyTarget('workspace_{}'.format(self.key)),
+                PyTarget('fitresults_{}'.format(self.key))]
 
     def run(self):
-        out_params, out_ws = self.outputs()
+        out_params, out_ws, out_results = self.outputs()
         out_params = out_params.path()
 
         import ROOT
         from analysis.fit import mle, assemble_model, load_tree
 
         ws = assemble_model(self.model.path())
-        model = ws.pdf('model')
+        model = ws.pdf(self.model_name)
         data = load_tree(ws, self.infile.path(), 'default', '')
 
+        if self.fix_params:
+            for name, results in self.fix_params.items():
+                if isinstance(results, PyTarget):
+                    res = results.get().floatParsFinal()
+                    var = res.find(name)
+                    val = var.getVal()
+                else:
+                    val = results
+
+                ws.var(name).setVal(val)
+                ws.var(name).setConstant(True)
+
         ROOT.SetOwnership(ws, False)
-        mle(model, data, start_params=self.params.path(), out_params=out_params, numcpus=20)
+        if self.params:
+            start_params = self.params.path()
+        else:
+            start_params = None
+
+        # Implement fitting on sub-ranges for censored data
+        extra_params = []
+        if self.censor:
+            ranges = []
+            for k, rng in self.censor.items():
+                vv = ws.var(k)
+                left_name = '{}_leftrange'.format(k)
+                right_name = '{}_rightrange'.format(k)
+                vv.setRange(left_name, vv.getMin(), rng[0])
+                vv.setRange(right_name, rng[1], vv.getMax())
+                ranges.append(left_name)
+                ranges.append(right_name)
+
+            rng = ROOT.RooFit.Range(','.join(ranges))
+            extra_params.append(rng)
+
+        results = mle(model, data, out_params=out_params, numcpus=20, extra_params=extra_params)
+        results.Print()
         out_ws.set(ws)
+        out_results.set(results)
+
+class GenToy(Task):
+    model = Input()
+    variables = Input()
+    model_name = Input(default='model')
+    outpath = Input(default='toy.root')
+    fix_params = Input(default='')
+
+    def outputs(self):
+        return LocalFile(DATASTORE + self.outpath)
+    
+    def run(self):
+        import ROOT
+        from analysis.fit import mle, assemble_model, load_tree
+
+        ws = assemble_model(self.model.path())
+        model = ws.pdf(self.model_name)
+        if self.fix_params:
+            for name, results in self.fix_params.items():
+                if isinstance(results, PyTarget):
+                    res = results.get().floatParsFinal()
+                    var = res.find(name)
+                    val = var.getVal()
+                else:
+                    val = results
+
+                ws.var(name).setVal(val)
+                ws.var(name).setConstant(True)
+
+        vrs = [ws.var(x) for x in self.variables]
+        print(vrs)
+        args = ROOT.RooArgSet(*vrs)
+        ff = ROOT.TFile(self.outputs().path(), 'recreate')
+        ROOT.RooAbsData.setDefaultStorageType(ROOT.RooAbsData.Tree)
+        data = model.generate(args)
+        data.tree().Write('tree')
+        ff.Close()
 
 class PlotFit(Task):
     infile = Input()
     inws = Input()
+    path = Input()
+    model_name = Input(default='model')
     plot_var = Input(default='B_M')
     components = Input(default=[])
 
     def outputs(self):
-        return LocalFile(DATASTORE + 'plot.pdf')
+        return LocalFile(self.path)
 
     def run(self):
-
         from analysis.plotting import plot_roofit
         from analysis.fit import load_tree
         import matplotlib.pyplot as plt
         ws = self.inws.get()
-        model = ws.pdf('model')
+        model = ws.pdf(self.model_name)
         data = load_tree(ws, self.infile.path(), 'default', '')
         v = ws.var(self.plot_var)
         plt.figure(figsize=(12, 8))
         gs, ax, width = plot_roofit(v, data, model, components=self.components, numcpus=20, xlabel='$m(K^+\\!\\pi^-\\!\\mu^+\\!\\mu^-)$')
-        plt.ylabel('Candidates')
+
+        plt.ylabel('Candidates', ha='right', y=1)
         gs.tight_layout(plt.gcf())
         plt.savefig(self.outputs().path())
         plt.clf()
+
+        import ROOT
+        c1 = ROOT.TCanvas()
+        frame = v.frame()
+        data.plotOn(frame)
+        model.plotOn(frame)
+        frame.Draw()
+        c1.SaveAs(self.outputs().path().replace('.pdf', '_ROOT.pdf'))
 
 class CalcSWeights(Task):
     infile = Input()
@@ -438,55 +565,18 @@ class CalcSWeights(Task):
         tf.Write()
         ROOT.SetOwnership(ws, False)
 
-class CalcROCFromWeights(Task):
-
-    infile = Input()
-    inweights = Input()
+class RunNotebook(Task):
+    notebook = Input()
+    dependencies = Input()
 
     def outputs(self):
-        return LocalFile(DATASTORE + 'weighted_roc.pdf'), LocalFile(DATASTORE + 'sig_eff.pdf'), LocalFile(DATASTORE + 'bkg_eff.pdf')
-    
+        return LocalFile(DATASTORE + os.path.basename(self.notebook.path()))
+
     def run(self):
-        import pandas as pd
-        df = read_root(self.infile.path())
-        weights = read_root(self.inweights.path())
+        from sh import runipy
+        nbpath = self.notebook.path()
 
-        logger.warn('df: {}, weights: {}'.format(len(df), len(weights)))
-        df['sigweights'] = weights['sigYield_sw'].ravel()
-        df['bkgweights'] = weights['bkgYield_sw'].ravel()
-
-
-        assert len(df) == len(weights), 'length of data and weights must match'
-
-        total_sig = df.sigweights.sum()
-        total_bkg = df.bkgweights.sum()
-
-        logger.warn('total_sig: {}'.format(total_sig))
-        logger.warn('total_bkg: {}'.format(total_bkg))
-
-        x = []
-        y = []
-        cuts = np.linspace(-15, 10, 200)
-
-        for c in cuts:
-            x.append(df['bkgweights'][df.classifier > c].sum())
-            y.append(df['sigweights'][df.classifier > c].sum())
-
-        import matplotlib.pyplot as plt
-        plt.plot(1 - x / total_bkg, y / total_sig, 'b-')
-        plt.xlim(0, 1)
-        plt.ylim(0, 1)
-        plt.ylabel('Signal efficiency')
-        plt.xlabel('Background rejection')
-        plt.tight_layout()
-        plt.savefig(self.outputs()[0].path())
-        plt.clf()
-        plt.plot(cuts, y, 'b-')
-        plt.savefig(self.outputs()[1].path())
-        plt.clf()
-        plt.plot(cuts, x, 'b-')
-        plt.savefig(self.outputs()[2].path())
-        plt.clf()
+        runipy([nbpath, self.outputs().path()], _out='/dev/stdout', _err='/dev/stderr')
 
 if __name__ == '__main__':
 
@@ -497,35 +587,99 @@ if __name__ == '__main__':
             LocalFile('./store/DATA_Bd_D0mumu_MD12.root'),
     ]
 
-    # B0->D~0mumu
+    inputs_b2dmumu_mc = [
+            LocalFile('./store/SIM_Bd_D0mumu_MD12.root'),
+            LocalFile('./store/SIM_Bd_D0mumu_MU12.root'),
+    ]
+
+    # B0 -> D~0 mu mu
     input_b2dmumu        = RootAppend(inputs_b2dmumu, 'DATA_B2D0mumu_ALL.root').outputs()
     reduced_b2dmumu      = Reduce(input_b2dmumu, variables_b2dmumu, treename='B2XMuMu_Line_TupleDST/DecayTree', blinded=True).outputs()
     triggered_b2dmumu    = ApplyTrigger(reduced_b2dmumu).outputs()
     selected_b2dmumu     = Select(triggered_b2dmumu).outputs()
 
-    input_b2dmumu_mc     = LocalFile('/fhgfs/users/ibabuschkin/DataStore/MC/2012/Stripping20/AllStreams/DVBd2MuMuD0_MC/combined/SIM_Bd2D0mumu.root')
+    input_b2dmumu_mc     = RootAppend(inputs_b2dmumu_mc, 'SIM_Bd_D0mumu_ALL.root').outputs()
     reduced_b2dmumu_mc   = Reduce(input_b2dmumu_mc, variables_b2dmumu + mc_variables, treename='B2XMuMu_Line_TupleMC/DecayTree').outputs()
     resampled_b2dmumu_mc = ResamplePID(reduced_b2dmumu_mc).outputs()
     triggered_b2dmumu_mc = ApplyTrigger(resampled_b2dmumu_mc).outputs()
     selected_b2dmumu_mc  = Select(triggered_b2dmumu_mc).outputs()
 
-    clf = TrainClassifier(signal=selected_b2dmumu_mc, background=selected_b2dmumu).outputs()
+    TrainClassifier(signal=selected_b2dmumu_mc, background=selected_b2dmumu).outputs()
 
-    crossval = KFoldCrossValidation(signal=selected_b2dmumu_mc, background=selected_b2dmumu, clf=clf).outputs()
+    from rep.classifiers.xgboost import XGBoostClassifier
+    clf = XGBoostClassifier(n_estimators=150, gamma=12, max_depth=10, verbose=1, nthreads=4)
+    classified_b2dmumu = KFoldCrossValidation(signal=selected_b2dmumu_mc, background=selected_b2dmumu, clf=clf).outputs()
 
-    # B->K*mumu
-    input_b2kstmumu = LocalFile('/fhgfs/users/ibabuschkin/DataStore/tmp/DATA_Kstmumu.root')
+    model_b2dmumu = LocalFile('models/Bd_D0mumu.model')
 
-    reduced_b2kstmumu = Reduce(input_b2kstmumu, variables_b2kstmumu).outputs()
-    triggered_b2kstmumu = ApplyTrigger(reduced_b2kstmumu).outputs()
-    cut_b2kstmumu = ApplyCut(triggered_b2kstmumu, ['B_M > 5100', 'B_M < 5500', 'Kstar_M > 896 - 150', 'Kstar_M < 896 + 150', 'Psi_M > 3000', 'Psi_M < 3200']).outputs()
+    sig_only_fit = RooFit(
+            selected_b2dmumu_mc,
+            model_b2dmumu,
+            model_name='sigMassPdf',
+        ).outputs()
+    plot_sig_only_fit = PlotFit(
+            selected_b2dmumu_mc,
+            sig_only_fit[1],
+            model_name='sigMassPdf',
+            path=DATASTORE + 'b2dmumu_sig_only_fit.pdf',
+        ).outputs()
+
+    bkg_only_fit = RooFit(
+                      selected_b2dmumu,
+                      model_b2dmumu,
+                      model_name='bkgMassPdf',
+                      censor={'B_M': (5279 - 50, 5279 + 50)},
+                   ).outputs()
+    plot_bkg_only_fit = PlotFit(
+                            selected_b2dmumu,
+                            bkg_only_fit[1],
+                            model_name='bkgMassPdf',
+                            path=DATASTORE + 'b2dmumu_bkg_only_fit.pdf'
+                        ).outputs()
+    
+    sig_only_fitresults = sig_only_fit[2]
+    bkg_only_fitresults = bkg_only_fit[2]
+
+    #toys = []
+    #for sig_yield in np.linspace(0, 100, 10):
+    #    toy = GenToy(
+    #            model_b2dmumu,
+    #            variables=['B_M'],
+    #            fix_params={
+    #                'frac':          sig_only_fitresults,
+    #                'sigMassMean':   sig_only_fitresults,
+    #                'sigMassSigma1': sig_only_fitresults,
+    #                'sigMassSigma2': sig_only_fitresults,
+    #                'bkgMassSlope':  bkg_only_fitresults,
+    #                'sigYield':      sig_yield,
+    #                'bkgYield':      100,
+    #            }).outputs()
+
+    #    toys.append(toy)
+
+    # B0 -> K* mu mu
+    inputs_b2kstmumu = [
+            LocalFile('./store/DATA_Bd_Kst0mumu_MD11.root'),
+            LocalFile('./store/DATA_Bd_Kst0mumu_MU11.root'),
+            LocalFile('./store/DATA_Bd_Kst0mumu_MD12.root'),
+            LocalFile('./store/DATA_Bd_Kst0mumu_MU12.root'),
+    ]
+    input_b2kstmumu       = RootAppend(inputs_b2kstmumu, 'DATA_B2Kstmumu_ALL.root').outputs()
+    model_b2kstmumu       = LocalFile('models/Bd_KstJpsi_CBall.model')
+    init_params_b2kstmumu = LocalFile('models/Bd_KstJpsi_CBall.params')
+    control_channel       = LocalFile('control-channel.ipynb')
+
+    reduced_b2kstmumu    = Reduce(input_b2kstmumu, variables_b2kstmumu).outputs()
+    triggered_b2kstmumu  = ApplyTrigger(reduced_b2kstmumu).outputs()
+    cut_b2kstmumu        = ApplyCut(triggered_b2kstmumu, ['B_M > 5100', 'B_M < 5500', 'Kstar_M > 896 - 150', 'Kstar_M < 896 + 150', 'Psi_M > 3000', 'Psi_M < 3200', 'Kplus_PIDK > -5']).outputs()
     classified_b2kstmumu = ApplyClassifier(cut_b2kstmumu, clf).outputs()
-    model = LocalFile('models/Bd_KstJpsi_CBall.model')
-    init_params = LocalFile('models/Bd_KstJpsi_CBall.params')
-    fit_b2kstmumu = RooFit(classified_b2kstmumu, model, params=init_params).outputs()
-    plot_b2kstmumu = PlotFit(cut_b2kstmumu, fit_b2kstmumu[1], components=['sigMassPdf1', 'sigMassPdf2', 'bkgMassPdf']).outputs()
-    weighted_b2kstmumu = CalcSWeights(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
-    roc_plot  = CalcROCFromWeights(classified_b2kstmumu, weighted_b2kstmumu).outputs()
+    fit_b2kstmumu        = RooFit(classified_b2kstmumu, model_b2kstmumu, params=init_params_b2kstmumu).outputs()
+    plot_b2kstmumu       = PlotFit(cut_b2kstmumu,
+                                   fit_b2kstmumu[1],
+                                   path=DATASTORE + 'b2kstmumu_data_fit.pdf',
+                                   components=['sigMassPdf1', 'sigMassPdf2', 'bkgMassPdf']).outputs()
+    weighted_b2kstmumu   = CalcSWeights(cut_b2kstmumu, fit_b2kstmumu[1]).outputs()
+    control_channel      = RunNotebook(control_channel, [weighted_b2kstmumu]).outputs()
 
-    require(selected_b2dmumu)
+    require([plot_bkg_only_fit])
 

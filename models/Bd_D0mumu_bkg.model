@@ -1,0 +1,14 @@
+
+B_M[5180, 5500]
+
+# Signal Mass
+# Background Mass
+expr::bkgMassExpoVar('5279 - B_M', B_M)
+#expr::lbgMassExpoVar('5279 - B_M', B_M)
+Exponential::model(bkgMassExpoVar, bkgMassSlope[0.005, 0, 2])
+#Exponential::lbgMassPdf(lbgMassExpoVar, lbgMassSlope[0.005, 0, 2])
+
+# Total
+#, lbgYield[1000, 0, 100000] * lbgMassPdf)
+
+# vim: ft=python

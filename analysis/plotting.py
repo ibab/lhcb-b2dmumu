@@ -90,12 +90,15 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
 
     ax = plt.subplot(gs[0])
 
-    if components:
-        for c, name in zip(comps, components):
-            if labels:
-                plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False, label=labels[name])
-            else:
-                plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False)
+    for c in comps:
+        plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False)
+
+    #if components:
+    #    for c, name in zip(comps, components):
+    #        if labels:
+    #            plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False, label=labels[name])
+    #        else:
+    #            plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False)
 
     plt.plot(x, f(x), 'r-', zorder=95, clip_on=False)
     if log:
@@ -125,7 +128,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     plt.ylabel('$\\frac{\\hat{\\mu}_i -  \\mu_i}{\\sigma_i}$')
 
     if xlabel:
-        plt.xlabel(xlabel, ha='right', x=0.9)
+        plt.xlabel(xlabel, ha='right', x=1)
 
     plt.xlim(var.getMin(), var.getMax())
     plt.ylim(-3, 3)
@@ -154,7 +157,7 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
     if not extra_params:
         extra_params = []
 
-    from numpy import vectorize
+    from numpy import vectorize, nan
     from ROOT import RooCurve, Double, RooFit
 
     model.plotOn(frame, RooFit.NumCPU(numcpus), *extra_params)
@@ -163,12 +166,52 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
         for c in components:
             model.plotOn(frame, RooFit.NumCPU(numcpus), RooFit.Components(c), *extra_params)
 
+    # Collect all function objects, their names and ranges
     funcs = []
     for idx in range(1, int(frame.numItems())):
         curr = frame.getObject(idx)
-        funcs.append(vectorize(lambda x, curr=curr: norm * curr.Eval(x)))
-    
-    return funcs[0], funcs[1:]
+        name = curr.GetName()
+        
+        from ROOT import Double
+        xmin = Double(0)
+        xmax = Double(0)
+        ymin = Double(0)
+        ymax = Double(0)
+        curr.ComputeRange(xmin, ymin, xmax, ymax)
+
+        funcs.append((curr, name, (xmin, xmax)))
+
+    func_results = [[]]
+
+    import re
+    # Process the functions, combine them if they belong together
+    curr_component = ''
+    for fobj, name, (xmin, xmax) in funcs:
+
+        if 'Comp' in name:
+            comp_name = re.findall(r'_Comp\[[^\]]*\]', name)[0]
+        else:
+            comp_name = ''
+
+        if curr_component == comp_name:
+            func_results[-1].append((fobj, (xmin, xmax)))
+        else:
+            func_results.append([(fobj, (xmin, xmax))])
+
+    logger.warn('Results is: {}'.format(func_results))
+    results = []
+    for entry in func_results:
+        @vectorize
+        def myfunc(x, entry=entry):
+            for fobj, (xmin, xmax) in entry:
+                if xmin < x < xmax:
+                    return norm * fobj.Eval(x)
+            else:
+                return nan
+        
+        results.append(myfunc)
+
+    return results[0], results[1:]
 
 def get_binned_data(x, frame, data, extra_params=None, binning=None):
     if not extra_params:

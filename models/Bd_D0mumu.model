@@ -1,0 +1,39 @@
+
+B_M[5050, 5600]
+
+# Constraints
+#Gaussian::signalEffGeomPdf(signalEffGeom[0.15791, 0,1], 0.15791, 0.00048)
+#Gaussian::signalEffStripPdf(signalEffStrip[0.109938, 0,1], 0.109938, 0.000310)
+#Gaussian::signalEffTriggPdf(signalEffTrigg[0.841367, 0,1], 0.841367, 0.001092)
+#Gaussian::controlEffGeomPdf(controlEffGeom[0.160500,0,1], 0.160500, 0.00043)
+#Gaussian::controlEffStripPdf(controlEffStrip[0.30051197,0,1], 0.30051197, 0.000154)
+#Gaussian::controlEffTriggPdf(controlEffTrigg[0.907331,0,1], 0.907331, 0.0001777)
+#Gaussian::controlYieldPdf(controlYield[300000, 1000000], 300000, 1000)
+#Gaussian::controlBRPdf(controlBR[0.00129,0,1], 0.00129, 0.00005)
+#expr::controlEff('controlEffGeom * controlEffStrip * controlEffTrigg', controlEffGeom, controlEffStrip, controlEffTrigg)
+#expr::sigEff('signalEffGeom * signalEffStrip * signalEffTrigg', signalEffGeom, signalEffStrip, signalEffTrigg)
+#expr::alpha('controlBR / (controlEff / (sigEff * controlYield))', controlBR, controlEff, sigEff, controlYield)
+
+Gaussian::alphaPdf(alpha[1.1309301473056417e-09, 0, 1], 1.1309301473056417e-09, 6.96140625887701e-11)
+expr::sigYield('signalBR / alpha', signalBR[0.000000001, 0, 1], alpha)
+
+# Signal Mass
+sigMassMean[5279.3, 5100, 5400]
+Gaussian::sigMassPdf1(B_M, sigMassMean, sigMassSigma1[20, 4, 30])
+Gaussian::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[30, 9, 80])
+
+SUM::sigMassPdf(frac[0.2, 0, 1] * sigMassPdf1, sigMassPdf2)
+
+# Background Mass
+expr::bkgMassExpoVar('5279 - B_M', B_M)
+#expr::lbgMassExpoVar('5279 - B_M', B_M)
+Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0.00000, 1])
+#Exponential::lbgMassPdf(lbgMassExpoVar, lbgMassSlope[0.005, 0, 2])
+
+SUM::bkgMassPdfExtended(bkgYield[600, 0, 10000] * bkgMassPdf)
+
+# Total
+SUM::model(sigYield * sigMassPdf, bkgYield * bkgMassPdf)
+#, lbgYield[1000, 0, 100000] * lbgMassPdf)
+
+# vim: ft=python

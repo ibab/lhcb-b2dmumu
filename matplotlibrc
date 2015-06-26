@@ -38,16 +38,16 @@ lines.markersize:      8
 #savefig.bbox:       tight
 #savefig.pad_inches: 0.1
 
-xtick.major.size:  24
-xtick.minor.size:  7
+xtick.major.size:  10
+xtick.minor.size:  5
 xtick.major.width: 1.5
 xtick.minor.width: 1.5
 xtick.major.pad:   10
 xtick.minor.pad:   10
 xtick.labelsize:   22
 
-ytick.major.size:  24
-ytick.minor.size:  7
+ytick.major.size:  10
+ytick.minor.size:  5
 ytick.major.width: 1.5
 ytick.minor.width: 1.5
 ytick.major.pad:   10

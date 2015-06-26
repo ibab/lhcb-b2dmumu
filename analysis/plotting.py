@@ -125,7 +125,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
 
     #plt.axhline(0, color='black')
     #plt.axhline(3, color='black')
-    plt.ylabel('$\\frac{\\hat{\\mu}_i -  \\mu_i}{\\sigma_i}$')
+    plt.ylabel('$\\frac{\\hat{n}_i -  n_i}{\\sigma(n_i)}$')
 
     if xlabel:
         plt.xlabel(xlabel, ha='right', x=1)
@@ -193,12 +193,14 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
         else:
             comp_name = ''
 
+        logger.debug('Processing {} {}'.format(name, comp_name))
+
         if curr_component == comp_name:
             func_results[-1].append((fobj, (xmin, xmax)))
         else:
             func_results.append([(fobj, (xmin, xmax))])
 
-    logger.warn('Results is: {}'.format(func_results))
+    logger.debug('Results is: {}'.format(func_results))
     results = []
     for entry in func_results:
         @vectorize

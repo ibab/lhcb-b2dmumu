@@ -1,39 +1,45 @@
 
-B_M[5050, 5600]
+B_M[4800, 6500]
+D~0_M[1800, 1930]
 
 # Constraints
-#Gaussian::signalEffGeomPdf(signalEffGeom[0.15791, 0,1], 0.15791, 0.00048)
-#Gaussian::signalEffStripPdf(signalEffStrip[0.109938, 0,1], 0.109938, 0.000310)
-#Gaussian::signalEffTriggPdf(signalEffTrigg[0.841367, 0,1], 0.841367, 0.001092)
-#Gaussian::controlEffGeomPdf(controlEffGeom[0.160500,0,1], 0.160500, 0.00043)
-#Gaussian::controlEffStripPdf(controlEffStrip[0.30051197,0,1], 0.30051197, 0.000154)
-#Gaussian::controlEffTriggPdf(controlEffTrigg[0.907331,0,1], 0.907331, 0.0001777)
-#Gaussian::controlYieldPdf(controlYield[300000, 1000000], 300000, 1000)
-#Gaussian::controlBRPdf(controlBR[0.00129,0,1], 0.00129, 0.00005)
-#expr::controlEff('controlEffGeom * controlEffStrip * controlEffTrigg', controlEffGeom, controlEffStrip, controlEffTrigg)
-#expr::sigEff('signalEffGeom * signalEffStrip * signalEffTrigg', signalEffGeom, signalEffStrip, signalEffTrigg)
-#expr::alpha('controlBR / (controlEff / (sigEff * controlYield))', controlBR, controlEff, sigEff, controlYield)
-
 Gaussian::alphaPdf(alpha[1.1309301473056417e-09, 0, 1], 1.1309301473056417e-09, 6.96140625887701e-11)
 expr::sigYield('signalBR / alpha', signalBR[0.000000001, 0, 1], alpha)
 
-# Signal Mass
+# Signal B mass
 sigMassMean[5279.3, 5100, 5400]
 Gaussian::sigMassPdf1(B_M, sigMassMean, sigMassSigma1[20, 4, 30])
 Gaussian::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[30, 9, 80])
+SUM::sigMassPdfB(sigFracB[0.2, 0, 1] * sigMassPdf1, sigMassPdf2)
+# Signal D mass
+sigMassMeanD[1860, 1800, 1920]
+Gaussian::sigMassPdfD1(D~0_M, sigMassMeanD, sigMassSigmaD1[10, 0, 40])
+Gaussian::sigMassPdfD2(D~0_M, sigMassMeanD, sigMassSigmaD2[20, 0, 40])
+SUM::sigMassPdfD(sigFracD[0.2, 0, 1] * sigMassPdfD1, sigMassPdfD2)
+# Total signal
+PROD::sigMassPdf(sigMassPdfB, sigMassPdfD)
 
-SUM::sigMassPdf(frac[0.2, 0, 1] * sigMassPdf1, sigMassPdf2)
+# Exponential background B Mass
+expr::bkgMassExpoVarB('5279 - B_M', B_M)
+Exponential::bkgMassPdfB(bkgMassExpoVarB, bkgMassSlopeB[0.005, -1, 1])
+# Exponential background D Mass
+expr::bkgMassExpoVarD('1860 - D~0_M', D~0_M)
+Exponential::bkgMassPdfD(bkgMassExpoVarD, bkgMassSlopeD[0, -1, 1])
+# Total exponential background
+PROD::bkgMassPdf(bkgMassPdfB, bkgMassPdfD)
 
-# Background Mass
-expr::bkgMassExpoVar('5279 - B_M', B_M)
-#expr::lbgMassExpoVar('5279 - B_M', B_M)
-Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0.00000, 1])
-#Exponential::lbgMassPdf(lbgMassExpoVar, lbgMassSlope[0.005, 0, 2])
+# PeakingD background B Mass
+expr::lbgMassExpoVarB('5279 - B_M', B_M)
+Exponential::lbgMassPdfB(lbgMassExpoVarB, lbgMassSlopeB[0.005, -1, 1])
+# PeakingD background D mass
+Gaussian::lbgMassPdfD(D~0_M, lbgMassMeanD[1860, 1800, 1920], lbgMassSigmaD[6, 0, 50])
+# Total peakingD background
+PROD::lbgMassPdf(lbgMassPdfB, lbgMassPdfD)
 
-SUM::bkgMassPdfExtended(bkgYield[600, 0, 10000] * bkgMassPdf)
+bkgYield[600, 0, 20000]
+SUM::fullBkgMassPdf(bkgFrac[0.5, 0, 1] * lbgMassPdf, bkgMassPdf)
 
-# Total
-SUM::model(sigYield * sigMassPdf, bkgYield * bkgMassPdf)
-#, lbgYield[1000, 0, 100000] * lbgMassPdf)
+# Total everything
+SUM::model(sigYield * sigMassPdf, bkgYield * fullBkgMassPdf)
 
 # vim: ft=python

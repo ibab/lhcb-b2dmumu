@@ -252,12 +252,12 @@ class Select(Task):
 
         if self.jpsi_inside:
             selection = [
-                'Psi_M > 2860 && Psi_M < 3200',
+                'Psi_M > 2850 && Psi_M < 3200',
             ]
         else:
             selection = [
                 # Exclude J/psi
-                'Psi_M < 2860 | Psi_M > 3200',
+                'Psi_M < 2850 | Psi_M > 3200',
                 # Kinematic range ends below this
                 'Psi_M < 3500',
             ]
@@ -289,12 +289,16 @@ classifier_variables = [
         '{Kplus,piminus,muplus,muminus}_isMuon',
         #'{Kplus,piminus,muplus,muminus}_TRACK_CHI2NDOF',
         #'D~0_CosTheta',
+        # New ideas:
+        'B_TAU',
+        'D~0_TAU',
 ]
 
 class ApplyCut(Task):
     infile = Input()
     cuts = Input()
     key = Input(default='')
+    insert = Input(default=[])
 
     def outputs(self):
         if self.key is '':
@@ -305,118 +309,17 @@ class ApplyCut(Task):
 
     def run(self):
         from analysis.util import prepare_sel
-        df = read_root(self.infile.path(), where=prepare_sel(self.cuts))
+
+        inserts = []
+        for ins in self.insert:
+            if isinstance(ins, PyTarget):
+                ins = ins.get()
+            inserts.insert(ins)
+
+        cuts = self.cuts.format(inserts)
+
+        df = read_root(self.infile.path(), where=prepare_sel(cuts))
         df.to_root(self.outputs().path())
-
-class TrainClassifier(Task):
-    signal = Input()
-    background = Input()
-    name = Input(default='xgboost')
-    folds = Input(default=5)
-
-    def outputs(self):
-        return PyTarget('clf')
-
-    def run(self):
-
-        from analysis.util import prepare_sel
-        from sklearn.tree import DecisionTreeClassifier
-        from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-        from rep.classifiers.xgboost import XGBoostClassifier
-        from rep.classifiers.tmva import TMVAClassifier
-
-        classifiers = {
-          'xgboost':  XGBoostClassifier(n_estimators=300, gamma=2, max_depth=7, verbose=1, nthreads=4),
-        }
-
-        clf = classifiers[self.name]
-
-        select_sidebands = [
-                #'(B_M > 5300)',
-                '(B_M > 5000)',
-        ]
-
-        step = 1
-        bkg = read_root(self.background.path(), columns=classifier_variables, where=prepare_sel(select_sidebands), step=4*step).dropna()
-        sig = read_root(self.signal.path(), columns=classifier_variables, step=step).dropna()
-
-        logger.info('Signal events: {}'.format(len(sig)))
-        logger.info('Backg. events: {}'.format(len(bkg)))
-
-        X = np.vstack([bkg.values, sig.values])
-        y = np.append(np.zeros(len(bkg)), np.ones(len(sig)))
-
-        clf.fit(X, y)
-
-        self.outputs().set(clf)
-
-class ApplyClassifier(Task):
-    infile = Input()
-    clf = Input()
-    name = Input(default='classifier')
-
-    def outputs(self):
-        return LocalFile(self.infile.path().replace('.root', '.ApplyClassifier_{}.root'.format(self.name)))
-
-    def run(self):
-        clf = self.clf.get()
-        data = read_root(self.infile.path(), columns=classifier_variables)
-        def logit(x):
-            return np.log(x / (1 - x))
-
-        pred = logit(clf.predict_proba(data.values)[:,1])
-        data = read_root(self.infile.path())
-        data[self.name] = pred
-        data.to_root(self.outputs().path())
-
-class KFoldCrossValidation(Task):
-    signal = Input()
-    background = Input()
-    clf = Input()
-
-    def outputs(self):
-        return LocalFile(self.signal.path().replace('.root', '.KFoldCrossValidation.root'))
-
-    def run(self):
-        from analysis.classification import evaluate_classifier
-
-        clf = self.clf
-        step = 1
-
-        sig = read_root(self.signal.path(), columns=classifier_variables, step=step).dropna()
-        bkg = read_root(self.background.path(), columns=classifier_variables, step=step * 5).dropna()
-        data = pd.concat([sig, bkg], keys=['sig', 'bkg'])
-
-        X = data.values.astype('float32')
-        y = np.append(np.ones(len(sig)), np.zeros(len(bkg)))
-
-        from sklearn.cross_validation import StratifiedKFold
-        from sklearn.metrics import roc_auc_score
-        from sklearn.base import clone
-        from scipy.special import logit
-
-        classifiers = []
-        data['signal'] = y
-        data['fold'] = 0
-        data['decision'] = 0.
-        data['proba'] = 0.
-
-        skf = StratifiedKFold(y, n_folds=5, shuffle=True, random_state=0)
-        for i, (train, test) in enumerate(skf):
-            classifier = clone(clf)
-            logger.info('Training fold {}'.format(i))
-            classifier.fit(X[train], y[train])
-            logger.info('Predicting fold {}'.format(i))
-            proba = classifier.predict_proba(X[test])[:,1]
-            data['fold'].values[test] = i + 1
-            data['proba'].values[test] = proba
-
-            data['decision'].values[test] = logit(proba)
-            classifiers.append(classifier)
-
-        score = roc_auc_score(data['signal'], data['decision'])
-        logger.info('ROC AUC: {}'.format(score))
-        data.to_root(self.outputs().path())
 
 class KFoldTrainAndApply(Task):
     signal = Input()
@@ -424,14 +327,13 @@ class KFoldTrainAndApply(Task):
     clf = Input()
 
     def outputs(self):
-        return LocalFile(self.signal.path().replace('.root', '.KFoldTrainAndApply.root'))
+        return LocalFile(self.signal.path().replace('.root', '.KFoldTrainAndApply.root')), LocalFile(self.signal.path().replace('.root', '.TrainTestSet.root'))
 
     def run(self):
         clf = self.clf
         step = 1
 
-        select_sidebands = 'B_M > 5300 & B_M < 5700'
-
+        select_sidebands = 'B_M > 5800 & B_M < 6300'
         sig = read_root(self.signal.path(), columns=classifier_variables, step=step).dropna()
         bkg = read_root(self.background.path(), columns=classifier_variables, step=step, where=select_sidebands).dropna()
         data = pd.concat([sig, bkg], keys=['sig', 'bkg'])
@@ -467,7 +369,16 @@ class KFoldTrainAndApply(Task):
         from scipy.special import logit
         ret['clf'] = logit(ret['proba'])
 
-        ret.to_root(self.outputs().path())
+        ret.to_root(self.outputs()[0].path())
+
+        ret2_vars = dict()
+        ret2_vars['y_true'] = y
+        ret2_vars['proba'] = skf.predict_proba(X)[:,1]
+
+        ret2 = pd.DataFrame(ret2_vars)
+
+        ret2.to_root(self.outputs()[1].path())
+
 
 class RooFit(Task):
     infile = Input()
@@ -691,6 +602,55 @@ class RunNotebook(Task):
 
         runipy([nbpath, self.outputs().path()], _out='/dev/stdout', _err='/dev/stderr')
 
+class CalculateOptimalMetric(Task):
+    signal = Input()
+    background = Input()
+    traintest = Input()
+
+    def outputs(self):
+        return PyTarget('OptimalThreshold')
+
+    def run(self):
+        if isinstance(self.signal, PyTarget):
+            s = self.signal.get()
+        else:
+            s = self.signal
+
+        if isinstance(self.background, PyTarget):
+            b = self.background.get()
+        else:
+            b = self.background
+
+        def punzi(s, b, sigma=5):
+            return s / (np.sqrt(b) + sigma / 2)
+
+        from rep.report.metrics import OptimalMetric
+        metric = OptimalMetric(punzi, s, b)
+
+        from root_pandas import read_root
+        df = read_root(self.traintest.path())
+
+        p1 = df.proba.ravel()
+
+        proba = np.zeros((p1.shape[0], 2))
+        proba[:,1] = p1
+
+        thresh, m_values = metric.compute(df.y_true, proba)
+
+        from scipy.special import logit
+
+        x = logit(thresh)
+
+        import matplotlib.pyplot as plt
+        plt.plot(x, m_values)
+        plt.savefig('test.pdf')
+
+        val = x[np.argmax(m_values)]
+
+        logger.info('Optimal FOM threshold: {}'.format(val))
+
+        self.outputs().set(val)
+
 if __name__ == '__main__':
 
     b2dmumu = {
@@ -731,18 +691,27 @@ if __name__ == '__main__':
         decay['mc_selected'], decay['mc_selected_eff'] = Select(decay['mc_triggered'], jpsi_inside=decay['contains_jpsi']).outputs()
 
         # Train and apply classifier
-        from rep.classifiers.xgboost import XGBoostClassifier
+        from rep.estimators.xgboost import XGBoostClassifier
         clf = XGBoostClassifier(n_estimators=150, gamma=12, max_depth=10, verbose=1, nthreads=4)
 
         #classified_b2dmumu_debug = KFoldCrossValidation(signal=selected_b2dmumu_mc, background=selected_b2dmumu, clf=clf).outputs()
-        decay['classified'] = KFoldTrainAndApply(signal=decay['mc_selected'], background=decay['selected'], clf=clf).outputs()
+        decay['classified'], decay['traintest'] = KFoldTrainAndApply(signal=decay['mc_selected'], background=decay['selected'], clf=clf).outputs()
 
-        # TODO find optimal fom
-        decay['classified_cut'] = ApplyCut(decay['classified'], ['clf > 4']).outputs()
-
-        # Perform fits to get parameters for expected limit
         decay['model'] = LocalFile('models/Bd_D0mumu.model')
 
+        bkg_only_fit_precut = RooFit(
+                          decay['classified'],
+                          decay['model'],
+                          model_name='fullBkgMassPdf',
+                          key=3,
+                       ).outputs()
+
+        bkg_yield_precut = bkg_only_fit_precut[3]
+        decay['fom'] = CalculateOptimalMetric(1., bkg_yield_precut, decay['traintest']).outputs()
+
+        decay['classified_cut'] = ApplyCut(decay['classified'], ['clf > {}'], insert=[decay['fom']]).outputs()
+
+        # Perform fits to get parameters for expected limit
         sig_only_fit = RooFit(
                 decay['mc_selected'],
                 decay['model'],
@@ -855,5 +824,5 @@ if __name__ == '__main__':
     control_channel      = RunNotebook(control_channel, [weighted_b2kstmumu]).outputs()
     """
 
-    require([b2dmumu['expected']])
-    #require([plot_bkg_only_fit, plot_bkg_only_fit_d, plot_sig_only_fit, plot_sig_only_fit_d])
+    #require([b2dmumu['fom']])
+    require([plot_bkg_only_fit, plot_bkg_only_fit_d, plot_sig_only_fit, plot_sig_only_fit_d])

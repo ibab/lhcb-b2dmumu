@@ -23,7 +23,7 @@ def calc_expected_limit(model_file, data, fix_params=None, set_params=None):
             for name, val in set_params.items():
                 ws.var(name).setVal(val[0])
                 ws.var(name).setError(val[1])
-        
+
         #bkg = ws.var('bkgYield')
         #bkg.setMin(0)
         #bkg.setMax(100)
@@ -46,7 +46,7 @@ def calc_expected_limit(model_file, data, fix_params=None, set_params=None):
         mc.SetParametersOfInterest(interest)
 
         datasets = []
-        for i in range(10000):
+        for i in range(100):
             data_this = data.Clone()
             # This doesn't take into account the fit error
             expected = ws.var('bkgYield').getVal()
@@ -58,7 +58,7 @@ def calc_expected_limit(model_file, data, fix_params=None, set_params=None):
             data_gen = model.generate(args, actual)
             ws.var('B_M').setMin(4800)
             ws.var('B_M').setMax(6500)
-            logger.error('numEntries: {}'.format(data_gen.numEntries()))
+            logger.debug('numEntries: {}'.format(data_gen.numEntries()))
             data_this.append(data_gen)
             if i == 0:
                 f = ROOT.TFile('test.root', 'recreate')
@@ -71,7 +71,7 @@ def calc_expected_limit(model_file, data, fix_params=None, set_params=None):
         for i, data in enumerate(datasets):
             this_mc = mc.Clone()
             this_mc.SetName('config_{}'.format(i))
-            data.Print()
+            #data.Print()
             plc = ROOT.RooStats.ProfileLikelihoodCalculator(data, this_mc)
             plc.SetTestSize(.10)
             plc_interval = plc.GetInterval()
@@ -101,4 +101,3 @@ def calc_expected_limit(model_file, data, fix_params=None, set_params=None):
         plt.tight_layout()
         plt.savefig('store/tmp/expected.pdf')
         return limits
-

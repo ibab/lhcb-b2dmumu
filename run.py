@@ -133,7 +133,7 @@ class Reduce(Task):
         name = os.path.basename(self.infile.path())
         outfile = LocalFile(DATASTORE + name.replace('.root', '.' + self.__class__.__name__ + '.root'))
         return outfile
-    
+
     def run(self):
         from analysis.util import calc_tau
 
@@ -176,7 +176,7 @@ class ResamplePID(Task):
         from analysis.pid_resample import Resampler
         __import__('__main__').Resampler = Resampler # for pickle
 
-        resamplers = {                                                                                                        
+        resamplers = {
             'Kplus': './store/resamplers/Kaon_Stripping20_MagnetUp.pkl',
             'piminus': './store/resamplers/Pi_Stripping20_MagnetUp.pkl',
             'muplus':  './store/resamplers/Mu_Stripping20_MagnetUp.pkl',
@@ -244,7 +244,8 @@ class Select(Task):
     def outputs(self):
         name = os.path.basename(self.infile.path())
         outfile = LocalFile(DATASTORE + name.replace('.root', '.' + self.__class__.__name__ + '.root'))
-        return outfile
+        efficiency = PyTarget('efficiency')
+        return (outfile, efficiency)
 
     def run(self):
         from analysis.util import prepare_sel
@@ -256,22 +257,24 @@ class Select(Task):
         else:
             selection = [
                 # Exclude J/psi
-                'Psi_M < 2860 || Psi_M > 3200',
+                'Psi_M < 2860 | Psi_M > 3200',
                 # Kinematic range ends below this
                 'Psi_M < 3500',
             ]
 
-
-        # Filter particle ID variables for true Kaon and true Pion
-        pid_cuts = [
-            #'Kplus_PIDK > 0',
-            #'piminus_PIDK < 0',
-            'Kplus_isMuonLoose == 0',
-            'piminus_isMuonLoose == 0',
-        ]
-
+        df = read_root(self.infile.path())
+        initial = len(df)
+        df = df.query(prepare_sel(selection))
+        after = len(df)
         df = read_root(self.infile.path(), where=prepare_sel(selection))
-        df.to_root(self.outputs().path())
+
+        df.to_root(self.outputs()[0].path())
+
+        eff = float(after) / initial
+
+        logger.info('Selection efficiency: {}'.format(eff))
+
+        self.outputs()[1].set(eff)
 
 classifier_variables = [
         'B_DiraAngle',
@@ -354,7 +357,7 @@ class ApplyClassifier(Task):
 
     def outputs(self):
         return LocalFile(self.infile.path().replace('.root', '.ApplyClassifier_{}.root'.format(self.name)))
-    
+
     def run(self):
         clf = self.clf.get()
         data = read_root(self.infile.path(), columns=classifier_variables)
@@ -373,7 +376,7 @@ class KFoldCrossValidation(Task):
 
     def outputs(self):
         return LocalFile(self.signal.path().replace('.root', '.KFoldCrossValidation.root'))
-    
+
     def run(self):
         from analysis.classification import evaluate_classifier
 
@@ -699,7 +702,7 @@ if __name__ == '__main__':
             'contains_jpsi': True,
     }
 
-    #  PROCESS SIGNAL
+    # PROCESS SIGNAL
     for decay in [b2dmumu]:
         decay['inputs'] = [
                 # Same data files used for mumu and Jpsi
@@ -718,14 +721,14 @@ if __name__ == '__main__':
         decay['input']     = RootAppend(decay['inputs'], 'DATA_B2D0mumu_ALL.root').outputs()
         decay['reduced']   = Reduce(decay['input'], variables_b2dmumu, treename='B2XMuMu_Line_TupleDST/DecayTree', blinded=True).outputs()
         decay['triggered'] = ApplyTrigger(decay['reduced']).outputs()
-        decay['selected']  = Select(decay['triggered'], jpsi_inside=decay['contains_jpsi']).outputs()
+        decay['selected'], decay['selected_eff'] = Select(decay['triggered'], jpsi_inside=decay['contains_jpsi']).outputs()
 
         # Prepare simulation
         decay['mc_input']     = RootAppend(decay['mc_inputs'], 'SIM_Bd_D0mumu_ALL.root').outputs()
         decay['mc_reduced']   = Reduce(decay['mc_input'], variables_b2dmumu + mc_variables, treename='B2XMuMu_Line_TupleMC/DecayTree').outputs()
-        decay['mc_resampled'] = ResamplePID(decay['mc_reduced']).outputs() 
+        decay['mc_resampled'] = ResamplePID(decay['mc_reduced']).outputs()
         decay['mc_triggered'] = ApplyTrigger(decay['mc_resampled']).outputs()
-        decay['mc_selected']  = Select(decay['mc_triggered'], jpsi_inside=decay['contains_jpsi']).outputs()
+        decay['mc_selected'], decay['mc_selected_eff'] = Select(decay['mc_triggered'], jpsi_inside=decay['contains_jpsi']).outputs()
 
         # Train and apply classifier
         from rep.classifiers.xgboost import XGBoostClassifier
@@ -735,7 +738,7 @@ if __name__ == '__main__':
         decay['classified'] = KFoldTrainAndApply(signal=decay['mc_selected'], background=decay['selected'], clf=clf).outputs()
 
         # TODO find optimal fom
-        decay['classified_cut'] = ApplyCut(decay['classified'], ['clf > 5']).outputs()
+        decay['classified_cut'] = ApplyCut(decay['classified'], ['clf > 4']).outputs()
 
         # Perform fits to get parameters for expected limit
         decay['model'] = LocalFile('models/Bd_D0mumu.model')
@@ -789,7 +792,7 @@ if __name__ == '__main__':
                                 binning=100,
                                 log=False,
                             ).outputs()
-        
+
         # Calculate the expected limit
 
         sig_only_fitresults = sig_only_fit[2]
@@ -808,6 +811,8 @@ if __name__ == '__main__':
                     'sigMassMeanD':   sig_only_fitresults,
                     'sigMassSigmaD1': sig_only_fitresults,
                     'sigMassSigmaD2': sig_only_fitresults,
+
+                    'bkgFrac':        bkg_only_fitresults,
                     'bkgMassSlopeB':  bkg_only_fitresults,
                     'bkgMassSlopeD':  bkg_only_fitresults,
                     'lbgMassSlopeB':  bkg_only_fitresults,
@@ -852,4 +857,3 @@ if __name__ == '__main__':
 
     require([b2dmumu['expected']])
     #require([plot_bkg_only_fit, plot_bkg_only_fit_d, plot_sig_only_fit, plot_sig_only_fit_d])
-

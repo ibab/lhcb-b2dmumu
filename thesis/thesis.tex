@@ -1,0 +1,115 @@
+
+\RequirePackage{fixltx2e}
+\documentclass[
+  %tucolor,
+  BCOR=12mm,
+  parskip=half,
+  open=any,
+]{tudothesis}
+
+
+\usepackage[aux]{rerunfilecheck}
+
+\setcounter{tocdepth}{1}
+
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Linux Libertine O}
+\setsansfont{Linux Biolinum O}
+
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+
+\setotherlanguages{german}
+
+\usepackage[autostyle]{csquotes}
+
+\usepackage{microtype}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+\usepackage[italic]{hepnicenames}
+\usepackage[
+  math-style=ISO,
+  bold-style=ISO,
+  sans-style=italic,
+  nabla=upright,
+  partial=upright,
+]{unicode-math}
+
+\usepackage{xfrac}  
+
+\usepackage[
+  locale=DE,
+  separate-uncertainty=true,
+  per-mode=symbol-or-fraction,
+]{siunitx}
+\sisetup{math-micro=\text{µ},text-micro=µ}
+
+\usepackage{booktabs}
+
+\usepackage{graphicx}
+\usepackage{grffile}
+
+\usepackage{scrhack}
+\usepackage{float}
+\floatplacement{figure}{htbp}
+\floatplacement{table}{htbp}
+
+
+\usepackage[section, below]{placeins}
+
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{arrows.meta}
+
+\usepackage[
+  backend=biber,
+  autolang=hyphen,
+]{biblatex}
+\addbibresource{references.bib}
+\DefineBibliographyStrings{german}{andothers = {{et\,al\adddot}}} 
+
+\usepackage[pdfusetitle,unicode,linkbordercolor=tugreen]{hyperref}
+\usepackage{bookmark}
+\usepackage[shortcuts]{extdash}
+
+\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.7ex)--(0.9em,0.7ex);\kern+0.1em$\mathbf{D\mu\mu}$}{B → Dμμ}}
+
+\author{Igor Babuschkin}
+\title{Search for Rare \bolddecay{} Decays at LHCb}
+\date{2015}
+\birthplace{Krasnoobsk}
+\chair{Lehrstuhl für Experimentelle Physik V}
+\division{Fakultät Physik}
+\thesisclass{Master of Science}
+\submissiondate{31. September 2015}
+\firstcorrector{Prof.~Dr.~Spaan}
+\secondcorrector{Prof.~Dr.~Zweitgutachter}
+
+\titlehead{\includegraphics[height=1.5cm]{logos/tu-logo.pdf}}
+
+\begin{document}
+\frontmatter
+\maketitle
+
+\makecorrectorpage
+
+\input{abstract.tex}
+\tableofcontents
+
+\mainmatter
+\input{./contents.tex}
+
+\appendix
+\input{./appendix.tex}
+
+\backmatter
+\printbibliography
+
+\cleardoublepage
+\input{./eid_versicherung.tex}
+\end{document}

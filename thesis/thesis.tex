@@ -7,10 +7,9 @@
   open=any,
 ]{tudothesis}
 
-
 \usepackage[aux]{rerunfilecheck}
 
-\setcounter{tocdepth}{1}
+\setcounter{tocdepth}{2}
 
 \usepackage{fontspec}
 \defaultfontfeatures{Ligatures=TeX}
@@ -58,7 +57,6 @@
 \floatplacement{figure}{htbp}
 \floatplacement{table}{htbp}
 
-
 \usepackage[section, below]{placeins}
 
 \usepackage{enumitem}
@@ -71,16 +69,17 @@
   autolang=hyphen,
 ]{biblatex}
 \addbibresource{references.bib}
-\DefineBibliographyStrings{german}{andothers = {{et\,al\adddot}}} 
+%\DefineBibliographyStrings{german}{andothers = {{et\,al\adddot}}} 
 
 \usepackage[pdfusetitle,unicode,linkbordercolor=tugreen]{hyperref}
 \usepackage{bookmark}
 \usepackage[shortcuts]{extdash}
 
+\DeclareRobustCommand{\decay}{\texorpdfstring{$B^0\to \overline{D}^0\mu^+\mu^-$}{B⁰ → D⁰μ⁺μ⁻}}
 \DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.7ex)--(0.9em,0.7ex);\kern+0.1em$\mathbf{D\mu\mu}$}{B → Dμμ}}
 
 \author{Igor Babuschkin}
-\title{Search for Rare \bolddecay{} Decays at LHCb}
+\title{Search for Rare\\ \bolddecay{}\\ Decays at LHCb}
 \date{2015}
 \birthplace{Krasnoobsk}
 \chair{Lehrstuhl für Experimentelle Physik V}

@@ -1,5 +1,5 @@
 
-\RequirePackage{fixltx2e}
+%\RequirePackage{fixltx2e}
 \documentclass[
   %tucolor,
   BCOR=12mm,
@@ -7,14 +7,24 @@
   open=any,
 ]{tudothesis}
 
+\usepackage{expl3}
+
+\ExplSyntaxOn
+\def\tl_case:Nnn{\tl_case:NnF}
+\def\str_case:nnn{\str_case:nnF}
+\def\str_case_x:nnn{\str_case_x:nnF}
+\ExplSyntaxOff
+
 \usepackage[aux]{rerunfilecheck}
 
 \setcounter{tocdepth}{2}
 
 \usepackage{fontspec}
 \defaultfontfeatures{Ligatures=TeX}
-\setmainfont{Linux Libertine O}
-\setsansfont{Linux Biolinum O}
+%\setmainfont{Linux Libertine O}
+%\setsansfont{Linux Biolinum O}
+\setmainfont{Minion Pro}
+\setsansfont{Myriad Pro}
 
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
@@ -28,8 +38,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
-
-\usepackage[italic]{hepnicenames}
+%\usepackage[italic]{hepnicenames}
 \usepackage[
   math-style=ISO,
   bold-style=ISO,
@@ -37,6 +46,7 @@
   nabla=upright,
   partial=upright,
 ]{unicode-math}
+\setmathfont{Latin Modern Math}
 
 \usepackage{xfrac}  
 
@@ -75,12 +85,19 @@
 \usepackage{bookmark}
 \usepackage[shortcuts]{extdash}
 
+\usepackage{todonotes}
+
+\makeatletter
+\newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
+\newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
+\makeatother
+
 \DeclareRobustCommand{\decay}{\texorpdfstring{$B^0\to \overline{D}^0\mu^+\mu^-$}{B⁰ → D⁰μ⁺μ⁻}}
-\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.7ex)--(0.9em,0.7ex);\kern+0.1em$\mathbf{D\mu\mu}$}{B → Dμμ}}
+\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B^{\raisemath{0.2ex}{0}}}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.60ex)--(0.9em,0.60ex);\kern+0.1em $\mathbf{\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^+\!\mu^-}$}{B → Dμμ}}
 
 \author{Igor Babuschkin}
-\title{Search for Rare\\ \bolddecay{}\\ Decays at LHCb}
-\date{2015}
+\title{\textit{Search for the Rare Decay\\ \bolddecay{} at LHCb}}
+\date{September 2015}
 \birthplace{Krasnoobsk}
 \chair{Lehrstuhl für Experimentelle Physik V}
 \division{Fakultät Physik}
@@ -89,7 +106,7 @@
 \firstcorrector{Prof.~Dr.~Spaan}
 \secondcorrector{Prof.~Dr.~Zweitgutachter}
 
-\titlehead{\includegraphics[height=1.5cm]{logos/tu-logo.pdf}}
+\titlehead{\centering\includegraphics[height=2.1cm,trim=0 0 3.6in 0,clip]{logos/tu-logo.pdf}}
 
 \begin{document}
 \frontmatter

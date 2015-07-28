@@ -1,34 +1,129 @@
 
-\chapter{Introduction}
+\chapter{Introduction(1)}
 
-\chapter{Theory}
+\chapter{Theory (4)}
 
 \section{The Standard Model of particle physics}
 
 \section[The decay \decay]{The decay \bolddecay}
 
-\chapter{The LHCb Experiment}
+\chapter{The LHCb Experiment (6)}
 
-\chapter{Overview of the analysis}
+\chapter{Outline of the analysis (2)}
 
-\chapter{Selection}
+\begin{itemize}
+  \item We want to determine limit on $B^0\to \overline{D^0}μ^+μ^-$
+  \item First measurement
+  \item Use control channel $B^0\to J/ψ K^*$ to reduce systematic uncertainties
+  \item Blinded analysis
+  \item Simple preselection
+  \item Vetoes to reject peaking backgrounds: $J/ψ K^*$, $D^{*-}μν$
+  \item Apply multivariate classifier to get rid of background
+  \item Determine trigger efficiency through TISSTOS on control channel
+  \item Determine selection efficiencies trough simulation
+  \item Perform fit to control channel to derive control yield
+  \item Perform 2-dimensional fit to $B$ and $D$ mass to derive signal yield
+  \item Calculate $α$ and use it to transform to branching fraction
+  \item Would be neat to write down how to calculate $α$
+  \item Use Profile Likelihood Ratio to derive limit on branching fraction
+\end{itemize}
+
+\chapter{Selection (18)}
 
 \section{Dataset}
 
+\begin{itemize}
+  \item 3 inverse femtobarn from LHCb Run I (2011+2012)
+  \item Explain trigger lines used
+  \item I used phase space simulation of $B^0\to\overline{D^0}μ^+μ^-$
+  \item Which trigger lines do we use for the control channel? (Same, lol)
+\end{itemize}
+
 \section{Preselection criteria}
 
-\section{Vetos on physical backgrounds}
+\begin{itemize}
+  \item This explains the stripping line cuts
+  \item What did we use for the control channel? Same (lol) with some differences: explain
+  \item How is the blinding cut applied? Use objective criteria!
+  \item How many events end up in the blinded sample?
+  \item How many events do we have in our control channel?
+\end{itemize}
+
+\section{Vetoes to reject specific physical backgrounds}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=0.7\textwidth]{The $B\to Dμμ$ dataset after stripping, with blinding}
+  \caption{A figure of the $B\to Dμμ$ dataset after stripping, with blinding}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=0.7\textwidth]{Reconstructing the $D^*$ invariant mass and spotting background}
+  \caption{Figure for $B^0\to D^{*-}μ^+ν$ background veto}
+\end{figure}
+
+\begin{itemize}
+  \item How does the dataset look after stripping? Dem $J/ψ$ peaks lol
+  \item Remove backgrounds with $J/ψ$ through cut on $μμ$ inv mass
+  \item Reconstruct $D^*$ mass through $\overline{D}^0μ^-$, plot of the peak, veto $B^0\to D^{*-}μ^+ν$
+  \item Treat other part reco as well???
+\end{itemize}
 
 \section{Multivariate classification}
+
+\begin{itemize}
+  \item What is all this ML anyway?
+  \item Way too much background: Looking for N signal events in dataset of K
+  \item Use ML methods to classify combine many variables into one discriminant
+  \item Choose optimal cut on discriminant according to a criterium
+\end{itemize}
+
 \subsection{Gradient Boosted Decision Trees}
+
+\begin{itemize}
+  \item Very short explanation of how the algorithm works
+\end{itemize}
+
 \subsection{Features used in the classification}
+
+\begin{itemize}
+  \item Use phase space signal MC as signal proxy
+  \item Use right sideband as bkg proxy. Why?
+  \item Dem control plots
+  \item Plots of signal MC, sweighted control and control MC
+  \item correlation matrix
+  \item importances?
+\end{itemize}
+
 \subsection{Classification of signal and background}
 
-\section{Optimization of the Figure of Merit}
+\begin{itemize}
+  \item Plot of classifier output for signal MC, sidebands and control signal as well
+  \item Plot of classifier output for control sweighted signal and bkg
+  \item Give a KS test value for the control channel that shows that the classifier is unbiased
+\end{itemize}
+
+\subsection{Optimization of the Figure of Merit}
+
+\begin{itemize}
+  \item Choose an appropriate signal window for this (objectively)
+  \item We want to optimize the classifier cut according to an objective criterium
+  \item Use punzi figure of merit (formula)
+  \item Use signal efficiency for s, don't need total number of signal candidates as it can be factorized and doesn't affect the maximum
+  \item For background efficiency, take efficiency on sidebands. For total number of bkg candidates, perform initial fit (show plot)
+  \item Show plot of FOM depending on cut point
+  \item List maximum value, explain that this was used to cut on clf output
+\end{itemize}
 
 \section{Determination of the signal efficiency}
 
-\chapter{Determination of the expected signal branching ratio}
+\begin{itemize}
+  \item Get stripping efficiency from MC
+  \item Get trigger efficiency from TISTOS on control channel
+\end{itemize}
+
+\chapter{Determination of the expected signal branching ratio (15)}
 
 \section{Maximum Likelihood estimation}
 
@@ -46,8 +141,8 @@
 
 \section{Calculating the expected branching ratio}
 
-\chapter{Systematic uncertainties}
+\chapter{Systematic uncertainties (3)}
 
-\chapter{Conclusion and outlook}
+\chapter{Conclusion and outlook (1)}
 
-
+% vim ft=latex

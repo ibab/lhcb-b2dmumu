@@ -18,6 +18,7 @@
   headings=normal         % size of chapter headings slightly smaller
 ]{scrbook}
 
+\setkomafont{subject}{\Large\sffamily}
 
 % Define our beloved tu colour:
 \RequirePackage{xcolor}

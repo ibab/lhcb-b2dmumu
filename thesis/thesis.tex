@@ -87,13 +87,25 @@
 
 \usepackage{todonotes}
 
+\usepackage{xspace}
+\newcommand*{\eg}{e.g.\@\xspace}
+\newcommand*{\ie}{i.e.\@\xspace}
+
+\makeatletter
+\newcommand*{\etc}{%
+    \@ifnextchar{.}%
+        {etc}%
+        {etc.\@\xspace}%
+}
+\makeatother
+
 \makeatletter
 \newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
 \newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
 \makeatother
 
 \DeclareRobustCommand{\decay}{\texorpdfstring{$B^0\to \overline{D}^0\mu^+\mu^-$}{B⁰ → D⁰μ⁺μ⁻}}
-\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B^{\raisemath{0.2ex}{0}}}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.60ex)--(0.9em,0.60ex);\kern+0.1em $\mathbf{\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^+\!\mu^-}$}{B → Dμμ}}
+\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B^{\raisemath{0.2ex}{0}}}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.60ex)--(0.9em,0.60ex);\kern+0.1em $\mathbf{\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^{\!+}\!\mu^{\!-}}$}{B → Dμμ}}
 
 \author{Igor Babuschkin}
 \title{\textit{Search for the Rare Decay\\ \bolddecay{} at LHCb}}
@@ -120,8 +132,8 @@
 \mainmatter
 \input{./contents.tex}
 
-\appendix
-\input{./appendix.tex}
+%\appendix
+%\input{./appendix.tex}
 
 \backmatter
 \printbibliography

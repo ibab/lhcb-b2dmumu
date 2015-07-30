@@ -1,68 +1,4 @@
 
-\chapter{Introduction} % 1
-
-\begin{itemize}
-  \item What has been measured?
-  \item Which dataset?
-  \item Which experiment?
-  \item What are the goals? 
-    \begin{itemize}
-      \item Investigate non-factorizable hadronic influence: A way to test theory
-      \item Useful to understand effects in $B^0\to K^{*0}\mu\mu$
-    \end{itemize}
-  \item What's the current status of the analysis?
-  \item What are the results of the measurement?
-    \begin{itemize}
-      \item An expected limit on the signal branching fraction
-    \end{itemize}
-\end{itemize}
-
-\chapter{Theory} % 4
-
-\section{The Standard Model of particle physics}
-
-\begin{itemize}
-  \item What is the standard model?
-  \item Why are rare decays interesting?
-  \item Challenges in perturbative QCD
-\end{itemize}
-
-\section[The decay \decay]{The decay \bolddecay}
-
-\begin{itemize}
-  \item summarize theory paper
-\end{itemize}
-
-\chapter{The LHCb Experiment} % 6
-
-Some general info
-\begin{itemize}
-  \item What are the goals of the experiment?
-  \item When was it built?
-  \item How much data was taken so far?
-\end{itemize}
-
-\section{The Large Hadron Collider}
-
-\begin{itemize}
-  \item A nice figure showing the LHC and other facilities
-  \item When was the LHC built?
-  \item Which are the four large experiments and what do they do?
-\end{itemize}
-
-\section{Experimental setup}
-
-Explain the most important components of the LHCb detector.
-Take care to mention how these aid the final analysis.
-\begin{itemize}
-  \item VELO
-  \item Tracking and Magnet
-  \item RICH for particle identification
-  \item muon detector
-\end{itemize}
-
-\section{Trigger and data processing}
-
 \chapter{Outline of the analysis} % 2
 
 \begin{itemize}
@@ -107,13 +43,19 @@ Take care to mention how these aid the final analysis.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=0.7\textwidth]{The $B\to Dμμ$ dataset after stripping, with blinding}
+  \missingfigure[figwidth=\textwidth]{}
   \caption{A figure of the $B\to Dμμ$ dataset after stripping, with blinding}
 \end{figure}
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=0.7\textwidth]{Reconstructing the $D^*$ invariant mass and spotting background}
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Show that phase space ends before the Psi(2S)}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
   \caption{Figure for $B^0\to D^{*-}μ^+ν$ background veto}
 \end{figure}
 
@@ -161,13 +103,39 @@ Take care to mention how these aid the final analysis.
   \item importances?
 \end{itemize}
 
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Overview of all variables used for multivariate classification: signal and control MC, data sidebands}
+\end{figure}
+
+\subsubsection{PID resampling}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{PID resampling control plots}
+\end{figure}
+
 \subsection{Classification of signal and background}
 
 \begin{itemize}
   \item Plot of classifier output for signal MC, sidebands and control signal as well
-  \item Plot of classifier output for control sweighted signal and bkg
+  \item Plot of classifier output for control sweighted signal and MC
   \item Give a KS test value for the control channel that shows that the classifier is unbiased
 \end{itemize}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Plot of classifier output for signal MC, sidebands and control signal}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Plot of classifier output for control sweighted signal and MC}
+\end{figure}
 
 \subsection{Optimization of the Figure of Merit}
 
@@ -180,6 +148,12 @@ Take care to mention how these aid the final analysis.
   \item Show plot of FOM depending on cut point
   \item List maximum value, explain that this was used to cut on clf output
 \end{itemize}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Plot of figure of merit depending on cut point}
+\end{figure}
 
 \section{Determination of the signal efficiency}
 
@@ -196,8 +170,8 @@ Take care to mention how these aid the final analysis.
 
 \section{Maximum Likelihood estimation}
 
-In order to extract an estimate of the number of signal events from the dataset, a \textit{Maximum Likelihood Estimate} (MLE) is performed.
-The MLE is a method to determine the parameters $θ$ of a probability distribution $p(x | θ)$, given the data $x$.
+In order to extract an estimate of the number of signal events from the dataset, a \gls{MLE} is performed.
+The \gls{MLE} is a method to determine the parameters $θ$ of a probability distribution $p(x | θ)$, given the data $x$.
 It is given by
 \begin{equation}
   θ^* = \mathrm{argmax}\ p(θ | x)
@@ -227,7 +201,7 @@ Such an estimate can be obtained through
 \begin{equation}
   N_j = f_j N_\text{total}\:.
 \end{equation}
-To determine the uncertainty of our estimate $N_j$, the uncertainties of $f_j$ (determined from the MLE) and of $N_\text{total}$ have to be propagated, where we have to take into account that $N_\text{total}$ is the result of a Poisson counting experiment.
+To determine the uncertainty of our estimate $N_j$, the uncertainties of $f_j$ (determined from the \gls{MLE}) and of $N_\text{total}$ have to be propagated, where we have to take into account that $N_\text{total}$ is the result of a Poisson counting experiment.
 
 This manual step can be avoided by modeling the Poissonian fluctuation directly as part of the Likelihood:
 \begin{equation}
@@ -239,63 +213,81 @@ By performing the variable transformation $n f_j \to N_j$ and neglecting the con
 \begin{equation}
   \mathcal{L}(θ, N_j | \vec{x}, N) = \mathrm{e}^{-\sum_j N_j}  \prod_i^N \sum_j^K N_j p_j(x_i | θ)\:.
 \end{equation}
-This model, which is referred to as the \textit{Extended Likelihood}\cite{Lyons1986530}, allows a direct estimate of $N_j$, including its uncertainty without manual error propagation.
+This model, which is referred to as the \textit{Extended Likelihood}\cite{Lyons1986}, allows for a direct estimate of $N_j$.
 
 \begin{itemize}
   \item Mention RooFit
 \end{itemize}
 
-%\section{The Profile Likelihood Ratio}
-%
-%\begin{itemize}
-%  \item We want to get a limit, need PLR
-%  \item Explain Wilke's theorem
-%  \item How do we go about calculating an expected limit? $\rightarrow$ lots of toys
-%\end{itemize}
-%
-%\section{Signal model}
-%
-%\begin{itemize}
-%  \item Double Gaussian
-%  \item Constrain this from simulation
-%\end{itemize}
-%
-%\section{Background models}
-%
-%\begin{itemize}
-%  \item Exponential, one resonant in $D$, one not
-%\end{itemize}
-%
-%\section{Validation of fit model}
-%
-%\begin{itemize}
-%  \item Maybe generate toys and look at some pulls
-%\end{itemize}
-%
-%\section{Normalization channel}
-%
-%\begin{itemize}
-%  \item This is $B^0\to J/ψK^{*0}$
-%  \item Why do we want a normalization channel? $\rightarrow$ to reduce systematic uncertainties
-%  \item Choose similar trigger/stripping setup
-%  \item Show fits and give number of expected signal events
-%\end{itemize}
-%
-%\section{Normalization constant}
-%
-%\begin{itemize}
-%  \item Give formula for normalization constant $α$
-%  \item Calculate value of $α$
-%\end{itemize}
-%
-%\section{Calculating the expected branching ratio}
-%
-%\begin{itemize}
-%  \item How do we do this?
-%  \item Put alpha as constraint into fit
-%  \item Make toys, calculate limit for each
-%  \item Take median, show plot
-%\end{itemize}
+\section{The Profile Likelihood Ratio}
+
+\begin{itemize}
+  \item We want to get a limit, need PLR
+  \item Explain Wilke's theorem
+  \item How do we go about calculating an expected limit? $\rightarrow$ lots of toys
+\end{itemize}
+
+\section{Signal model}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Fit on signal MC}
+\end{figure}
+
+\begin{itemize}
+  \item Double Gaussian
+  \item Constrain this from simulation
+\end{itemize}
+
+\section{Background models}
+
+\begin{itemize}
+  \item Exponential, one resonant in $D$, one not
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Fit to sidebands}
+\end{figure}
+
+\section{Validation of fit model}
+
+\begin{itemize}
+  \item Maybe generate toys and look at some pulls
+\end{itemize}
+
+\section{Normalization channel}
+
+\begin{figure}
+  \centering
+  \missingfigure[figwidth=\textwidth]{}
+  \caption{Fit in normalization channel}
+\end{figure}
+
+\begin{itemize}
+  \item This is $B^0\to J/ψK^{*0}$
+  \item Why do we want a normalization channel? $\rightarrow$ to reduce systematic uncertainties
+  \item Choose similar trigger/stripping setup
+  \item Show fits and give number of expected signal events
+\end{itemize}
+
+\section{Normalization constant}
+
+\begin{itemize}
+  \item Give formula for normalization constant $α$
+  \item Calculate value of $α$
+\end{itemize}
+
+\section{Calculating the expected branching ratio}
+
+\begin{itemize}
+  \item How do we do this?
+  \item Put alpha as constraint into fit
+  \item Make toys, calculate limit for each
+  \item Take median, show plot
+\end{itemize}
 
 \chapter{Systematic uncertainties} % 3
 
@@ -308,6 +300,4 @@ This model, which is referred to as the \textit{Extended Likelihood}\cite{Lyons1
 \end{itemize}
 
 \chapter{Conclusion and outlook} % 1
-
-\nocite{pdg}
 

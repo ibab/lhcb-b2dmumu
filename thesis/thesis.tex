@@ -85,6 +85,9 @@
 \usepackage{bookmark}
 \usepackage[shortcuts]{extdash}
 
+\usepackage{glossaries}
+\makeglossaries
+
 \usepackage{todonotes}
 
 \usepackage{xspace}
@@ -130,12 +133,23 @@
 \tableofcontents
 
 \mainmatter
-\input{./contents.tex}
+
+\newacronym{LHC}{LHC}{Large Hadron Collider}
+\newacronym{VELO}{VELO}{Vertex Locator}
+\newacronym{MLE}{MLE}{Maximum Likelihood Estimate}
+\newacronym{TT}{TT}{Tracker Turicensis}
+\newglossaryentry{CERN}{name={CERN},description={The European Organization for Nuclear Research}}
+
+\input{intro.tex}
+\input{experiment.tex}
+\input{analysis.tex}
 
 %\appendix
 %\input{./appendix.tex}
 
 \backmatter
+
+%\printglossaries
 \printbibliography
 
 \cleardoublepage

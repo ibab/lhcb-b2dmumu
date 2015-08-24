@@ -1,50 +1,257 @@
+\newacronym{LHC}{LHC}{Large Hadron Collider}
+\newacronym{VELO}{VELO}{Vertex Locator}
+\newacronym{MLE}{MLE}{Maximum Likelihood Estimate}
+\newacronym{TT}{TT}{Tracker Turicensis}
+\newglossaryentry{CERN}{name={CERN},description={The European Organization for Nuclear Research}}
+\newglossaryentry{LHCb}{name={LHCb},description={The Large Hadron Collider beauty experiment}}
+\newacronym{IT}{IT}{Inner Tracker}
+\newacronym{OT}{OT}{Outer Tracker}
+\newacronym{RICH}{RICH}{Ring Imaging Cherenkov}
+\newacronym{PID}{PID}{Particle Identification}
+\newacronym{L0}{L0}{Low Level Trigger}
+\newacronym{HLT}{HLT}{High Level Trigger}
 
-\chapter{The LHCb Experiment} % 6
+\chapter{The LHCb Experiment}
 
-The LHCb experiment is dedicated to the precise study of $CP$ violation and rare decays of beauty and charm hadrons at the \gls{LHC}, \gls{CERN} in Geneva, Switzerland.
+The Large Hadron Collider beauty (LHCb) experiment is dedicated to the precise study of beauty and charm hadrons at the \gls{LHC}, which is located at the European Organization for Nuclear Science (\gls{CERN}) in Geneva, Switzerland.
+In contrast to the other three large detector experiments at the LHC (ATLAS, CMS and ALICE), which are multi-purpose detectors with almost complete angular acceptance, LHCb is a spectrometer which only covers the forward region and focuses on precision measurements.
 
-In contrast to the other three large detector experiments at the LHC (ATLAS, CMS and ALICE), which are multi-purpose detectors, LHCb is a single-arm forward spectrometer specifically optimized for the precise study of $b$ and $c$ quarks.
+The ability to distinguish individual hadronic tracks, to identify these as belonging to a final state particle (kaon, pion, proton or muon) with high accuracy and the ability to determine decay times of short-lived particles to within \SI{50}{\femto\second} (for $B$ mesons \cite{VELO2014}) demonstrate the role of LHCb as a precision instrument.
 
-During Run I, which occurred from 2010 to 2012, the experiment collected proton-proton collision data corresponding to a total integrated luminosity of \SI{3}{fb^{-1}}.
+During the Run I period of the LHC, which ranged from 2010 to 2012, LHCb observed proton-proton collisions corresponding to a total integrated luminosity of \SI{3}{fb^{-1}}.
+This is currently the largest recorded sample of \Pqb\APqb pairs.
+Notable LHCb results from Run I include, among others, the branching fraction measurement of $\PBzero\to\APmuon\Pmuon$, the discovery of $\PBs\to\APmuon\Pmuon$ in combination with CMS \cite{Bsmumu2015}, the angular analysis of the rare electroweak penguin decay $\PBzero\to\PKstar\APmuon\Pmuon$, and the discovery of a pentaquark state~\cite{Pentaquark2015}.
+
+LHCb is expected to collect a further \SIrange{5}{6}{fb^{-1}} in Run II, which began in 2015 and is expected to last until 2018.
+Following Run II, during the second long shutdown of the LHC, various components of LHCb will be upgraded to deal with an increased instantaneous luminosity and to provide a higher trigger efficiency, especially for hadronic decay channels.\cite{TrackerUpgrade2014}
+One of these upgrade projects is the planned replacement of the current trigger system with a completely software-based trigger that reads out the detector at a full rate of \SI{40}{MHz} \cite{TriggerUpgrade2014}.
+
+After a short overview of the \gls{LHC}, this chapter will focus on a description of the LHCb detector and the data acquisition process.
 
 \section{The Large Hadron Collider}
-
-\begin{itemize}
-  \item A nice figure showing the LHC and other facilities
-  \item When was the LHC built?
-  \item Which are the four large experiments and what do they do?
-\end{itemize}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.75\textwidth]{cern-complex.pdf}
-  \caption{The CERN accelerator complex}
+  \caption{
+    The CERN accelerator complex.
+    The protons used for LHC collisions originate at the LINAC 2, which injects them into the Proton Synchrotron Booster.
+    From there, they arrive at the Proton Synchrotron (PS), the Super Proton Synchrotron (SPS) and finally the Large Hadron Collider (LHC).
+  }
+  \label{fig:lhc}
+\end{figure}
+
+The LHC is a circular superconducting hadron accelerator installed in the \SI{26.7}{\kilo\metre} tunnel at CERN previously occupied by the LEP electron-positron accelerator.
+It re-uses the injection chain of LEP (see \ref{fig:lhc}).
+
+The LHC was designed to collide two proton beams of equal momentum, travelling in opposite directions, at a center of mass energy of up to $\sqrt{s} = \SI{14}{TeV}$.
+A proton collider such as the LHC features significantly smaller synchrotron radiation losses compared to an electron-positron collider, which means much larger center of mass energies can be achieved.
+This makes the LHC highly suitable as a discovery machine.
+
+The choice of protons also has a few downsides.
+Using the parton model, the proton-proton collision can be decomposed into a hard collision between two partons of the colliding protons, and the underlying event, which describes the rest of the interaction.
+The unique properties of proton collisions have several consequences: 
+The significantly higher multiplicity and number of background tracks pose challenges to both experimental design and analysis.
+Also, a proton collider does not offer the same level of control over the initial state of the interaction as an electron-positron collider, for example no requirements on the polarization can be made.
+This prevents one from measuring certain physical parameters.
+
+The proton-proton collisions at the LHC produce $\Pqb\APqb$ pairs predominantly correlated in the forward and backward directions, as can be seen from figure \ref{fig:bbarprod}.
+This can be understood from the fact that the colliding partons each carry a certain momentum fraction of its proton, which can be described statistically by a parton distribution function.
+At energies such as those achieved at the LHC, these tend to be highly asymmetric.
+This means that LHCb can observe a substantial fraction of produced $\Pqb\APqb$ pairs by only covering a small forward region.
+
+During Run I, the LHC collided proton bunches at center of mass energies of \SI{7}{TeV} (in 2011) and \SI{8}{TeV} (in 2012).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.50\textwidth]{./lhcb-detector-bbar.pdf}
+\caption{
+  Simulation of \Pqb\APqb production at $\sqrt{s} = \SI{7}{TeV}$ at the LHC. $θ_1$ and $θ_2$ are the respective angles between the \Pqb and \APqb flight directions and the beam axis.
+  The acceptance region of the LHCb detector is marked in red.
+}
+\label{fig:bbarprod}
 \end{figure}
 
 \section{Experimental setup}
 
-\subsection{Tracking}
+The LHCb detector is a single-arm forward spectrometer specifically designed to record decays of beauty and charm hadrons with high precision.
+The detector covers a pseudorapidity range of roughly $2 < η < 5$ in the forward region.
 
-A highly accurate reconstruction of particle tracks is vital for the precise study of particle decays.
-For this purpose, LHCb is equipped with several components for tracking, vertexing and momentum estimation.
+LHCb does not make use of the full luminosity delivered by the LHC.
+Instead, the delivered luminosity is artificially reduced by displacing the two proton beams from each other (luminosity leveling).
+This way, an almost constant instantaneous luminosity of $\mathcal{L}=\SI{2e32}{\per\centi\metre\squared\per\second}$ (2011) or $\mathcal{L}=\SI{4e32}{\per\centi\metre\squared\per\second}$ (2012) can be maintained.
+This reduces the average number of proton-proton interactions $\mu$ per bunch crossing (also called the pile-up) to $\mu \approx \num{1.6}$. \cite{Trigger2012}
+A lower pile-up corresponds to cleaner events, which can be analyzed with higher precision, and slower aging of the detector components.
 
-The \gls{VELO} is situated close to the interaction point and records $r$ and $φ$ coordinates of particle tracks..
-It consists of two halves, each consisting of an array of silicon detector modules perpendicular to the beam axis.
-When the LHC beam is stable, the two \gls{VELO} halves can be brought together.
+Figure \ref{fig:lhcbdetector} gives an overview of the detector layout.
+The following has been adapted from \cite{LHCb2008}, where not otherwise noted.
 
-% TT is a silicon strip detector, upstream (in front of magnet)
-% IT is a silicon strip detector, downstream (after magnet)
-% OT is a drift detector, extends acceptance
-% The magnet!
-% magnet field map very precise, allows to infer particle momenta
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{./lhcb-detector-cross.pdf}
+\caption{
+  Schematic cross section of the LHCb detector along the beam axis.
+  The \acrshort{VELO}, situated around the interaction point, is responsible for a precise vertex reconstruction.
+  The tracking system, consisting of TT and T1--3 are used for track reconstruction and momentum estimation.
+  The two RICH detectors are used for particle identification of hadrons.
+  The ECAL and HCAL are calorimeters that provide further particle identification and serve as an input to the trigger.
+  The muon system identifies muons and is located at the end of the detector.\cite{LHCb2008}
+}
+\label{fig:lhcbdetector}
+\end{figure}
+
+% beam pipe?
+% BCM?
+
+\subsection{Vertexing and Tracking}
+
+An accurate reconstruction of particle tracks and vertices is vital for the precise study of particle decays.
+For this purpose, LHCb is equipped with several components for tracking, vertexing and momentum measurement.
+
+The \gls{VELO} is a silicon strip detector placed around the interaction point.
+It consists of two halves, each containing an array of silicon detector modules perpendicular to the beam axis.
+To minimize the interaction of short-lived produced particles with air, the two \gls{VELO} halves are mounted inside a vacuum vessel.
+Normally, the \gls{VELO} halves are retracted, to protect them from the LHC beams during injection.
+When the LHC beams are stable, they can be brought together close to the beam axis.
+The \gls{VELO} is responsible for the precise determination of Primary Vertices (PVs), which correspond to the location of the proton-proton collision, as well as Seconday Vertices (SVs), which correspond to the vertices at which particles originating from a PV decay.
+
+LHCb is equipped with a warm spectrometer magnet with an integrated field strength of \SI{4}{\tesla\metre}.
+Its purpose is to deflect charged particles, which allows one to infer their momenta from the track curvature.
+For this purpose, the magnetic field needs to be known precisely and has been mapped to an accuracy of \num{4e-4} in the tracking volume.
+
+The tracking system, which allows a precise reconstruction of particle tracks, consists of the \gls{TT} in front of the magnet and three tracking stations behind the magnet, which each consist of an \gls{IT} and \gls{OT}.
+The \gls{TT} and \gls{IT} are silicon microstrip detectors, featuring a precise hit resolution and fast response times.
+The \gls{OT} consists of Kapton/Aluminum straw drift tubes and extends the inner area covered by the \gls{IT} to the full LHCb acceptance.
+
+The precise tracking setup of the LHCb detector allows for an accurate estimate of the masses of decaying particles.
+The resulting precise mass resolution, as well as a high tracking efficiency, facilitate a high rejection of combinatorial background.
+This is especially vital for the study of rare decays, where the data sample is dominated by background events.
 
 \subsection{Particle identification}
 
-% RICH
+\begin{figure}
+  \begin{minipage}{.45\textwidth}
+    \centering
+    \includegraphics[width=0.8\linewidth]{./rich.pdf}
+    \captionsetup{width=0.8\textwidth}
+    \captionof{figure}{
+      Vertical cross section of the RICH1 subdetector.
+      Cherenkov radiation produced by traversing particles is reflected out of the spectrometer acceptance using spherical and flat mirrors, and onto photon detectors.
+\cite{LHCb2008}
+    }
+    \label{fig:rich1}
+  \end{minipage}%
+  \begin{minipage}{.55\textwidth}
+    \centering
+    \includegraphics[width=0.8\linewidth]{./pid.pdf}
+    \captionsetup{width=0.8\textwidth}
+    \captionof{figure}{
+      Cherenkov photon hits in the RICH1 detector for a typical LHCb event.
+      Measuring the diameters of the produced rings allows one to distinguish between pions, kaons and protons.
+      \cite{LHCb2008}
+    }
+    \label{fig:pid}
+  \end{minipage}
+\end{figure}
 
-\subsection{Trigger and data processing}
+The two \gls{RICH} detectors, which use Aerogel, \ce{C_4F_{10}} and \ce{CF_4} as radiators, are designed to measure the velocities of produced particles through the angles at which they radiate Cherenkov photons.
+Combining this information with measured momenta allows one to distinguish kaons, pions and protons from each other.
+The two \gls{RICH} detectors are responsible for different momentum ranges.
+While the RICH1 (see \ref{fig:rich1}) is designed to identify particles within a low momentum range of \SIrange{1}{60}{GeV}, the RICH2 handles particles with momenta between \SI{15}{GeV} and beyond \SI{100}{GeV}.
 
-% L0 trigger
-% HLT
-% reconstruction software: DaVinci, ...
+The Cherenkov radiation rings can be fitted using different mass hypotheses for the decaying particle, which allows one to calculate a likelihood ratio for any two given hypotheses.
+In practice, the logarithmic value of the likelihood ratio, referred to as the difference in log-likelihood (DLL), is used as a discriminating variable when analysing a decay channel.
+
+\PK-\Pgp separation is important for the analysis of \decay, where the \APDzero meson decays to \PKp and \Pgpm.
+Enforcing \gls{PID} requirements on the signal candidates allows one to further reject background events, beyond what is possible through the use of kinematic properties of the decay.
+
+Additional PID information is provided by the Electromagnetic Calorimeter (ECAL) and the Hadronic Calorimeter (HCAL), which are located between the RICH2 and the muon system.
+In particular, the ECAL allows the identification of electrons and photons, while the HCAL is responsible for hadrons.
+Both the ECAL and HCAL are also important inputs for the L0 trigger.
+
+The purpose of the muon system, located at the end of the detector and consisting of the five stations M1--M5, is to identify muons.
+This is achieved by requiring simultaneous hits in several chambers of the muon detector.
+
+In the case of \decay, the muon system does not only aid the analysis by providing \gls{PID} information for the two final state muons, but also allows one to achieve a high trigger efficency by using specialized muon trigger algorithms that make use of the clear signature of muons in the detector.
+
+\subsection{Trigger and data acquisition}
+
+Because the LHC collides proton bunches at a high rate (\SI{40}{MHz} during Run I), not all events (bunch crossings) can be recorded.
+This is demonstrated by the fact that (assuming an average event size of roughly \SI{100}{kB}) the total processing bandwidth would correspond to \SI{4}{TB/s}.
+
+To reduce the rates at which data has to be read out of the detector and saved to disk, a trigger system is employed which rejects a majority of the data, while keeping as many useful events (containing decays of beauty and charm) as possible.
+The LHCb trigger consists of several stages, each of which significantly reduces the event rate.
+
+The first trigger level (L0) is implemented on Field Programmable Gate Arrays (FPGAs) and triggers on high $p_T$ muons detected in the muon system and on large transverse energy $E_T$ deposits in the calorimeter.
+It reduces the event rate to roughly \SI{1}{MHz}.
+
+Events that pass the L0 are further filtered by the \gls{HLT}, consisting of the HLT1 and HLT2.
+the \gls{HLT} is a software-based trigger running on an underground node farm next to the experimental cavern.
+The HLT1 partially reconstructs the event and executes a range of previously configured selection strategies.
+This reduces the event rate to \SI{80}{kHz}.
+The HLT2 then performs a full event reconstruction, mostly using the same algorithms that are also used during the offline reconstruction.
+Further selection criteria reduce the event rate to \SI{5}{kHz}, which is low enough for the events to be persisted.  \cite{Trigger2011} \cite{Trigger2012}
+The computing resources of the HLT trigger farm are not sufficient to process all events in real time.
+Instead, a fraction of the events is cached during data acquisition and later processed in between runs.
+
+Once an event has been accepted by the trigger farm, it is transferred to the Tier 0 computing centre at \gls{CERN} for further processing and archiving.
+
+\subsection{LHCb software}
+
+The data recorded by the LHCb experiment is processed using the LHCb software framework, which is based on the \textsc{Gaudi} package.
+\textsc{Gaudi} is a framework for event stream processing.
+It allows users to write configurable algorithms that process event data on a per bunch-crossing basis.
+Event data is stored using the \textsc{ROOT}\cite{ROOT} data format.
+
+Reconstruction, simulation and selection of particle events are the three most important tasks needed to measure physical parameters of interest.
+These are explained in the following sections.
+
+\subsubsection{Reconstruction}
+
+\textsc{Brunel} is the LHCb software package responsible for reconstructing particle events.
+It is used for tracking, i.e. reconstructing the tracks of charged particles from hits in the detector, as well as as for particle identification.
+Reconstruction proceeds in two steps:
+In the first step, pattern recognition algorithms are used to find collections of detector hits that belong to the same particle track.
+If the hits of two tracks overlap to a certain degree, one of the tracks is removed to avoid the creation of duplicate tracks.
+In a second step, the hit collection of each track is used as input to a Kalman Filter, which fits the trajectory of the track, taking into account multiple scattering and energy loss resulting from interaction with the detector material.
+The resulting knowledge of the particle track is used to construct a ProtoParticle with known momentum and trajectory.
+
+\textsc{Brunel} is also responsible for calculating the PID information from data taken in the RICH, calorimeter and muon sub-systems of the detector.
+To evaluate the RICH data, particles are transported into the two RICH volumes.
+The detected Cherenkov radiation in the RICH detectors is then fit using different hypotheses for the particle mass.
+The muon sub-system is evaluated by extrapolating the particle tracks through the muon stations and calculating a muon vs. non-muon likelihood ratio based on the compatibility of the extrapolated track with hits in the muon stations.
+Tracks are also extrapolated into the calorimetry system and matched with clusters.
+This allows one to identify electrons and gives additional information on charged hadrons.
+
+\subsubsection{Selection}
+
+The \textsc{DaVinci} package is responsible for the final processing of event data prior to analysis.
+It allows one to assign particle hypotheses to the previously reconstructed ProtoParticles.
+These can then be used to calculate the properties of short-lived intermediate particles, given a description of the decay that needs to be analysed.
+This is achieved by fitting the vertices at which reconstructed particle tracks cross.
+Given the vertices and information on the decay products, various properties of intermediate particles like masses and momenta can be calculated.
+Such a decay tree fit also provides information on the fit quality, which can be used to reject background events.
+The decay tree fit algorithms used at LHCb are highly flexible, for example allowing to constrain the masses of intermediate particles, which can increase the mass resolution of the signal particle.
+
+As processing the complete raw event data (consisting of several PB of data) for each analysis is not feasible, LHCb has developed a collaboration-wide pre-selection procedure referred to as \emph{Stripping}.
+The Stripping is organized in terms of Stripping lines, each of which corresponds to a set of selection criteria and an identifier.
+The Stripping selection is performed centrally, and only events matching one of the configured Stripping lines is made available to analysts.
+
+\subsubsection{Simulation}
+
+Simulated data samples are a vital input to the analysis of particle decays.
+For example, a simulated signal data sample, consisting purely of bunch crossings where a signal decay occured, can serve as an input in designing the selection procedure and to determine various signal efficiencies.
+These are then be used as a critical input to determine the branching fraction of the decay.
+
+In order for this procedure to be accurate, the simulated data sample has to match the properties of real data as closely as possible.
+This not only requires an accurate simulation of the $\Pp\Pp$ interaction and of the particle decay, but also of the detector response.
+
+At LHCb, the \textsc{Gauss} package is responsible for the simulation of particle events.  It uses the \textsc{Pythia} Monte Carlo (MC) generator to simulate the initial $\Pp\Pp$ bunch crossing.
+The EvtGen package is used to simulate the decay of the signal particle.
+The decay products are then propagated through the detector using the GEANT4 package, which simulates the interaction of the decay products with the detector material.
+The \textsc{Boole} package, given the output of \textsc{Gauss}, is responsible for performing the simulation of the detector response, the readout electronics and the hardware stage of the trigger.
+The rest of the processing chain is then identical to the one used for real data.
+
+Even though the simulation procedure has been tuned to be accurate, noticable differences between simulation and data remain.
+This means that, depending on the desired precision, additional analysis steps that eliminate data-simulation differences may be necessary.
 

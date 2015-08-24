@@ -11,3 +11,8 @@ sub run_makeglossaries {
     system "makeglossaries -d build '$c'";
   };
 }
+
+$pdf_mode = 1;
+$pdflatex = 'lualatex -interaction=nonstopmode -halt-on-error %O %S';
+$out_dir = 'build';
+

@@ -19,6 +19,7 @@
 ]{scrbook}
 
 \setkomafont{subject}{\Large\sffamily}
+%\setkomafont{chapterentry}{\normalfont\bf}
 
 % Define our beloved tu colour:
 \RequirePackage{xcolor}

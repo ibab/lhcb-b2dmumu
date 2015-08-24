@@ -3,7 +3,7 @@
 \documentclass[
   %tucolor,
   BCOR=12mm,
-  parskip=half,
+  %parskip=half,
   open=any,
 ]{tudothesis}
 
@@ -32,13 +32,12 @@
 \setotherlanguages{german}
 
 \usepackage[autostyle]{csquotes}
-
 \usepackage{microtype}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
-%\usepackage[italic]{hepnicenames}
+\usepackage[italic]{hepnames}
 \usepackage[
   math-style=ISO,
   bold-style=ISO,
@@ -48,12 +47,13 @@
 ]{unicode-math}
 \setmathfont{Latin Modern Math}
 
-\usepackage{xfrac}  
+\usepackage{xfrac}
 
 \usepackage[
-  locale=DE,
+  locale=US,
   separate-uncertainty=true,
-  per-mode=symbol-or-fraction,
+  %per-mode=symbol-or-fraction,
+  per-mode=reciprocal,
 ]{siunitx}
 \sisetup{math-micro=\text{µ},text-micro=µ}
 
@@ -74,12 +74,14 @@
 \usetikzlibrary{arrows}
 \usetikzlibrary{arrows.meta}
 
+\usepackage[version=3]{mhchem}
+
 \usepackage[
   backend=biber,
   autolang=hyphen,
 ]{biblatex}
 \addbibresource{references.bib}
-%\DefineBibliographyStrings{german}{andothers = {{et\,al\adddot}}} 
+%\DefineBibliographyStrings{german}{andothers = {{et\,al\adddot}}}
 
 \usepackage[pdfusetitle,unicode,linkbordercolor=tugreen]{hyperref}
 \usepackage{bookmark}
@@ -107,13 +109,17 @@
 \newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
 \makeatother
 
-\DeclareRobustCommand{\decay}{\texorpdfstring{$B^0\to \overline{D}^0\mu^+\mu^-$}{B⁰ → D⁰μ⁺μ⁻}}
-\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B^{\raisemath{0.2ex}{0}}}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.60ex)--(0.9em,0.60ex);\kern+0.1em $\mathbf{\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^{\!+}\!\mu^{\!-}}$}{B → Dμμ}}
+\DeclareRobustCommand{\decay}{\texorpdfstring{$B^{\raisemath{0.2ex}{0}}\!\to\!\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^+\!\mu^-$}{B⁰ → D⁰μ⁺μ⁻}}
+%\DeclareRobustCommand{\bolddecay}{\texorpdfstring{$\mathbf{B^{\raisemath{0.2ex}{\pmb{0}}}}$\kern+0.1em\tikz[baseline]\draw[-To,ultra thick](0,0.60ex)--(0.9em,0.60ex);\kern+0.1em $\mathbf{\overline{D}^{\raisemath{-0.43ex}{0}}\!\mu^{\!+}\!\mu^{\!-}}$}{B → Dμμ}}
 
-\author{Igor Babuschkin}
-\title{\textit{Search for the Rare Decay\\ \bolddecay{} at LHCb}}
+%\DeclareRobustCommand{\decay}{\texorpdfstring{\HepProcess{\PBzero\to\APDzero\APmuon\Pmuon}}{B⁰ → D⁰μ⁺μ⁻}}
+
+\DeclareRobustCommand{\mytitle}{Search for the Rare Decay \decay at LHCb}
+
+\author{\huge Igor Babuschkin}
+\title{\mytitle}
 \date{September 2015}
-\birthplace{Krasnoobsk}
+\birthplace{Krasnoobsk, Russland}
 \chair{Lehrstuhl für Experimentelle Physik V}
 \division{Fakultät Physik}
 \thesisclass{Master of Science}
@@ -133,12 +139,6 @@
 \tableofcontents
 
 \mainmatter
-
-\newacronym{LHC}{LHC}{Large Hadron Collider}
-\newacronym{VELO}{VELO}{Vertex Locator}
-\newacronym{MLE}{MLE}{Maximum Likelihood Estimate}
-\newacronym{TT}{TT}{Tracker Turicensis}
-\newglossaryentry{CERN}{name={CERN},description={The European Organization for Nuclear Research}}
 
 \input{intro.tex}
 \input{experiment.tex}

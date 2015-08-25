@@ -1,22 +1,45 @@
 
-\chapter{Outline of the analysis} % 2
+\chapter{Outline of the analysis}
 
-\begin{itemize}
-  \item We want to determine limit on $B^0\to \overline{D}^0μ^+μ^-$
-  \item First measurement
-  \item Use control channel $B^0\to J/ψ K^*$ to reduce systematic uncertainties
-  \item Blinded analysis
-  \item Simple preselection
-  \item Vetoes to reject peaking backgrounds: $J/ψ K^*$, $D^{*-}μν$
-  \item Apply multivariate classifier to get rid of background
-  \item Determine trigger efficiency through TISTOS on control channel
-  \item Determine selection efficiencies trough simulation
-  \item Perform fit to control channel to derive control yield
-  \item Perform 2-dimensional fit to $B$ and $D$ mass to derive signal yield
-  \item Calculate $α$ and use it to transform to branching fraction
-  \item Would be neat to write down how to calculate $α$
-  \item Use Profile Likelihood Ratio to derive limit on branching fraction
-\end{itemize}
+The goal of the analysis is to determine a limit on the branching fraction of the decay $\PBzero\to\APDzero\APmuon\Pmuon$, using events where the $\APDzero$ decays to $\PKplus\Ppiminus$.
+This represents the first measurement searching for this decay channel so far.
+
+To minimize experimenter's bias, a blind analysis is performed.
+This is achieved by removing a part of the reconstructed mass spectrum of the decay channel that fully contains the signal decay.
+The analysis is developed without access to this signal region, which is unblinded (taken into account) only once the analysis is finalized.
+A useful result of the analysis before unblinding is the calculation of an \emph{expected limit}, which represents an estimate of the limit that will be achieved after unblinding, under the assumption that there are no signal events in the signal region.
+
+The first step of the analysis is a loose preselection involving cuts on kinematic properties and measures of fit quality for the decay.
+Following this, several veto cuts are applied to reject physical backgrounds.
+In order to reduce the amount of combinatorial background, a multivariate classifier (Gradiend Boosted Decision Trees) is employed.
+Various signal efficiencies resulting from the trigger, the reconstruction, the preselection, vetos on physical backgrounds and the multivariate classification need to be taken into account.
+These are determined using a simulated signal data sample.
+
+To reduce the systematic uncertainty of the branching fraction measurement, it is useful to perform a simultaneous measurement of the branching fraction of a \emph{normalization channel} and to normalize the signal branching fraction to this measurement.
+The decay $\PBzero\to\PJpsi\PKstar$ is an ideal candidate for this, because it features both a large branching fraction, which reduces the uncertainty in the normalization process, and a final state ($\PKplus\Ppiminus\APmuon\Pmuon$) that is identical to the one of the signal decay.
+
+When calculating the signal branching fraction $BR_\text{sig}$, the control channel is taken into account by
+\begin{equation}
+  BR_\text{sig} = \frac{BR_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}} N_\text{sig}\:,
+\end{equation}
+where $BR_\text{norm}$ refers to a known branching fraction of the signal decay (e.g. from previous measurements), $\varepsilon_\text{sig}$ and $\varepsilon_\text{norm}$ refer to the total efficiencies of the signal and normalization channels, respectively, and $N_\text{sig}$ and $N_\text{norm}$ refer to the measured yields of the signal and normalization channel.
+
+The factor
+\begin{equation}
+  \alpha = \frac{BR_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}}
+  \label{eq:alpha}
+\end{equation}
+is referred to as the \emph{normalization constant}.
+It translates the measured number of signal decays to the measured branching fraction.
+
+Statistical models are developed for the reconstructed mass of both the signal and and normalization channels.
+These can be used to determine the number of signal or normalization events remaining after the selection procedure through a Maximum Likelihood Estimate (MLE).
+By incorporating \eqref{eq:alpha} into the fit, the signal branching fraction can be determined directly as a parameter of the model.
+
+Based on this model, the Profile Likelihood Ratio method is used to calculate limits on the branching fraction, taking into account nuisance parameters.
+In order to calculate an expected limit for the signal decay branching fraction, toy simulations of the blinded signal region are generated using a model of the background distribution fit to the sidebands of the mass distribution.
+Each of the toys is combined with the data outside the blinded region and a limit is calculated.
+The distribution of calculated limits is used to determine an expected limit on the signal decay branching fraction.
 
 \chapter{Selection} % 18
 

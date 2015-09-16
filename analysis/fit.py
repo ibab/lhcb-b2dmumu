@@ -141,7 +141,7 @@ def mle(model, data, start_params='None', out_params='result.params', numcpus=1,
         results = model.fitTo(
                 data,
                 RooFit.NumCPU(numcpus),
-                RooFit.Extended(extended),
+                #RooFit.Extended(extended),
                 RooFit.Minos(False),
                 RooFit.Strategy(2),
                 RooFit.Minimizer('Minuit2'),

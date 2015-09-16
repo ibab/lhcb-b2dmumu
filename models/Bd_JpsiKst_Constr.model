@@ -1,0 +1,35 @@
+# B->K*J/psi fit
+
+B_ConstrainJpsi_M_0[5220, 5340]
+
+# Signal Mass
+sigMassMean[5279, 5200, 5400]
+alpha1[4, 0, 10]
+#alpha2[4, 0, 10]
+alpha2[-4, -10, 0]
+#n1[0.0001, 0, 4000]
+#n2[2.6, 0, 4000]
+n1[1, 0.1, 20]
+n2[2.6, 0.1, 20]
+
+RooCBShape::sigMassPdf1(B_ConstrainJpsi_M_0, sigMassMean, sigMassSigma1[20, 5, 80], alpha1, n1)
+RooCBShape::sigMassPdf2(B_ConstrainJpsi_M_0, sigMassMean, sigMassSigma2[20, 5, 80], alpha2, n2)
+SUM::sigMassPdf(sigFrac[0.5, 0.0, 1.0] * sigMassPdf1, sigMassPdf2)
+
+expr::Bs_M('sigMassMean + deltaM', sigMassMean, deltaM[87, 50, 120])
+RooCBShape::sigMassPdf1Bs(B_ConstrainJpsi_M_0, Bs_M, sigMassSigma1, alpha1, n1)
+RooCBShape::sigMassPdf2Bs(B_ConstrainJpsi_M_0, Bs_M, sigMassSigma2, alpha2, n2)
+SUM::sigMassPdfBs(sigFrac * sigMassPdf1Bs, sigMassPdf2Bs)
+
+## Background Mass
+#p1[-0.0001, -0.00018181818, 1]
+#RooPolynomial::bkgMassPdf(B_ConstrainJpsi_M, {p1})
+
+expr::bkgMassExpoVar('5279 - B_ConstrainJpsi_M_0', B_ConstrainJpsi_M_0)
+Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0, 2])
+
+# Total
+SUM::model(sigYield[300000, 0, 800000] * sigMassPdf, bkgYield[50000, 0, 500000] * bkgMassPdf)
+#, lbgYield[1000, 0, 100000] * lbgMassPdf)
+
+# vim: ft=python

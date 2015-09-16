@@ -1,10 +1,12 @@
 
-B_M[4800, 6500]
-D~0_M[1800, 1930]
+B_M[4900, 7000]
+#B_M[5229, 6500]
+#B_M[5329, 6500]
+Meson_M[1800, 1930]
 
 # Constraints
-Gaussian::alphaPdf(alpha[1.1309301473056417e-09, 0, 1], 1.1309301473056417e-09, 6.96140625887701e-11)
-expr::sigYield('signalBR / alpha', signalBR[0.000000001, 0, 1], alpha)
+Gaussian::alpha_constr(mu_alpha[0], alpha[1e-8, 1e-9, 1e-7], sigma_alpha[0])
+expr::sigYield('signalBR / alpha', signalBR[1e-8, 1e-9, 1e-6], alpha)
 
 # Signal B mass
 sigMassMean[5279.3, 5100, 5400]
@@ -13,8 +15,8 @@ Gaussian::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[30, 9, 80])
 SUM::sigMassPdfB(sigFracB[0.2, 0, 1] * sigMassPdf1, sigMassPdf2)
 # Signal D mass
 sigMassMeanD[1860, 1800, 1920]
-Gaussian::sigMassPdfD1(D~0_M, sigMassMeanD, sigMassSigmaD1[10, 0, 40])
-Gaussian::sigMassPdfD2(D~0_M, sigMassMeanD, sigMassSigmaD2[20, 0, 40])
+Gaussian::sigMassPdfD1(Meson_M, sigMassMeanD, sigMassSigmaD1[8, 0, 20])
+Gaussian::sigMassPdfD2(Meson_M, sigMassMeanD, sigMassSigmaD2[15, 0, 40])
 SUM::sigMassPdfD(sigFracD[0.2, 0, 1] * sigMassPdfD1, sigMassPdfD2)
 # Total signal
 PROD::sigMassPdf(sigMassPdfB, sigMassPdfD)
@@ -23,7 +25,7 @@ PROD::sigMassPdf(sigMassPdfB, sigMassPdfD)
 expr::bkgMassExpoVarB('5279 - B_M', B_M)
 Exponential::bkgMassPdfB(bkgMassExpoVarB, bkgMassSlopeB[0.005, -1, 1])
 # Exponential background D Mass
-expr::bkgMassExpoVarD('1860 - D~0_M', D~0_M)
+expr::bkgMassExpoVarD('1860 - Meson_M', Meson_M)
 Exponential::bkgMassPdfD(bkgMassExpoVarD, bkgMassSlopeD[0, -1, 1])
 # Total exponential background
 PROD::bkgMassPdf(bkgMassPdfB, bkgMassPdfD)
@@ -32,14 +34,26 @@ PROD::bkgMassPdf(bkgMassPdfB, bkgMassPdfD)
 expr::lbgMassExpoVarB('5279 - B_M', B_M)
 Exponential::lbgMassPdfB(lbgMassExpoVarB, lbgMassSlopeB[0.005, -1, 1])
 # PeakingD background D mass
-Gaussian::lbgMassPdfD(D~0_M, lbgMassMeanD[1860, 1800, 1920], lbgMassSigmaD[6, 0, 50])
+Gaussian::lbgMassPdfD(Meson_M, lbgMassMeanD[1860, 1800, 1920], lbgMassSigmaD[6, 0, 50])
 # Total peakingD background
 PROD::lbgMassPdf(lbgMassPdfB, lbgMassPdfD)
 
+# PartReco background B mass
+partMeanB[5100, 5000, 5200]
+partSigmaB[20, 0, 50]
+partTransB[5300, 5100, 5400]
+partMeanD[1865, 1800, 1900]
+partSigmaD[8, 0, 20]
+RooExpAndGauss::recoMassPdfB(B_M, partMeanB, partSigmaB, partTransB)
+Gaussian::recoMassPdfD(Meson_M, partMeanD, partSigmaD)
+PROD::partMassPdf(recoMassPdfB, recoMassPdfD)
+
 bkgYield[600, 0, 20000]
-SUM::fullBkgMassPdf(bkgFrac[0.5, 0, 1] * lbgMassPdf, bkgMassPdf)
+SUM::fullBkgMassPdf(bkgFrac[0.4, 0, 1] * bkgMassPdf, lbgMassPdf)
 
 # Total everything
 SUM::model(sigYield * sigMassPdf, bkgYield * fullBkgMassPdf)
+
+PROD::model_constrained(model, alpha_constr)
 
 # vim: ft=python

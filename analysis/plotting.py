@@ -59,7 +59,7 @@ def plot(data, plotfile, mcfile=None, cuts=None, variables=None, bins=30):
         #plt.clf()
 
         
-def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_params=None, norm=None, log=False, binning=None, labels=None):
+def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_params=None, norm=None, log=False, binning=None, labels=None, plot_pull=True):
     if not extra_params:
         extra_params = []
     if not norm:
@@ -78,8 +78,10 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     xmin, ymin = box.xmin, box.ymin
     xmax, ymax = box.xmax, box.ymax
 
-    gs = GridSpec(2, 1, height_ratios=[7, 1], left=xmin, right=xmax, bottom=ymin, top=ymax)
-    gs.update(hspace=0.12)
+    if plot_pull:
+        gs = GridSpec(2, 1, height_ratios=[7, 1], left=xmin, right=xmax, bottom=ymin, top=ymax, wspace=0., hspace=0.15)
+    else:
+        gs = GridSpec(1, 1, left=xmin, right=xmax, bottom=ymin, top=ymax)
 
     frame = var.frame()
 
@@ -91,7 +93,7 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     ax = plt.subplot(gs[0])
 
     for c in comps:
-        plt.plot(x, c(x), '--', dashes=[8,3], zorder=90, clip_on=False)
+        plt.plot(x, c(x), '--', dashes=[8,3], zorder=-10, clip_on=True)
 
     #if components:
     #    for c, name in zip(comps, components):
@@ -103,36 +105,38 @@ def plot_roofit(var, data, model, components=None, numcpus=1, xlabel='', extra_p
     plt.plot(x, f(x), 'r-', zorder=95, clip_on=False)
     if log:
         ax.set_yscale('log')
-        ax.set_ylim(max(0.1, min(y)), 1.2 * max(y))
+        ax.set_ylim(max(0.1, 0.5*min(y)), 1.2 * max(y))
         yerr[0] = y - maximum(1e-1, y - yerr[0])
     else:
         pass
         #ax.set_ylim(0, 1.1 * max(y))
         #plt.gca().yaxis.set_major_locator(MaxNLocator(prune='lower'))
 
-    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=4, linewidth=1.5, clip_on=False, capsize=3)
-    plt.setp(ax.get_xticklabels(), visible=False)
+    plt.errorbar(xpos, y, yerr=yerr, fmt='o', color='k', zorder=100, markersize=1, linewidth=0.5, clip_on=False, capsize=0)
 
-    bx = plt.subplot(gs[1], sharex=ax)
-    plt.setp(bx, zorder=-10)# Make sure the main histogram can draw over the pull plot
-    pull = calc_pull(xpos, f, y, yerr)
+    if plot_pull:
+        plt.setp(ax.get_xticklabels(), visible=False)
+        bx = plt.subplot(gs[1], sharex=ax)
+        plt.setp(bx, zorder=-9)# Make sure the main histogram can draw over the pull plot
+        pull = calc_pull(xpos, f, y, yerr)
 
-    plt.fill_between([var.getMin(), var.getMax()], 2, 1, facecolor='#bbbbbb', linewidth=0, edgecolor='#bbbbbb')
-    plt.fill_between([var.getMin(), var.getMax()], -2, -1, facecolor='#bbbbbb', linewidth=0, edgecolor='#bbbbbb')
+        plt.fill_between([var.getMin(), var.getMax()], 2, 1, facecolor='#bbbbbb', linewidth=0, edgecolor='#bbbbbb')
+        plt.fill_between([var.getMin(), var.getMax()], -2, -1, facecolor='#bbbbbb', linewidth=0, edgecolor='#bbbbbb')
 
-    color = ['#cc4444' if abs(p) > 3 else '#555555' for p in pull]
-    plt.bar(xpos-width/2, pull, width, color=color, linewidth=0.8)
+        color = ['#cc4444' if abs(p) > 3 else '#555555' for p in pull]
+        plt.bar(xpos-width/2, pull, width, color=color, linewidth=0.5)
 
-    #plt.axhline(0, color='black')
-    #plt.axhline(3, color='black')
-    plt.ylabel('$\\frac{\\hat{n}_i -  n_i}{\\sigma(n_i)}$')
+        #plt.axhline(0, color='black')
+        #plt.axhline(3, color='black')
+        plt.ylabel('$\\frac{\\hat{n}_i -  n_i}{\\sigma(n_i)}$')
 
-    if xlabel:
-        plt.xlabel(xlabel, ha='right', x=1)
+        plt.ylim(-3, 3)
+        bx.get_yaxis().set_ticks([-3, 0, 3])
 
     plt.xlim(var.getMin(), var.getMax())
-    plt.ylim(-3, 3)
-    bx.get_yaxis().set_ticks([-3, 0, 3])
+
+    if xlabel:
+        plt.xlabel(xlabel)
 
     plt.sca(ax)
     return gs, ax, width
@@ -171,6 +175,8 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
     for idx in range(1, int(frame.numItems())):
         curr = frame.getObject(idx)
         name = curr.GetName()
+
+        logger.debug('Found plot object with name {}'.format(name))
         
         from ROOT import Double
         xmin = Double(0)
@@ -193,11 +199,11 @@ def get_function(x, frame, model, components=None, norm=1, numcpus=1, extra_para
         else:
             comp_name = ''
 
-        logger.debug('Processing {} {}'.format(name, comp_name))
-
         if curr_component == comp_name:
             func_results[-1].append((fobj, (xmin, xmax)))
         else:
+            logger.debug('Creating new fit object: {} - {}'.format(comp_name, curr_component))
+            curr_component = comp_name
             func_results.append([(fobj, (xmin, xmax))])
 
     logger.debug('Results is: {}'.format(func_results))

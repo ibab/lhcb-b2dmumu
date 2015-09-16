@@ -1,19 +1,35 @@
 # B->K*J/psi fit
 
-B_M[5100, 5500]
+B_M[5120, 5700]
 
 # Signal Mass
-sigMassMean[5200, 5400]
-RooCBShape::sigMassPdf1(B_M, sigMassMean, sigMassSigma1[30, 50], alpha1[1, 0, 600], n1[1, 0, 4000])
-RooCBShape::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[5, 30], alpha2[1, 0, 600], n2[1, 0, 4000])
-SUM::sigMassPdf(sigFrac[0, 1] * sigMassPdf1, sigMassPdf2)
+sigMassMean[5279, 5200, 5400]
+alpha1[4, 0, 10]
+#alpha2[4, 0, 10]
+alpha2[-4, -10, 0]
+#n1[0.0001, 0, 4000]
+#n2[2.6, 0, 4000]
+n1[1, 0.1, 20]
+n2[2.6, 0.1, 20]
+
+RooCBShape::sigMassPdf1(B_M, sigMassMean, sigMassSigma1[5, 50], alpha1, n1)
+RooCBShape::sigMassPdf2(B_M, sigMassMean, sigMassSigma2[5, 50], alpha2, n2)
+SUM::sigMassPdf(sigFrac[0.5, 0.2, 1] * sigMassPdf1, sigMassPdf2)
+
+expr::Bs_M('sigMassMean + deltaM', sigMassMean, deltaM[70, 50, 120])
+RooCBShape::sigMassPdf1Bs(B_M, Bs_M, sigMassSigma1, alpha1, n1)
+RooCBShape::sigMassPdf2Bs(B_M, Bs_M, sigMassSigma2, alpha2, n2)
+SUM::sigMassPdfBs(sigFrac * sigMassPdf1Bs, sigMassPdf2Bs)
 
 ## Background Mass
-p1[-0.0001, -0.00018181818, 1]
-RooPolynomial::bkgMassPdf(B_M, {p1})
+#p1[-0.0001, -0.00018181818, 1]
+#RooPolynomial::bkgMassPdf(B_M, {p1})
+
+expr::bkgMassExpoVar('5279 - B_M', B_M)
+Exponential::bkgMassPdf(bkgMassExpoVar, bkgMassSlope[0.005, 0, 2])
 
 # Total
-SUM::model(sigYield[450000, 0, 600000] * sigMassPdf, bkgYield[360000, 0, 500000] * bkgMassPdf)
+SUM::model(sigYield[400000, 0, 800000] * sigMassPdf, bsYield[5000, 0, 30000] * sigMassPdfBs, bkgYield[100000, 0, 500000] * bkgMassPdf)
 #, lbgYield[1000, 0, 100000] * lbgMassPdf)
 
 # vim: ft=python

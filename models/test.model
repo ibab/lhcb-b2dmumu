@@ -1,0 +1,15 @@
+
+
+x[-10, 10]
+mu1[0, -10, 10]
+sigma1[2, 0, 10]
+
+y[-10, 10]
+mu2[0, -10, 10]
+sigma2[2, 0, 10]
+
+Gaussian::model1(x, mu1, sigma1)
+Gaussian::model2(y, mu2, sigma2)
+
+PROD::model(model1, model2)
+

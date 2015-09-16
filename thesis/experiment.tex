@@ -11,7 +11,7 @@
 \newacronym{L0}{L0}{Low Level Trigger}
 \newacronym{HLT}{HLT}{High Level Trigger}
 
-\chapter{The LHCb Experiment}
+\chapter{The LHCb experiment}
 
 The Large Hadron Collider beauty (LHCb) experiment is dedicated to the precise study of beauty and charm hadrons at the \gls{LHC}, which is located at the European Organization for Nuclear Science (\gls{CERN}) near Geneva, Switzerland.
 In contrast to the other three large detector experiments at the LHC (ATLAS, CMS and ALICE), which feature an almost complete angular acceptance, LHCb is a spectrometer that only covers the forward region and focuses on precision measurements.
@@ -62,7 +62,7 @@ This precludes the measurement of certain physical parameters.
 
 The proton-proton collisions at the LHC produce $\Pqb\APqb$ pairs predominantly correlated in the forward and backward directions, as can be seen from figure \ref{fig:bbarprod}.
 This can be understood from the fact that at LHC energies, the probability to have a large asymmetry in the parton momenta is high, which means that decay products such as $\Pqb\APqb$ pairs are highly boosted on average.
-As a result, LHCb can observe a substantial fraction of produced $\Pqb\APqb$ pairs (roughly a quarted) by only covering a comparably small forward region.
+As a result, LHCb can observe a substantial fraction of produced $\Pqb\APqb$ pairs (roughly a quarter) by only covering a comparably small forward region.
 
 \begin{figure}
 \centering
@@ -130,6 +130,7 @@ The resulting precise mass resolution facilitates a high rejection of combinator
 This is especially vital for the study of rare decays such as $\PBzero\to\APDzero\APmuon\Pmuon$, where an improvement in background rejection directly enhances the sensitivity of the measurement.
 
 \subsection{Particle identification}
+\label{sec:pid}
 
 \begin{figure}
   \begin{minipage}{.45\textwidth}
@@ -192,22 +193,20 @@ The HLT1 partially reconstructs the event and executes a range of previously con
 This reduces the event rate to \SI{80}{kHz}.
 The HLT2 then performs a full event reconstruction, mostly using the same algorithms that are also used during the later offline reconstruction.
 Further selection criteria reduce the event rate to \SI{5}{kHz}, which is low enough for the events to be persisted.  \cite{Trigger2011} \cite{Trigger2012}
-In order to make efficient use of the available computing resources, the HLT trigger farm does not process all events in real time.
-Instead, a \emph{deferred trigger} scheme is used, wherein a fraction of the events is cached and processed later in between data acquisition runs.
 
-The computing resources of the HLT trigger farm are not sufficient to process all events in real time.
-Instead, a fraction of the events is cached during data acquisition and later processed in between runs.
+In order to make efficient use of the available computing resources, the HLT trigger farm does not process all events in real time.
+Instead, a \emph{deferred trigger} scheme is used, wherein a fraction of the events is cached and processed in between data acquisition runs.
 
 Once an event has been accepted by the trigger farm, it is transferred to the Tier 0 computing centre at \gls{CERN} for further processing and archiving.
 
-\subsection{LHCb software}
+\subsection{Data processing}
 
 The data recorded by the LHCb experiment is processed using the LHCb software framework, which is based on the \textsc{Gaudi} package.
 \textsc{Gaudi} is a framework for event stream processing.
 It allows users to write configurable algorithms that process event data on a per bunch-crossing basis.
 Event data is stored using the \textsc{ROOT} \cite{ROOT} data format.
 
-Reconstruction, simulation and selection of particle events are the three most important tasks needed to measure physical parameters of interest.
+Reconstruction, simulation and selection of particle events are the three most important preparatory tasks needed to analyze particle decays.
 An overview of these steps is given in the following sections.
 
 \subsubsection{Reconstruction}
@@ -244,7 +243,7 @@ The stripping selection is performed centrally, and events matching the criteria
 
 Simulated data samples are a vital input to the analysis of particle decays.
 For example, a simulated signal sample, consisting purely of bunch crossings where a signal decay occured, can serve as an input in designing the selection procedure and to determine various signal efficiencies, such as the reconstruction and preselection efficiencies.
-These are then be used as a critical input to determine the branching fraction of the decay.
+These can then serve as critical inputs to determine the branching fraction of the decay.
 
 In order for this procedure to be accurate, the simulated data sample has to match the properties of real data as closely as possible.
 This not only requires an accurate simulation of the $\Pp\Pp$ interaction and of the particle decay, but also of the detector response.

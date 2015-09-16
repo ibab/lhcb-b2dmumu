@@ -1,7 +1,7 @@
 
 \chapter{Outline of the analysis}
 
-The goal of the analysis is to determine a limit on the branching fraction of the decay $\PBzero\to\APDzero\APmuon\Pmuon$, using events where the $\APDzero$ decays to $\PKplus\Ppiminus$.
+The goal of this analysis is to determine a limit on the branching fraction of the decay $\PBzero\to\APDzero\APmuon\Pmuon$, using events where the $\APDzero$ decays to $\PKplus\Ppiminus$.
 This represents the first measurement searching for this decay channel so far.
 
 To minimize experimenter's bias, a blind analysis is performed.
@@ -11,196 +11,769 @@ A useful result of the analysis before unblinding is the calculation of an \emph
 
 The first step of the analysis is a loose preselection involving cuts on kinematic properties and measures of fit quality for the decay.
 Following this, several veto cuts are applied to reject physical backgrounds.
-In order to reduce the amount of combinatorial background, a multivariate classifier (Gradiend Boosted Decision Trees) is employed.
+In order to reduce the amount of combinatorial background, a multivariate classifier is employed.
 Various signal efficiencies resulting from the trigger, the reconstruction, the preselection, vetos on physical backgrounds and the multivariate classification need to be taken into account.
 These are determined using a simulated signal data sample.
 
 To reduce the systematic uncertainty of the branching fraction measurement, it is useful to perform a simultaneous measurement of the branching fraction of a \emph{normalization channel} and to normalize the signal branching fraction to this measurement.
-The decay $\PBzero\to\PJpsi\PKstar$ is an ideal candidate for this, because it features both a large branching fraction, which reduces the uncertainty in the normalization process, and a final state ($\PKplus\Ppiminus\APmuon\Pmuon$) that is identical to the one of the signal decay.
-
-When calculating the signal branching fraction $BR_\text{sig}$, the control channel is taken into account by
-\begin{equation}
-  BR_\text{sig} = \frac{BR_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}} N_\text{sig}\:,
-\end{equation}
-where $BR_\text{norm}$ refers to a known branching fraction of the signal decay (e.g. from previous measurements), $\varepsilon_\text{sig}$ and $\varepsilon_\text{norm}$ refer to the total efficiencies of the signal and normalization channels, respectively, and $N_\text{sig}$ and $N_\text{norm}$ refer to the measured yields of the signal and normalization channel.
-
-The factor
-\begin{equation}
-  \alpha = \frac{BR_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}}
-  \label{eq:alpha}
-\end{equation}
-is referred to as the \emph{normalization constant}.
-It translates the measured number of signal decays to the measured branching fraction.
+The decay $\PBzero\to\PJpsi\PKstar$, where the $\PJpsi$ decays to $\APmuon\Pmuon$, is an ideal candidate for this, because it features both a large branching fraction, which reduces the uncertainty in the normalization process, and a final state ($\PKplus\Ppiminus\APmuon\Pmuon$) that is identical to the one of the signal decay.
 
 Statistical models are developed for the reconstructed mass of both the signal and and normalization channels.
 These can be used to determine the number of signal or normalization events remaining after the selection procedure through a Maximum Likelihood Estimate (MLE).
-By incorporating \eqref{eq:alpha} into the fit, the signal branching fraction can be determined directly as a parameter of the model.
+By calculating the normalization constant $\alpha$ and incorporating it into the fit model, the signal branching fraction can be determined directly as a parameter.
 
-Based on this model, the Profile Likelihood Ratio method is used to calculate limits on the branching fraction, taking into account nuisance parameters.
-In order to calculate an expected limit for the signal decay branching fraction, toy simulations of the blinded signal region are generated using a model of the background distribution fit to the sidebands of the mass distribution.
-Each of the toys is combined with the data outside the blinded region and a limit is calculated.
-The distribution of calculated limits is used to determine an expected limit on the signal decay branching fraction.
+Based on the Likelihood model, the Profile Likelihood Ratio method is used to calculate limits on the branching fraction, taking into account nuisance parameters.
+In order to calculate an expected limit for the branching fraction of the signal decay, toy simulations of the blinded signal region are generated using a model of the background distribution, which is determined through a fit to the sidebands of the mass distribution.
+Each of the toys is combined with the data outside of the blinded region and a limit is calculated.
+The distribution of calculated limits is used to determine an expected limit on the branching fraction of the signal decay.
 
-\chapter{Selection} % 18
+\chapter{Selection}
+\label{selection}
 
-\section{Dataset}
+Before an estimate of the number of signal candidates can be extracted effectively, the number of background events in the data has to be reduced.
+The following sections describe the different selection steps used in the analysis.
 
-\begin{itemize}
-  \item 3 inverse femtobarn from LHCb Run I (2011+2012)
-  \item Explain trigger lines used
-  \item I used phase space simulation of $B^0\to\overline{D^0}μ^+μ^-$
-  \item Which trigger lines do we use for the control channel? (Same, lol)
-\end{itemize}
+\section{Datasets}
+
+The analyzed data samples correspond to the full integrated luminosity of \SI{3}{fb^{-1}} observed by LHCb during Run I. Throughout the analysis, data samples of the decays $\PBzero\to\APDzero\APmuon\Pmuon$ and $\PBzero\to\PJpsi\PKstar$ are used.
+
+Simulated data samples were generated for both decay channels.
+Because no reliable model of $\PBzero\to\APDzero\APmuon\Pmuon$ is available, the decay was simulated using a \emph{phase space} model.
+This means that no assumptions about the kinematic dependence of the decay width $\Gamma$ were made outside of the three-body decay phase space factor.
+% TODO why is that useful?
+% TODO what about B->JpsiK* ?
+
+In order to reduce experimenter bias, the analysis is conducted in a blinded fashion. This is achieved by removing a window of $\pm \SI{50}{MeV}$ in the reconstructed mass $m(\PKplus\Ppiminus\APmuon\Pmuon)$ around the nominal \PBzero mass in the $\PBzero\to\APDzero\APmuon\Pmuon$ dataset.
+This way, all signal candidates are removed from the dataset, and a biasing optimization of analysis parameters is prevented.
+% TODO why was this window chosen?
+% TODO how much MC is in there?
+% TODO how many data events do we have (after blinding)?
 
 \section{Preselection criteria}
 
-\begin{itemize}
-  \item This explains the stripping line cuts
-  \item What did we use for the control channel? Same (lol) with some differences: explain
-  \item How is the blinding cut applied? Use objective criteria!
-  \item How many events end up in the blinded sample?
-  \item How many events do we have in our control channel?
-\end{itemize}
+\subsection{Stripping selection}
 
-\section{Vetoes to reject specific physical backgrounds}
+As part of the LHCb-wide stripping selection, several loose cuts based on kinematic properties, fit quality and PID variables have been applied.
+The stripping line \texttt{B2XMuMu} has been chosen for both of the decays $\PBzero\to\APDzero\APmuon\Pmuon$ and $\PBzero\to\PJpsi\PKstar$.
+
+The selection criteria only differ in the selection of the \APDzero and \PKstar candidates and their decay products.
+All selection criteria are listed in table \ref{tab:stripping}.
+
+$\text{IP}\:\chi^2$ is the $\chi^2$ resulting from adding the chosen PV to the track of a particle using the Kalman fit, roughly equivalent to the IP significance $\text{IP}/\sigma(\text{IP})$.
+DIRA angle refers to the angle between the momentum of a particle and its associated PV.
+Vertex $\chi^2$ is the $\chi^2$ resulting from adding the tracks of all produced particles to the decay vertex.
+Flight distance $\chi^2$ is the flight distance significance.
+The ghost probability describes the likelihood that a given track (\emph{ghost track}) has been constructed without a corresponding particle track existing in the event.
+It is calculated using a specialized ghost probability algorithm. \cite{Ghosts}
+The DLL variables characterize the likelihood ratio for two given particle hypotheses (see section \ref{sec:pid}).
+The \texttt{hasRICH} variable checks for the existence of RICH information for the given track.
+The SPD hits variable correponds to the number of hits in the scintillating pad detector.
+% TODO why is this useful?
+
+The efficiency resulting from the limited geometrical acceptance of the LHCb detector is determined to be
+\begin{align}
+  \varepsilon_\text{geom}(\PBzero\to\APDzero\APmuon\Pmuon) &= \SI{15.79 \pm 0.05}{\percent} \\
+  \varepsilon_\text{geom}(\PBzero\to\PJpsi\PKstar) &= \SI{16.050 \pm 0.04}{\percent}
+\end{align}
+using simulated candidates.
+
+After applying the reconstruction and stripping selection to the two simulated samples, the combined reconstruction and stripping efficiencies are determined to be
+\begin{align}
+  \varepsilon_\text{reco\&strip}(\PBzero\to\APDzero\APmuon\Pmuon) &= \SI{10.99 \pm 0.03}{\percent} \\
+  \varepsilon_\text{reco\&strip}(\PBzero\to\PJpsi\PKstar) &= \SI{9.687 \pm 0.010}{\percent}\:.
+\end{align}
+
+\begin{table}
+  \centering
+  \caption{
+     Selection criteria applied to the signal and normalization channels as part of the stripping.
+     Definitions of the variables used here are given in the text.
+  }
+  \begin{tabular}{l l}
+    \toprule
+    Target & Selection \\
+    \midrule
+    $\PBzero$ & $\text{IP}\:\chi^2 < 16$ \\
+              & $\SI{4600}{MeV} < m(\PKplus\Ppiminus\APmuon\Pmuon) < \SI{7000}{MeV}$ \\
+              & $\text{DIRA angle} < \SI{14}{mrad}$ \\
+              & $\text{flight distance}\:\chi^2 > 121$ \\
+              & $\text{vertex}\:\chi^2/\text{ndf} < 8$\\
+    \midrule
+    $\PKstar$ & $m(\PKplus\Ppiminus) < \SI{6200}{MeV}$ \\
+              & $\text{flight distance}\:\chi^2 > 9$  \\
+              & $\text{vertex}\:\chi^2/\text{ndf} < 12$ \\
+    \midrule
+    $\APDzero$ & $|m(\PKplus\Ppiminus) - m(\PDzero)| < \SI{100}{MeV}$ \\
+               & $\text{flight distance}\:\chi^2 > 9$ \\
+               & $\text{vertex}\:\chi^2/\text{ndf} < 10$ \\
+    \midrule
+    $\APmuon\Pmuon$ & $m(\APmuon\Pmuon)$ < \SI{7100}{MeV} \\
+                    & $\text{vertex}\:\chi^2$ < 9 \\
+    \midrule
+    $\mu^\pm$       & \texttt{IsMuon} \\
+                    & $\text{DLL}_{\mu\pi} > -3$ \\
+    \midrule
+    $K^\pm$       & \texttt{hasRICH} \\
+                    & $\text{DLL}_{K\pi} > -5$ (only if from \PDzero) \\
+    \midrule
+    $\pi^\pm$      & \texttt{hasRICH} \\
+    \midrule
+    Track           & $\text{ghost probability} < 0.4$ \\
+                    & $\min(\text{IP}\:\chi^2) > 9$ \\
+    \midrule
+    GEC             & $\text{SPD multiplicity} < 600$ \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:stripping}
+\end{table}
+
+% TODO check table
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{A figure of the $B\to Dμμ$ dataset after stripping, with blinding}
+  {\input{store/variables/AFTER_STRIPPING_B_M.pgf}}
+  \caption{
+    Reconstructed \PBzero mass of the signal data sample after trigger and stripping requirements.
+    A window around the nominal \PBzero mass has been removed as a means of blinding the measurement.
+  }
+\end{figure}
+
+\subsection{Trigger selection}
+
+Both of the decays $\PBzero\to\APDzero\APmuon\Pmuon$ and $\PBzero\to\PJpsi(\APmuon\Pmuon)\PKstar$ feature two muons in their final states.
+Accordingly, a selection of general and muon-specific trigger algorithms has been chosen for the analysis.
+See table \ref{tab:trigger} for a list of the trigger algorithms and the efficiencies associated with each trigger stage, as well as the total trigger efficiency for both decay channels, evaluated using simulated candidates.
+
+The reduced trigger efficiency of $B^0\to\APDzero\APmuon\Pmuon$ compared to the normalization channel can be explained by the fact that it contains a significant fraction of low $q^2$ muon pairs.
+These low-momentum muons are not triggered as efficiently in the L0 trigger as those originating from a \PJpsi resonance.
+
+The reconstructed $B^0$ mass distribution after applying stripping and trigger requirements is given in figure \ref{fig:bmass}.
+
+The fact that the trigger efficiencies differ strongly between the signal and normalization channels means that the data-driven TISTOS method \cite{TisTos}, which would require using the normalization channel as a proxy for the signal, is not applicable.
+
+\begin{table}
+  \centering
+  \caption{
+    Trigger algorithms required for both the signal and normalization channels.
+    The strategies used consist mainly of muon and topological requirements.
+    Events are required to match at least one of the trigger algorithms per stage.
+    The trigger efficiencies as determined on simulated candidates are given for both the signal and normalization channel.
+  }
+  \begin{tabular}{l l S[table-format=2.2,table-figures-uncertainty=1] S[table-format=2.2,table-figures-uncertainty=1]}
+    \toprule
+    Stage & Trigger algorithms & {Eff. (signal) $/\ \si{\percent}$} & {Eff. (norm.) $/\ \si{\percent}$} \\
+    \midrule
+    L0   & \texttt{L0Muon} & 75.87 \pm 0.13 & 87.34 \pm 0.04 \\ 
+    \midrule
+    HLT1 & \texttt{Hlt1TrackAllL0} & 94.99 \pm 0.07 & 94.92 \pm 0.03 \\ 
+         & \texttt{Hlt1TrackMuon} & & \\ 
+    \midrule
+    HLT2 & \texttt{Hlt2SingleMuonDecision} & 96.12 \pm 0.07 & 96.62 \pm 0.02 \\ 
+         & \texttt{Hlt2DiMuonDetachedDecision} & & \\ 
+         & \texttt{Hlt2Topo\{2,3,4\}BodyBBDT} & & \\ 
+         & \texttt{Hlt2TopoMu\{2,3,4\}BodyBBDT} & & \\ 
+    \midrule
+    Total & & 69.27 \pm 0.14 & 80.10 \pm 0.04 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:trigger}
+\end{table}
+
+\begin{figure}
+  \centering
+  {\input{store/variables/AFTER_STRIPPING_NORM_B_M.pgf}}
+  \caption{
+    Reconstructed \PBzero mass of the normalization data sample after trigger and stripping requirements.
+  }
+  \label{fig:bmass}
+\end{figure}
+
+\subsection{Vetoes to reject specific physical backgrounds}
+
+Before proceeding with the multivariate selection, a number of vetoes is applied to the two datasets to reject specific physical backgrounds.
+These are summarized in table \ref{tab:signalcuts}.
+
+\begin{table}
+  \centering
+  \caption{
+    Summary of all preselection cuts applied to the signal ($\PBzero\to\APDzero\APmuon\Pmuon$) dataset.
+    Each efficiency is calculated based on the output of the previous selection cut.
+  }
+  \begin{tabular}{l l S[table-format=2.3,table-figures-uncertainty=1]}
+    \toprule
+    Background & Veto & {Efficiency $/\ \si{\percent}$} \\
+    \midrule
+    $-$ & $m(\APmuon\Pmuon) > \SI{3500}{MeV}$ & 100 \\
+    $\PBzero\to\PJpsi X$ & $\SI{2900}{MeV} < m(\APmuon\Pmuon) < \SI{3200}{MeV}$ & 87.00 \pm 0.12 \\
+    $\PBzero\to\PJpsi\PKstar$& $\SI{2900}{MeV} < m(\APmuon\pi^-_\mu) < \SI{3200}{MeV}$ & 93.22 \pm 0.10 \\
+    $\PBzero\to\PpsiTwoS\PKstar$&$\SI{3500}{MeV} < m(\APmuon\pi^-_\mu) < \SI{3800}{MeV}$ & 96.72 \pm 0.07 \\
+    $\PBzero\to\PDstar^-\APmuon\Pneutrino$ & $\SI{1990}{MeV} < m(\PKplus\Ppiminus\mu^-_\pi) < \SI{2030}{MeV}$ & 99.957 \pm 0.008 \\
+    \midrule
+    Total & & 78.40 \pm 0.15 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:signalcuts}
+\end{table}
+
+
+\subsubsection{Dimuon mass vetoes}
+
+% TODO what about a Kaon swap?
+
+Two regions in the invariant mass distribution $m(\APmuon\Pmuon)$ of the two muons (see figure \ref{fig:B_vs_Jpsi}) are excluded:
+The first ranges from \SI{2900}{MeV} to \SI{3200}{MeV} and is designed to exclude muon pairs originating from resonant \PJpsi decays.
+The second excludes all values of $m(\APmuon\Pmuon)$ upwards of \SI{3500}{MeV}.
+This region can be safely excluded because it lies outside of the phase space of the $\PBzero\to\APDzero\APmuon\Pmuon$ decay (see figure \ref{fig:mumu_mc}).
+
+\begin{figure}
+  \centering
+  \input{store/vetoes/B_vs_Jpsi.pgf}
+  \caption{
+    A two-dimensional histogram of the invariant mass of all $B^0$ decay products and the $q^2$ of the two muons.
+    Regions excluded as part of the $m(\APmuon\Pmuon)$ vetoes are marked in red.
+  }
+  \label{fig:B_vs_Jpsi}
 \end{figure}
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Show that phase space ends before the Psi(2S)}
+  \input{store/vetoes/MC_Jpsi.pgf}
+  \caption{
+    Histogram of $q^2$ of the two muons from simulated $\PBzero\to\APDzero\APmuon\Pmuon$ candidates after initial preselection.
+    The left region marked in red corresponds to the selection cut to remove resonant $\PJpsi$ candidates in the data.
+    The right region marked in red can be removed without loss of signal, as the phase space of $\PBzero\to\APDzero\APmuon\Pmuon$ ends roughly at $q^2 = \SI{12}{GeV^2}$.
+  }
+  \label{fig:mumu_mc}
 \end{figure}
+
+\subsubsection{Vetoes on \texorpdfstring{$\PBzero\to\PJpsi\PKstar$}{B0->JpsiK*} and \texorpdfstring{$\PBzero\to\PpsiTwoS\PKstar$}{B0->psi(2S)K*} with \texorpdfstring{$\pi/\mu$}{pion-muon} swap}
+
+A possible background that peaks directly in the signal region originates from misreconstructed $\PBzero\to\PJpsi(\APmuon\Pmuon)\PKstar(\to\PKplus\Ppiminus)$ decays, where \Ppiminus and \Pmuon have been swapped.
+Because this background appears in the blinded signal region, the contribution is studied in an indirect way.
+A $\PBzero\to\PJpsi\PKstar$ data sample from a later stage of the analysis is used.
+The $m(\PKplus\mu^-_\pi)$ invariant mass is reconstructed using these candidates under a $\Ppiminus$ mass hypothesis for the $\Pmuon$.
+As can be seen from figure \ref{fig:doubleswap}, a significant number of candidates pass the $\PDzero$ reconstructed mass requirement.
+In order to reject this background contribution, the invariant mass $m(\APmuon\pi^-_\mu)$ is reconstructed for the signal sample under a \Pmuon hypothesis for the \Ppiminus.
+This corresponds to the \PJpsi invariant mass for swapped $\PBzero\to\PJpsi\PKstar$ candidates.
+Two cuts are placed on this invariant mass: $\SI{2900}{MeV} < m(\APmuon\pi^-_\mu) < \SI{3200}{MeV}$ and $\SI{3500}{MeV} < m(\APmuon\pi^0_\mu) < \SI{3800}{MeV}$.
+The first is designed to reject swapped $\PBzero\to\PJpsi\PKstar$ candidates, while the second correspondingly rejects swapped $\PBzero\to\PpsiTwoS\PKstar$.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Figure for $B^0\to D^{*-}μ^+ν$ background veto}
+  \input{store/vetoes/Meson_swapped.pgf}
+  \caption{
+    Invariant mass $m(\PKplus\Pmuon)$ of $\PBzero\to\PJpsi\PKstar$ candidates from data, reconstructed under a \Ppiminus hypothesis for the \Pmuon.
+    The exclusion region of the $|m(\PKplus\Ppiminus) - m(\PDzero)| < \SI{100}{MeV}$ stripping cut is marked in red.
+    This demonstrates that misreconstructed $\PBzero\to\PJpsi\PKstar$ candidates consistute a significant background contribution to the analysis.
+  }
+  \label{fig:doubleswap}
 \end{figure}
 
-\begin{itemize}
-  \item How does the dataset look after stripping? Dem $J/ψ$ peaks lol
-  \item Remove backgrounds with $J/ψ$ through cut on $μμ$ inv mass
-  \item Reconstruct $D^*$ mass through $\overline{D}^0μ^-$, plot of the peak, veto $B^0\to D^{*-}μ^+ν$
-  \item Treat other part reco as well???
-\end{itemize}
+\subsubsection{Veto on partially reconstructed \texorpdfstring{$\PBzero\to\PDstar^-\APmuon\Pneutrino$}{B->D*munu}}
+
+Decays of \PBzero to $\PDstar^-\APmuon\Pneutrino$, where the $\PDstar^-$ decays to $\APDzero\Ppiminus$ and the \Ppiminus is identified as a \Pmuon, while the \Pneutrino is not reconstructed, constitute another background.
+Because the neutrino momentum is not accounted for, this background appears in the lower sideband of the reconstructed \PBzero mass, ranging up to the nominal \PBzero mass.
+
+It is found that this background contribution is not sufficiently removed by the later multivariate selection step.
+The invariant mass of the $\PDstar^-$, corresponding to $m(\PKplus\Ppiminus\mu^-_\pi)$ with a \Ppiminus mass hypothesis for the \Pmuon is reconstructed (see figure \ref{fig:dstar}) and the background contribution is removed by excluding candidates with $\SI{1990}{GeV} < m(\PKplus\Ppiminus\mu^-_\pi) < \SI{2030}{GeV}$.
+
+\begin{figure}
+  \centering
+  \input{store/vetoes/Dstar.pgf}
+  \caption{
+    Invariant mass $m(\PKplus\Ppiminus\mu^-_\pi)$ constructed with a \Ppiminus mass hypothesis for the \Pmuon.
+    The decay $B^0\to D^{*-} \mu^+ \APneutrino$ is reponsible for the peak around \SI{2010}{GeV}.
+    The region marked in red is removed as part of the preselection.
+  }
+  \label{fig:dstar}
+\end{figure}
+
+\subsubsection{Vetoes used for the normalization channel}
+
+The data sample used for the normalization channel also contains various physical backgrounds that need to be excluded before a reliable estimate of the normalization channel yield can be performed.
+
+As $B^0\to\PJpsi\PKstar$ has previously been analyzed at LHCb, background rejection cuts have been adapted from a previous analysis.
+The selection procedure of $\PBzero\to\PKstar\APmuon\Pmuon$ using the full LHCb Run I dataset \cite{Citation needed} has been reproduced for this purpose with a few modifications:
+Where the $B^0\to K^{*0}\APmuon\Pmuon$ analysis used combined mass and PID cuts, only the corresponding mass cuts are used for this analysis.
+This is done to avoid introducing systematic errors resulting from discrepancies between real data and simulation.
+While the backgrounds are still fully rejected using this method, the achieved normalization channel efficiency is lower.
+By using a data-driven approach to measure the normalization efficiencies or by using one of the methods for eliminating data-simulation differences discussed in section \ref{mva}, combined mass and PID cuts could be introduced to significantly increase the normalization channel efficiency.
+
+Cuts on $m(\APmuon\Pmuon)$ (to select \PJpsi candidates) and $m(\PKplus\Ppiminus)$ (to select \PKstar candidates) are applied.
+Decays of $\PBplus$ to $\PJpsi\PKplus$, where an additional \Ppiminus has been added to the candidate, are excluded by constructing $m(\PKplus\APmuon\Pmuon)$ and rejecting a window around the nominal $B^0$ mass.
+The background $\PBzero\to\PJpsi\Pphi(\PKplus\PKminus)$, where \PKminus has been identified as \Ppiminus is excluded by constructing $m(\PKplus\pi^-_K)$ and rejecting a window around the nominal \Pphi mass.
+Finally, $\PBzero\to\PJpsi\PKstar$ decays where a \PKminus has been identified as \Ppiminus and \Ppiplus as \PKplus are rejected by constructing $m(K^+_\pi \pi^-_K)$ and rejecting a window around the \PKstar mass.
+This cut in particular has a low efficieny for the normalization channel without a complementary PID cut.
+
+All selection cuts applied to the dataset are summarized in table \ref{tab:normcuts}.
+
+\begin{table}
+  \centering
+  \caption{
+    Summary of all preselection cuts applied to the normalization ($\PBzero\to\PJpsi\PKstar$) dataset.
+    Each efficiency is calculated based on the output of the previous selection cut.
+  }
+  \begin{tabular}{l l S[table-format=2.4,table-figures-uncertainty=1]}
+    \toprule
+    Background & Veto & {Efficiency $/\ \si{\percent}$} \\
+    \midrule
+    $-$ & $\mathrm{DLL}_{K/\pi} < -5$ & 99.49 \pm 0.009 \\
+    $-$ & $m(\PKplus\Ppiminus)\ \text{outside}\ (\SI{800}{MeV},\SI{1000}{MeV})$ & 87.54 \pm 0.04 \\
+    $-$ & $m(\APmuon\Pmuon)\ \text{outside}\ (\SI{2970}{MeV},\SI{3170}{MeV})$ & 99.9928 \pm 0.0011 \\
+    $\PBzero\to\PJpsi\PKplus$ & $\SI{5220}{MeV} < m(\PKplus\APmuon\Pmuon) < \SI{5340}{MeV}$ & 99.993 \pm 0.001 \\
+    $\PBzero\to\PJpsi\Pphi$ & $\SI{1005}{MeV} < m(\PKplus\pi^-_K) < \SI{1035}{MeV}$ & 99.335 \pm 0.011 \\
+    \PKplus\Ppiminus swap & $\SI{795}{MeV} < m(K^+_\pi \pi^-_K) < \SI{995}{MeV}$ & 67.27 \pm 0.06 \\
+    \midrule
+    Total & & 58.13 \pm 0.06 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:normcuts}
+\end{table}
 
 \section{Multivariate classification}
+\label{mva}
 
-\begin{itemize}
-  \item What is all this ML anyway?
-  \item Way too much background: Looking for N signal events in dataset of K
-  \item Use ML methods to classify combine many variables into one discriminant
-  \item Choose optimal cut on discriminant according to a criterium
-  \item Several libraries tested
-    \begin{itemize}
-      \item TMVA
-      \item scikit-learn
-      \item XGBoost
-    \end{itemize}
-  \item Best performance speed-wise and in AUC: XGBoost $\rightarrow$ choose this
-\end{itemize}
+As the analysis requires an identification of an excess of only a few ($\approx 10^1$) events in a dataset of roughly $10^6$ (mostly combinatorial) background events, an efficient way to improve the ratio between combinatorial background and possible signal events is needed.
+For this purpose, a multivariate classification algorithm is employed.
 
-\subsection{Gradient tree boosting}
+% TODO queue explanation of MVA
+% TODO why is it useful?
+% TODO which classifier has been used?
 
-\begin{itemize}
-  \item Short explanation of how the algorithm works
-  \item Explain that this is basically steepest descent 
-  \item Nice: invariant under scaling of inputs
-  \item Check this out: \url{http://homes.cs.washington.edu/~tqchen/pdf/BoostedTree.pdf}
-\end{itemize}
+In order to train the classifier, pure signal and background samples are needed.
+Because no pure signal data sample is available, the simulated signal dataset is used as a proxy.
+To reduce the systematic uncertainty resulting from different behaviour of simulated and real events, the procedure described in section \ref{resampling} is applied.
 
-\subsection{Features used in the classification}
+The upper mass sideband of the $\PBzero\to\APDzero\APmuon\Pmuon$ dataset (up to \SI{5600}{MeV}) is used as a background proxy.
+The upper mass sideband is used, because training on the lower sideband could partially remove (and thus obscure) the presence of partially reconstructed backgrounds, which would lead to an error in the later parametrization of the combinatorial background.
 
-\begin{itemize}
-  \item Use phase space signal MC as signal proxy
-  \item Use right sideband as bkg proxy. Why?
-  \item Dem control plots
-  \item Plots of signal MC, sweighted control and control MC
-  \item Use resampling for PID variables
-  \item correlation matrix
-  \item importances?
-\end{itemize}
+Ten variables with high separation power (see table \ref{tab:mvavariables}) have been selected from the dataset to serve as input to the classifier.
+Figure \ref{fig:features} compares the signal and background distributions of each variable.
+
+% TODO how many signal/background events were used?
+
+\begin{table}
+  \centering
+  \caption{Variables used for the multivariate classification}
+  \begin{tabular}{l}
+    \toprule
+    Variable \\
+    \midrule
+    $\mathrm{cos}(\text{DIRA angle})$ \\
+    $B^0\ \text{vertex}\ \chi^2/\text{ndf}$ \\
+    $B^0\ \text{muon isolation BDT response}$ \\
+    $t_{B^0}$ \\
+    $K^+ \mathrm{DLL}_{K\pi}$ \\
+    $K^+ \mathrm{DLL}_{\mu\pi}$ \\
+    $\pi^- \mathrm{DLL}_{K\pi}$ \\
+    $\pi^- \mathrm{DLL}_{\mu\pi}$ \\
+    $\mu^+ \mathrm{DLL}_{\mu\pi}$ \\
+    $\mu^- \mathrm{DLL}_{\mu\pi}$ \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:mvavariables}
+  % TODO explanations
+\end{table}
+
+In order to estimate the efficiency of the classification procedure and to optimize its hyperparameters, the training dataset itself is classified.
+A possible danger when doing this naively by using the entire signal and background samples for both training and evaluation is that a classifier's performance in general differs between its training inputs and previously unseen data.
+In order to avoid this problem, a $k$-fold cross-validation procedure\cite{Elements} is used.
+This consists of using a $\frac{k - 1}{k}$ fraction of the data to train the classifier and using the remaining $\frac{1}{k}$ of the data to validate it.
+This is done iteratively $k$ times until each fraction of the dataset has been used once for validation.
+$k = 5$ has been chosen for this analysis.
+
+The hyperparameters of the classification algorithm are optimized using the area under the ROC curve as a guideline.
+The resulting parameters, which are used for the rest of the analysis, are given in table \ref{tab:mvaparams}.
+
+\begin{table}
+  \centering
+  \caption{Parameters used for the XGBoost gradient boosting classifier}
+  \begin{tabular}{l S}
+    \toprule
+    Parameter & {Value} \\
+    \midrule
+    $N_\text{trees}$ & 150 \\
+    $\gamma$ & 12 \\
+    max. tree depth & 10 \\
+    $\eta$ & 0.3 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:mvaparams}
+\end{table}
+
+The classifier returns a posterior probability $p$ that a given candidate belongs to the signal class.
+The distribution of probabilities (ranging from $0$ to $1$) can be mapped to a potential range of $-\infty$ to $+\infty$ using the logit function
+\begin{equation}
+  \mathrm{logit}(p) = \mathrm{log}\left(\frac{p}{1 - p}\right)\:.
+\end{equation}
+The calculated value is referred to as the \emph{classifier response} in the following analysis steps.
+The classifier response for the signal and background training samples is given in figure \ref{fig:response}.
+
+The classifier is used to calculate a response for the entire (blinded) $B^0\to\APDzero\APmuon\Pmuon$ data sample.
+Care is taken to conduct the classification of the upper mass sideband (used for training) in a $k$-fold manner.
+When classifying the rest of the dataset, one of the $k$ classifiers is chosen at random.
+
+In order to use the calculated classifier response to reject background candidates, a cut is applied to the classifier response distribution of the $B^0\to\APDzero\APmuon\Pmuon$ dataset.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Overview of all variables used for multivariate classification: signal and control MC, data sidebands}
+  \input{store/variables/SIG_BKG_clf.pgf}
+  \caption{
+    Response of the classifier on the signal (blue) and background (red) subsamples of the training dataset.
+    The two distributions are normalized to $1$.
+  }
+  \label{fig:response}
 \end{figure}
 
-\subsubsection{PID resampling}
+An objective criterium to select an optimal threshold on the classifier response is through the optimization of a \emph{figure of merit} (FOM).
+A FOM is a function of the expected number of signal and background decays in a signal window, both of which depend on the chosen threshold.
+The optimal threshold is determined by finding the value that maximizes a given FOM.
+
+For this analysis, the \emph{Punzi} figure of merit \cite{Punzi}
+\begin{equation}
+  \mathrm{FOM}(s, b) = \frac{s}{\sqrt{b} + \frac{a}{2}}
+\end{equation}
+with $a=3$ has been chosen.
+Here, $s$ and $b$ are the expected numbers of signal and background decays, given a threshold on the classifier response.
+The initial number of expected signal decays does not affect the maximum of the FOM and can be factorized out of the function.
+The FOM then depends on the estimated signal efficiency only.
+The expected number of background decays has been estimated by measuring the initial number (before the multivariate selection) through a fit to the $\PBzero\to\APDzero\APmuon\Pmuon$ dataset (see figure \ref{fig:bkginitial}).
+The fit model consists of a single exponential function.
+The estimate is calculated by integrating this function in a $\pm 1\sigma$ window around the nominal $B^0$ mass, where $\sigma$ is the standard deviation of the $B^0$ mass distribution as determined using simulated candidates (see section \ref{signalmodel}).
+This yields a value of roughly $N_\text{bkg} = 6622$.
+$N_\text{bkg}$ is multiplied with the background efficiency of the multivariate selection as determined on the training sample.
+
+The dependence of the FOM on the chosen threshold is shown in figure \ref{fig:fom}.
+The maximum is found for a threshold at $3.905$.
+Applying the threshold on the simulated signal sample yields an efficiency of
+\begin{equation}
+  \varepsilon_\text{classifier}(\PBzero\to\APDzero\APmuon\Pmuon) = \SI{27.53 \pm 0.18}{\percent}
+\end{equation}
+with a background rejection of \SI{99.842 \pm 0.006}{\percent} on the entire blinded $\PBzero\to\APDzero\APmuon\Pmuon$ dataset.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{PID resampling control plots}
-\end{figure}
-
-\subsection{Classification of signal and background}
-
-\begin{itemize}
-  \item Plot of classifier output for signal MC, sidebands and control signal as well
-  \item Plot of classifier output for control sweighted signal and MC
-  \item Give a KS test value for the control channel that shows that the classifier is unbiased
-\end{itemize}
-
-\begin{figure}
-  \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Plot of classifier output for signal MC, sidebands and control signal}
+  \input{store/b2dmumu_bkg_only_fit_precut.pgf}
+  \caption{
+    Fit of an exponential function to upper and lower mass sideband of the $B^0\to\APDzero\APmuon\Pmuon$ data sample before the application of the multivariate selection.
+    The blinded region has been masked in the fit.
+    This is used to find the absolute number of background events in a $\pm1\sigma$ window around the nominal $B^0$ mass for the calculation of the FOM.
+  }
+  \label{fig:bkginitial}
 \end{figure}
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Plot of classifier output for control sweighted signal and MC}
+  \input{store/fom.pgf}
+  \caption{
+    Plot of the Punzi figure of merit with $a = 3$ depending on the chosen threshold on the classifier response.
+    The value that maximises the FOM is found to be $3.905$ (marked in black).
+  }
+  \label{fig:fom}
 \end{figure}
 
-\subsection{Optimization of the Figure of Merit}
+\begin{figure}	
+	\centering
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_B_DiraAngle.pdf}
+    \input{store/variables/SIG_BKG_B_DiraAngle.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_B_ENDVERTEX_CHI2_NDOF.pdf}
+    \input{store/variables/SIG_BKG_B_ENDVERTEX_CHI2_NDOF.pgf}
+	\end{subfigure}
+  
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_B_ISOLATION_BDT_Soft.pdf}
+    \input{store/variables/SIG_BKG_B_ISOLATION_BDT_Soft.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_B_TAU.pdf}
+    \input{store/variables/SIG_BKG_B_TAU.pgf}
+	\end{subfigure}
 
-\begin{itemize}
-  \item Choose an appropriate signal window for this (objectively)
-  \item We want to optimize the classifier cut according to an objective criterium
-  \item Use punzi figure of merit (formula)
-  \item Use signal efficiency for s, don't need total number of signal candidates as it can be factorized and doesn't affect the maximum
-  \item For background efficiency, take efficiency on sidebands. For total number of bkg candidates, perform initial fit (show plot)
-  \item Show plot of FOM depending on cut point
-  \item List maximum value, explain that this was used to cut on clf output
-\end{itemize}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_Kplus_PIDK.pdf}
+    \input{store/variables/SIG_BKG_Kplus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_Kplus_PIDmu.pdf}
+    \input{store/variables/SIG_BKG_Kplus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_piminus_PIDK.pdf}
+    \input{store/variables/SIG_BKG_piminus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_piminus_PIDmu.pdf}
+    \input{store/variables/SIG_BKG_piminus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_muminus_PIDmu.pdf}
+    \input{store/variables/SIG_BKG_muminus_PIDmu.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/SIG_BKG_muplus_PIDmu.pdf}
+    \input{store/variables/SIG_BKG_muplus_PIDmu.pgf}
+	\end{subfigure}
+
+  \caption{
+    Comparison of signal distributions (blue) and background distributions (red) for all variables used in the multivariate selection.
+  }
+  \thisfloatpagestyle{empty}
+  \label{fig:features}
+\end{figure}
+
+\section{Controlling differences between data and simulation}
+\label{datamc}
+
+An important systematic uncertainty on the multivariate selection procedure is the influence of differences between simulated and real decays.
+Multivariate classifiers are able to  exploit even small differences in the distributions of the input variables, which can lead to large differences between the expected signal efficiency as determined using simulated samples and real decays.
+
+In order to investigate this effect, an sweighted $\PBzero\to\PJpsi\PKstar$ data sample (obtained in section \ref{normfit}) has been classified together with the simulated $\PBzero\to\PJpsi\PKstar$ data sample using the classifier trained in the previous section.
+As can be seen in figure \ref{fig:datamcsystematic}, the relative efficiency difference reaches around \SI{30}{\percent} at the chosen threshold of $3.905$.
+A possible way to avoid such a large discrepancy is to refrain from using input variables that are known to show data-simulation differences (in particular, this is the case for the PID variables).
+But this reduces the achievable signal efficiency, as the available data is only partially used.
+
+In the following two sections, two alternative methods to reduce data-simulation differences are described and compared.
+The first is a partial, bin-based reweighting of the dataset and a resampling of the PID variables from data.
+This is a standard approach that is also currently used for this analysis.
+The alternative is a full reweighting of the input data using a classifier that is trained on data-simulation differences.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Plot of figure of merit depending on cut point}
+  \input{store/data_mc_response.pgf}
+  \caption{
+    Ratios of classifier signal efficiencies of $\PBzero\to\PJpsi\PKstar$ simulation (blue), resampled simulation (red, see section \ref{resampling}) and fully reweighted simulation (green, see section \ref{reweighting}) to sweighted $\PBzero\to\PJpsi\PKstar$ data sample.
+  }
+  \label{fig:datamcsystematic}
 \end{figure}
 
-\section{Determination of the signal efficiency}
+%0.242537719914
+%0.312235905464
+%0.26723365517
+%0.242492112505
 
-\begin{itemize}
-  \item Get stripping efficiency from MC
-  \item Get trigger efficiency from TISTOS on control channel
-\end{itemize}
+\subsection{Resampling technique}
+\label{resampling}
 
-\chapter{Determination of expected signal branching ratio} % 15
+The standard method of dealing with data-simulation differences in LHCb analyses is to perform a bin-based reweighting based on a few of the variables in the dataset, and optionally a resampling of PID variables.
 
-\begin{itemize}
-  \item Give an overview of how this was done
-\end{itemize}
+For the bin-based reweighting, real and simulated data of a control channel is binned.
+The ratio of bin heights is a heuristic approximation to the probability ratio $p / (1 - p)$ that a given entry in the dataset belongs to a real data sample, compared to a simulated one.
+By weighting the signal simulation sample using the determined ratios of bin heights, data-simulation differences in the sample are reduced.
+
+This approach suffers from the curse of dimensionality when applying it to more than a few variables.
+
+In the case of PID variables, a resampling approach is used.
+For any final state particle, a multi-dimensional histogram of $N_\text{tracks}$, $p$ and $η$ and a PID variable can be filled from a reference decay channel.
+For a given simulated final state particle, a new PID value can be sampled from
+\begin{equation}
+  p(\text{PID}|N_\text{tracks},p,η)\:.
+\end{equation}
+
+The two variables $N_\text{tracks}$ and $N_\text{SPD hits}$ have been reweighted using the bin-based approach and all PID variables have been resampled from data.
+The resulting variables can be seen in figure \ref{fig:mcfeaturesresampled} and the classifier response on the modified dataset is given in \ref{fig:resampledresponse}.
+
+\begin{figure}
+  \centering
+  \input{store/variables/DATA_MC_clf.pgf}
+  \caption{
+    Classifier response of the resampled simulated sample.
+    The original simulated dataset (red) and data distribution (blue) are  given as a reference.
+  }
+  \label{fig:resampledresponse}
+\end{figure}
+
+\begin{figure}	
+	\centering
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_B_DiraAngle.pdf}
+    \input{store/variables/DATA_MC_B_DiraAngle.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_B_ENDVERTEX_CHI2_NDOF.pdf}
+    \input{store/variables/DATA_MC_B_ENDVERTEX_CHI2_NDOF.pgf}
+	\end{subfigure}
+  
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_B_ISOLATION_BDT_Soft.pdf}
+    \input{store/variables/DATA_MC_B_ISOLATION_BDT_Soft.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_B_TAU.pdf}
+    \input{store/variables/DATA_MC_B_TAU.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_Kplus_PIDK.pdf}
+    \input{store/variables/DATA_MC_Kplus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_Kplus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_Kplus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_piminus_PIDK.pdf}
+    \input{store/variables/DATA_MC_piminus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_piminus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_piminus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_muminus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_muminus_PIDmu.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_muplus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_muplus_PIDmu.pgf}
+	\end{subfigure}
+
+	\caption{
+    Input variables after bin-based reweighting and resampling of PID variables (orange).
+    The original simulated dataset (red) and data distribution (blue) are  given as a reference.
+  }
+  \thisfloatpagestyle{empty}
+  \label{fig:mcfeaturesresampled}
+\end{figure}
+
+\subsection{Classifier-driven reweighting}
+\label{reweighting}
+
+An alternative reweighting scheme is used as follows:
+A classifier is trained to discriminate between a real and simulated sample of a control channel (in this case $\PBzero\to\PJpsi\PKstar$).
+The classifier is then used to predict posterior class membership probabilities $p$ for the dataset that needs to be reweighted.
+The ratio $p / (1 - p)$ is used as a weight that removes data-simulation differences.
+
+In this case, the classifier has been applied to the same simulated dataset used to train it using $2$-fold cross-validation.
+The weighted input variables are given in figure \ref{fig:mcfeaturesreweighted}.
+The classifier response is given in figure \ref{fig:reweightedresponse}.
+
+A large reduction in the efficiency ratio down to a discrepancy of \SI{1}{\percent} can be observed.
+This validates the basic feasibility of the reweighting method.
+It remains to be seen how transferable the reweighting procedure is, i.e. in how far an application of the trained classifier to the signal channel $\PBzero\to\APDzero\APmuon\Pmuon$ also leads to a data-like classifier response.
+
+\begin{figure}
+  \centering
+  \input{store/variables/DATA_MC_REWEIGHT_clf.pgf}
+  \caption{
+    Classifier response on the fully reweighted simulated sample.
+    The original simulated dataset (red) and data distribution (blue) are  given as a reference.
+  }
+  \label{fig:reweightedresponse}
+\end{figure}
+
+\begin{figure}	
+	\centering
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_B_DiraAngle.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_B_DiraAngle.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_B_ENDVERTEX_CHI2_NDOF.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_B_ENDVERTEX_CHI2_NDOF.pgf}
+	\end{subfigure}
+  
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_B_ISOLATION_BDT_Soft.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_B_ISOLATION_BDT_Soft.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_B_TAU.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_B_TAU.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_Kplus_PIDK.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_Kplus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_Kplus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_Kplus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_piminus_PIDK.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_piminus_PIDK.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_piminus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_piminus_PIDmu.pgf}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_muminus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_muminus_PIDmu.pgf}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.49\textwidth}
+		\centering
+    %\includegraphics[width=\textwidth]{store/variables/DATA_MC_REWEIGHTED_muplus_PIDmu.pdf}
+    \input{store/variables/DATA_MC_REWEIGHT_muplus_PIDmu.pgf}
+	\end{subfigure}
+
+	\caption{
+    Input variables after the full, classifier-based reweighting (orange).
+    The original simulated dataset (red) and data distribution (blue) are  given as a reference.
+  }
+  \thisfloatpagestyle{empty}
+  \label{fig:mcfeaturesreweighted}
+\end{figure}
+
+
+\chapter{Determination of expected limit}
+
+In order to estimate the number of observed signal decays, signal and background contributions to the reconstructed $B^0$ and $D^0$ masses are modelled statistically (see sections \ref{signalmodel} and \ref{backgroundmodel}).
+The parameters of the statistical model, including the \emph{signal yield}, can then be inferred through a \emph{Maximum Likelihood Estimate} (see section \ref{mle}).
+The model also allows for the construction of an upper confidence limit on the signal yield.
+\emph{Nuisance parameters} are treated using the Profile Likelihood ratio method.
+By calculating the normalization constant $\alpha$ (section \ref{normalization}), a measured signal yield can be converted to a branching fraction for the signal decay.
+By repeatedly filling the blinded signal window with toy simulated candidates (using a background-only hypothesis) and calculating a limit on the signal branching fraction, an expected limit is produced.
 
 \section{Maximum Likelihood estimation}
+\label{mle}
 
 In order to extract an estimate of the number of signal events from the dataset, a \gls{MLE} is performed.
 The \gls{MLE} is a method to determine the parameters $θ$ of a probability distribution $p(x | θ)$, given the data $x$.
 It is given by
 \begin{equation}
-  θ^* = \mathrm{argmax}\ p(θ | x)
+  θ^* = \mathrm{argmax}\ \mathcal{L}(θ | x)
   \label{eq:mle}
 \end{equation}
-where $p(θ | x)$ is the \textit{Likelihood}, which can be obtained by fixing the data $x$ in the probability distribution $p(x | θ)$ and varying the parameters $θ$.
+where $\mathcal{L}(θ | x)$ is the \textit{Likelihood}, which can be obtained by fixing the data $x$ in the probability distribution $p(x | θ)$ and varying the parameters $θ$.
 
 If we are dealing with $N$ identically distributed and uncorrelated events $\vec{x}$, we can express the Likelihood $\mathcal{L}$ as
 \begin{equation}
@@ -208,25 +781,24 @@ If we are dealing with $N$ identically distributed and uncorrelated events $\vec
 \end{equation}
 
 In high energy physics, statistical models often have to discriminate between different categories of events (\eg \textit{signal} or \textit{background}).
-This can be realized as a \textit{Mixture Model}
-\begin{equation}
+This can be realized as a \textit{mixture model} \begin{equation}
   \mathcal{L}(θ, \vec{f} | \vec{x}) = \prod_i^N \sum_j^K f_j p_j(x_i | θ)\:,
 \end{equation}
-where $K$ is the number of categories and $f_j$ is the mixture weight of the $j$th category with
+where $K$ is the number of categories and $f_j$ is the weight of the $j$th category with
 \begin{equation}
   \sum_j f_j = 1\:.
 \end{equation}
 The events originating from mixture category $j$ are distributed according to $p_j(x | θ)$.
 
 From this, estimates $f_j^*$ for the mixture weights can be inferred via \eqref{eq:mle}.
-But in high energy physics, we are rarely interested in the mixture weights, and more often in the total number of events in a certain category, \eg the number of signal events.
-Such an estimate can be obtained through
+In this case, we are not directly interested in estimating the $f_j^*$ , but rather in the number of events in a certain category $N_j$, \eg the number of signal events.
+Such an estimate $N^*_j$ can in principle be obtained through
 \begin{equation}
-  N_j = f_j N_\text{total}\:.
+  N^*_j = f^*_j N\:,
 \end{equation}
-To determine the uncertainty of our estimate $N_j$, the uncertainties of $f_j$ (determined from the \gls{MLE}) and of $N_\text{total}$ have to be propagated, where we have to take into account that $N_\text{total}$ is the result of a Poisson counting experiment.
+where $N$ has to be treated as the result of a Poisson experiment.
 
-This manual step can be avoided by modeling the Poissonian fluctuation directly as part of the Likelihood:
+The Poissonian fluctuation of $N_\text{total}$ can also be directly included in the model through
 \begin{equation}
   \mathcal{L}(θ, \vec{f}, n | \vec{x}, N) = \frac{n^N\mathrm{e}^{-n}}{N!}  \prod_i^N \sum_j^K f_j p_j(x_i | θ)\:,
 \end{equation}
@@ -238,89 +810,368 @@ By performing the variable transformation $n f_j \to N_j$ and neglecting the con
 \end{equation}
 This model, which is referred to as the \textit{Extended Likelihood}\cite{Lyons1986}, allows for a direct estimate of $N_j$.
 
-\begin{itemize}
-  \item Mention RooFit
-\end{itemize}
-
-\section{The Profile Likelihood Ratio}
-
-\begin{itemize}
-  \item We want to get a limit, need PLR
-  \item Explain Wilke's theorem
-  \item How do we go about calculating an expected limit? $\rightarrow$ lots of toys
-\end{itemize}
-
 \section{Signal model}
+\label{signalmodel}
+
+The signal model consists of a two-dimensional probability distribution over $m(\PKplus\Ppiminus\APmuon\Pmuon)$ (corresponding to the \PBzero mass, referred to as $m_B$) and $m(\PKplus\Ppiminus)$ (corresponding to the \APDzero mass, referred to as $m_D$).
+Describing the \APDzero mass in addition to the \PBzero mass allows one to separate background contributions containing resonant $\PKplus\Ppiminus$ pairs (peaking in the \APDzero mass) and non-resonant $\PKplus\Ppiminus$ pairs (flat in the \APDzero mass), both of which exist as part of the combinatorial background.
+
+For both dimensions, a \emph{Double Gaussian} model
+\begin{equation}
+  p(x|\mu,\sigma_1,\sigma_2 f) = f\,\mathup{Normal}(x|\mu,\sigma_1) + (1-f) \mathup{Normal}(x|\mu, \sigma_2)
+\end{equation}
+is used.
+Here, the normal distribution is defined by
+\begin{equation}
+  \mathup{Normal}(x|\mu,\sigma) = \frac{1}{\sigma \sqrt{2\pi}} \mathup{exp}\left(\frac{-(x-\mu)^2}{2\sigma^2}\right)\:.
+\end{equation}
+The use of two normal distributions with different widths accomodates for the fact that the resolution of the reconstructed mass differs on a per-event basis.
+
+The total model for both dimensions is obtained as
+\begin{equation}
+  p(m_B, m_D) = p(m_B) \times p(m_D)\:.
+\end{equation}
+
+Given the low expected signal yield in the data sample, the parameters of the signal model cannot be reliably determined from data and are thus estimated from a fit to the simulated $\PBzero\to\APDzero\APmuon\Pmuon$ data sample.
+Plots of the fitted model in both dimensions are given in figure \ref{fig:mcfitb}.
+The estimated parameters are listed in table \ref{tab:mcfit}.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Fit on signal MC}
+  \begin{subfigure}[t]{0.49\textwidth}
+    \input{store/b2dmumu_sig_only_fit.pgf}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.49\textwidth}
+    \input{store/b2dmumu_sig_only_fit_d.pgf}
+  \end{subfigure}
+  \caption{
+    Fit to the reconstructed \PBzero (left) and \APDzero (right) masses of simulated $B^0\to\APDzero\APmuon\Pmuon$ decays.
+    The two sub-components of the model are shown as blue and green dashed lines, while the total signal model is shown as a solid red line.
+  }
+  \label{fig:mcfitb}
 \end{figure}
 
-\begin{itemize}
-  \item Double Gaussian
-  \item Constrain this from simulation
-\end{itemize}
+\begin{table}
+  \centering
+  \caption{MC fit results}
+  \begin{tabular}{l l S[table-format=4.2,table-figures-uncertainty=1]}
+    \toprule
+    Dim. & Parameter & {Estimate} \\
+    \midrule
+    $B^0$ & $f$ & 0.37 \pm 0.05 \\
+    & $\mu$ & 5280.8 \pm 0.07 \\
+    & $\sigma_1$ & 21.3 \pm 0.7 \\
+    & $\sigma_2$ & 13.0 \pm 0.3 \\
+    \midrule
+    $\overline{D}^0$ & $f$ & 0.61 \pm 0.04 \\
+    & $\mu$ & 1865.3 \pm 0.03 \\
+    & $\sigma_1$ & 5.88 \pm 0.13 \\
+    & $\sigma_2$ & 10.91 \pm 0.35 \\
+    \bottomrule
+    % TODO fix number of figures
+  \end{tabular}
+  \label{tab:mcfit}
+\end{table}
 
 \section{Background models}
+\label{backgroundmodel}
 
-\begin{itemize}
-  \item Exponential, one resonant in $D$, one not
-\end{itemize}
+The background model takes into account the presence of combinatorial backgrounds with resonant and non-resonant behaviour in the reconstructed $\overline{D}^0$ mass.
+
+The \emph{flat} (non-resonant) component is defined as a product of two exponential distributions
+\begin{equation}
+  p_\text{flat}(m_B,m_D|λ_B,λ_D) = \mathup{Exp}(m_B|λ_B) \times \mathup{Exp}(m_D|λ_D)\:.
+\end{equation}
+Here, the $\mathup{Exp}$ distribution is defined by
+\begin{equation}
+  \mathup{Exp}(x | λ) = \frac{\mathrm{exp}(-λx)}{\int_\text{mass range} \mathup{exp}(-λx) dx}\:.
+\end{equation}
+
+The \emph{peaking} (resonant) component is represented by an exponential function in the $m_B$ dimension and a normal function in the $m_D$ dimension:
+\begin{equation}
+  \begin{split}
+    p_\text{peaking}(m_B,m_D|λ_B,\mu_D,\sigma_D) =  \\ \mathup{Exp}(m_B|λ_B) \times\mathup{Normal}(m_D|\mu_D,\sigma_D)\:.
+  \end{split}
+\end{equation}
+
+The two components are added using weights $f$ and $(1-f)$ to obtain the total background model.
+A fit to the left and right sidebands of the $\PBzero\to\APDzero\APmuon\Pmuon$ distribution is carried out (see figure \ref{fig:bkgfitb}).
+The blinded signal region is excluded from the fit by correcting the likelihood by the value of the integral of the blinded region.
+The resulting parameter estimates are given in table \ref{tab:bkgfit}.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Fit to sidebands}
+  \begin{subfigure}[t]{0.8\textwidth}
+    \centering
+    \input{store/b2dmumu_bkg_only_fit.pgf}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.8\textwidth}
+    \centering
+    \input{store/b2dmumu_bkg_only_fit_d.pgf}
+  \end{subfigure}
+  \caption{
+    Fit to the background distribution in the $\PBzero\to\APDzero\APmuon\Pmuon$ dataset.
+    Both the reconstructed \PBzero mass (top) and reconstructed \APDzero mass (bottom) are described by the model.
+    The total background model (red, solid) is plotted together with the flat (red, dashed) and peaking (blue, dashed) components.
+  }
+  \label{fig:bkgfitb}
 \end{figure}
 
-\section{Validation of fit model}
+\begin{table}
+  \centering
+  \caption{
+    Estimated parameters of the background model from a fit to the lower and upper mass sidebands of the $\PBzero\to\APDzero\APmuon\Pmuon$ dataset.
+  }
+  \begin{tabular}{l l S[table-format=4.4,table-figures-uncertainty=1]}
+    \toprule
+    Dim. & Parameter & {Estimate} \\
+    \midrule
+    $B^0$ & $λ_\text{flat}$ & 0.0030 \pm 0.0004 \\
+          & $λ_\text{peaking}$ & 0.0039 \pm 0.0005 \\
+    \midrule
+    $\overline{D}^0$ & $λ_\text{flat}$ & 0.0008 \pm 0.0027 \\
+                     & $\mu_\text{peaking}$ & 1867 \pm 1 \\
+                     & $\sigma_\text{peaking}$ & 9 \pm 1 \\
+    \midrule
+    shared & $f_\text{flat/peaking}$ & 0.42 \pm 0.05 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:bkgfit}
+\end{table}
 
-\begin{itemize}
-  \item Maybe generate toys and look at some pulls
-\end{itemize}
+\section{Normalization decay}
+\label{normfit}
 
-\section{Normalization channel}
+The normalization channel $B^0\to\PJpsi\PKstar$ is also analyzed statistically.
+This is needed to extract the normalization yield and also to obtain a pure data sample of the normalization decay for studying systematic uncertainties of the analysis.
+The pure normalization sample is obtained by applying the sPlot method \cite{SPlot} to the fitted mass distribution.
+This is used to obtain weights (called \emph{sweights}) that are used to project out the normalization distribution in other variables.
+
+In contrast to the model for the signal decay channel, the model for the normalization decay only makes use of the reconstructed $B^0$ mass $m(\PKplus\Ppiminus\APmuon\Pmuon)$.
+A version of the reconstructed $B^0$ mass is used in which the dimuon mass has been constrained to the nominal \PJpsi mass during the decay tree fit.
+This improves the mass resolution, which allows one to avoid describing the $B^0_s\to\PJpsi\PKstar$ background (to the right of the signal peak) and partially reconstructed backgrounds (left of the peak).
+
+The signal model consists of a sum of two \emph{Crystal Ball} (CB) functions\cite{CrystalBall}.
+The Crystal Ball function is a modified normal distribution (with parameters $\mu$ and $\sigma$) that changes into a power law at a switchpoint $\alpha$.
+The power law is parameterized using the parameter $n$.
+One of the two CB functions is used with a left-sided tail ($\alpha > 0$) in order to describe the radiative tail of the $\PBzero\to\PJpsi\PKstar$ mass distribution, while the other CB function is right-sided ($\alpha < 0$) in order to take into account the effect of the event-dependent mass resolution more precisely.
+
+A fit of the signal model to simulated $\PBzero\to\PJpsi\PKstar$ decays after preselection is conducted in order to fix the tail parameters of the model, as well as the fraction between the two CB functions.
+See figure \ref{fig:normmcfit} for a plot of the fit.
+The determined parameters are given in table \ref{tab:normmcfit}
+
+The background model consists of a single exponential function.
+An Extended Likelihood fit to the normalization data sample has been performed (see figure \ref{fig:normdatafit}).
+Here, the parameters $n$ and $\alpha$ of the two CB functions, as well as the fraction between the two components is fixed using the values in table \ref{tab:normmcfit}.
+The resulting parameters, which include the normalization yield needed for calculating the normalization constant, are given in table \ref{tab:normdatafit}.
 
 \begin{figure}
   \centering
-  \missingfigure[figwidth=\textwidth]{}
-  \caption{Fit in normalization channel}
+  \input{store/b2kstmumu_mc_fit.pgf}
+  \caption{
+    Fit of signal normalization model to simulated $\PBzero\to\PJpsi\PKstar$ candidates.
+    The total signal model (red, solid) is shown together with the left-sided (blue, dashed) and right-sided (green, dashed) Crystal Ball components.
+  }
+  \label{fig:normmcfit}
 \end{figure}
 
-\begin{itemize}
-  \item This is $B^0\to J/ψK^{*0}$
-  \item Why do we want a normalization channel? $\rightarrow$ to reduce systematic uncertainties
-  \item Choose similar trigger/stripping setup
-  \item Show fits and give number of expected signal events
-\end{itemize}
+\begin{table}
+  \centering
+  \caption{
+    Parameters of the signal model estimated from simulated decays.
+  }
+  \begin{tabular}{l S[table-format=4.3,table-figures-uncertainty=1]}
+    \toprule
+    Parameter & {Estimate} \\
+    \midrule
+    $\mu$                  & 5280.1 \pm 0.013 \\
+    $\sigma_\text{left}$   & 5.77   \pm 0.05 \\
+    $n_\text{left}$        & 1.36   \pm 0.05 \\
+    $\alpha_\text{left}$   & 2.19   \pm 0.05 \\
+    $\sigma_\text{right}$  & 9.41   \pm 0.16 \\
+    $n_\text{right}$       & 3.30   \pm 0.25 \\
+    $\alpha_\text{right}$  & -1.97  \pm 0.04 \\
+    $f_\text{left/right}$  & 0.578  \pm 0.019 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:normmcfit}
+\end{table}
+
+\begin{figure}
+  \centering
+  \input{store/b2kstmumu_data_fit.pgf}
+  \caption{
+    Fit of complete normalization model to $\PBzero\to\PJpsi\PKstar$ candidates.
+    The total model (red, solid) is shown together with the signal (blue, dashed) and background (green, dashed) components.
+  }
+  \label{fig:normdatafit}
+\end{figure}
+
+\begin{table}
+  \centering
+  \caption{
+    Parameters of the complete normalization model estimated from the normalization data sample.
+    The parameters $n$ and $\alpha$, as well as $f_\text{left/right}$ have been fixed to the values from table \ref{tab:normmcfit}.
+  }
+  \begin{tabular}{l S[table-format=6.5,table-figures-uncertainty=1]}
+    \toprule
+    Parameter & {Estimate} \\
+    \midrule
+    $\mu$                       & 5281.3\pm 0.018 \\
+    $\sigma_\text{left}$        & 6.340 \pm 0.023 \\
+    $\sigma_\text{right}$       & 11.86 \pm 0.06 \\
+    $\lambda_\text{background}$ & 0.00282 \pm 0.00016\\
+    $N_\text{signal}$           & 273100 \pm 600 \\
+    $N_\text{background}$       & 43200 \pm 400 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:normdatafit}
+\end{table}
 
 \section{Normalization constant}
+\label{normalization}
 
-\begin{itemize}
-  \item Give formula for normalization constant $α$
-  \item Calculate value of $α$
-\end{itemize}
+A possible approach to translating between a measured number $N$ of $\PBzero\to\APDzero\APmuon\Pmuon$ decays and the corresponding branching fraction $\text{BR}$ is given by
+\begin{equation}
+  N = \mathcal{L}\,\sigma_{b\overline{b}}\,2f_d\,\varepsilon_\text{total}\,\text{BR}\:.
+  \label{eq:translate}
+\end{equation}
+Here, $\mathcal{L}$ is the luminosity delivered by the accelerator, $\sigma_{b\overline{b}}$ is the $b\overline{b}$ branching fraction at a given center of mass energy, $f_B$ is the probability for a $b$ quark to hadronize into a $B^0$ meson and $\varepsilon_\text{total}$ is the total signal efficiency of all analysis steps.
 
-\section{Calculating the expected branching ratio}
+An alternative approach is to normalize the measurement to a decay channel with a known branching fraction.
+Using \eqref{eq:translate} for both the signal and normalization channels yields
+\begin{align}
+  N_\text{sig} &= X \varepsilon_\text{total} \text{BR}_\text{sig} \\
+  N_\text{norm} &= X \varepsilon_\text{total} \text{BR}_\text{norm}\:,
+\end{align}
+where $X$ includes $\mathcal{L}\,\sigma_{b\overline{b}}\,2f_d$ and can also represent systematic uncertainties that are identical for the two channels.
+By substituting $X$ and solving for $\text{BR}_\text{sig}$, the following equation for $\text{BR}_\text{sig}$ is obtained.
+\begin{equation}
+  \text{BR}_\text{sig} = \frac{\text{BR}_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}} N_\text{sig}
+\end{equation}
+This way, a reduction in the systematic uncertainties of the estimated signal branching fraction can be achieved.
 
-\begin{itemize}
-  \item How do we do this?
-  \item Put alpha as constraint into fit
-  \item Make toys, calculate limit for each
-  \item Take median, show plot
-\end{itemize}
+The factor
+\begin{equation}
+  \alpha = \frac{\text{BR}_\text{norm} \varepsilon_\text{norm}}{N_\text{norm} \varepsilon_\text{sig}}
+  \label{eq:alpha}
+\end{equation}
+is referred to as the \emph{normalization constant}.
+It translates the measured number of signal decays to the measured branching fraction.
 
-\chapter{Systematic uncertainties} % 3
+A branching fraction of \num{1.32\pm0.06 e-3} (from previous measurements, \cite{PDG}) is assumed for $\text{BR}_\text{norm}$.
+The efficiencies determined in chapter \ref{selection}, as well as the normalization channel yield $N_\text{norm}$ determined in section \ref{normfit} are repeated in table \ref{tab:alpha} together with the calculated normalization constant.
 
-\begin{itemize}
-  \item Which systematic uncertainties do we have?
-  \item PID resampling
-  \item Shape of signal
-  \item Trigger efficiency
-  \item Dimuon mass resolution
-\end{itemize}
+\begin{table}
+  \centering
+  \caption{Values used to calculate the normalization constant $\alpha$}
+  \begin{tabular}{l S[table-format=1.3,table-figures-exponent=1,table-sign-exponent,table-figures-uncertainty=1]}
+    \toprule
+    Parameter & {Value} \\
+    \midrule
+    $\varepsilon_\text{total,sig}$  & 2.60 \pm 0.05 e-3 \\
+    $\varepsilon_\text{total,norm}$ & 7.219 \pm 0.028 e-3 \\
+    $N_\text{norm}$                 & 2.731 \pm 0.006 e5 \\
+    $\mathup{BR}_\text{norm}$       & 1.32 \pm 0.06 e-3 \\
+    \midrule
+    $\alpha$                        & 1.34 \pm 0.07 e-8 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:alpha}
+\end{table}
 
-\chapter{Conclusion and outlook} % 1
+\section{Expected limit on the branching ratio}
+
+The signal and background models from sections \ref{signalmodel} and \ref{backgroundmodel} are combined into a single Extended Likelihood model
+\begin{equation}
+  p(m_B, m_D) = N_\text{sig} p_\text{sig}(m_B, m_D) + N_\text{bkg} p_\text{bkg}(m_B, m_D)\:.
+\end{equation}
+
+The branching fraction can be introduced as a parameter of the model by performing the substitution $N_\text{sig}\to \text{BR}_\text{sig}/\alpha$, where $\alpha$ is a new parameter representing the normalization constant.
+The parameter $\alpha$ is constrained by multiplying the likelihood with a Gaussian function centered at the estimated value $\mu_\alpha$ with width $\sigma_\alpha$ equal to the value and error determined in section \ref{normalization}.
+
+A limit on $\text{BR}_\text{sig}$ can be calculated by treating the nuisance parameters $N_\text{bkg}$ and $\alpha$ using the Profile Likelihood Ratio (PLR) method.
+In order to do this, the PLR test statistic
+\begin{equation}
+  q(μ) = -2\mathup{ln}\left(\frac{\mathcal{L}(μ,\hat{\hat{θ}})}{\mathcal{L}(\hat{μ},\hat{θ})}\right)
+\end{equation}
+is calculated.
+Here, $μ$ represents the parameters of interest, while $\theta$ represents the nuisance parameters.
+$\mathcal{L}(μ, \hat{\hat{θ}})$ corresponds to the likelihood optimized for fixed $μ$ and $\mathcal{L}(\hat{μ},\hat{θ})$ corresponds to the likelihood optimized over both $μ$ and $θ$.
+Assuming the applicability of Wilks' theorem \cite{Wilks}, this can be converted to an upper limit by treating $q(0)$ as a $\chi^2$ distributed variable and finding the value of $\text{BR}_\text{sig}$ for which the $p$-value for observing an equal or larger $q$ outcome is equal to 0.05 (for a 95\% confidence limit) or 0.1 (for a 90\% confidence limit).
+
+For this purpose, a complete dataset, including the blinded region, is necessary.
+While the dataset is blinded, it is useful to calculate an \emph{expected limit}, meaning an estimate of the limit that can be achieved under a background-only hypothesis.
+
+In order to to do this, the blinded signal region is filled with toy simulated candidates.
+An expected number of background candidates in the blinded window is estimated by integrating the background-only model over the signal window and propagating the uncertainties of the $\lambda$ parameters to the result of the integral.
+In order to generate a toy sample, a value for the background rate $n$ is sampled from $\mathup{Normal}\left(n|N_\text{integ}, \sigma(N_\text{integ})\right)$, which is then used as as the rate paramter to sample a value $N_\text{toy}$ from a Poisson distribution.
+A toy sample containing $N_\text{toy}$ candidates is then produced by restricting the background model to the blinded signal window and sampling from it.
+
+A histogram showing the resulting limits of $10^5$ toy samples is given in figure \ref{fig:expected}.
+The median of the distribution of calculated limits is
+\begin{equation}
+  \text{CL}_\text{expected}(90\%) = 6.8^{+5.1}_{-2.9}\,10^{-8}\:\,
+\end{equation}
+where the lower and upper errors enclose the central $68\%$ of calculated limits.
+
+\begin{figure}
+  \centering
+  \input{store/expected.pgf}
+  \caption{
+    Histogram showing the upper $90\%$ confidence limits on $10^5$ simulated toy samples of the $B^0\to\APDzero\APmuon\Pmuon$ dataset.
+    The median (solid) and lower and upper $16\%$ percentiles (dashed) of the distribution have been marked.
+  }
+  \label{fig:expected}
+\end{figure}
+
+\chapter{Systematic uncertainties}
+
+Apart from the uncertainty resulting from a limited size of the data sample, the analysis is affected by several systematic uncertainties resulting from the specific methods used to analyse the data.
+These have to be understood for both the signal decay channel, as well as the normalization decay channel, which directly affects the result of the analysis through the normalization constant $\alpha$.
+
+\subsubsection{Differences between real and simulated data samples}
+One systematic uncertainty is the influence of differences between simulated and real decay candidates on the estimated signal efficiencies.
+The presented preselection procedures for both the signal and normalization channels exclusively rely on mass cuts and highly efficiency PID cuts.
+These are expected to be only weakly affected by differences between data and simulation.
+Their systematic uncertainties can be analyzed by varying the cut window.
+For example, in the case of $\PBzero\to\PJpsi\PKstar$ a cut on the invariant mass of the two muons around the \PJpsi mass can be analyzed by observing the change in cut efficiency when shifting the window by the difference of the observed \PJpsi masses in data and simulation.
+The normalization yield can be increased by replacing some of the mass cuts with combined mass and PID cuts.
+In this case, systematic uncertainties on the cut efficiencies could be decreased by measuring them from data.
+
+The multivariate selection has been shown to be sensitive to differences between data and simulation (see section \ref{datamc}).
+In the case of the standard partial reweighting method with PID variables resampled from data, a $9\%$ difference in the efficiency between data and simulation has been measured in the normalization sample, which can be assumed as a systematic uncertainty of this method.
+An alternative method using a full, classifier-driven reweighting has been presented that reduces the difference to $1\%$.
+Although the data-simulation difference has been reduced significantly, it remains to be seen if applying the reweighting procedure to the simulated signal samples introduces an additional error.
+
+\subsubsection{Difference between phase space model and actual decay}
+The fact that a phase space simulated data sample has been used can lead to an uncertainty on the branching fraction, as real decay candidates are expected to be more prevalent at low values of $q^2$, given the comparably large mass of of the \PDzero meson.
+This is expected to affect the efficiency of the \PJpsi mass veto cut as well as the trigger efficiency (which varies with $q^2$).
+This can be avoided by generating a simulated sample according to a theoretical model of the decay.
+In the absence of this, the measurement could be limited to a $q^2$ range that allows 
+
+\subsubsection{Choice of mass range for normalization fit}
+The estimate of the normalization signal yield can be affected by a systematic uncertainty if it depends on the mass range included in the fit.
+This can be determined by fitting in a larger mass range, where partially reconstructed background and $B_s\to\PJpsi\PKstar$ signal have to be described as part of the fit.
+
+\chapter{Conclusion and outlook}
+
+The decay $\PBzero\to\APDzero\APmuon\APmuon$ has been analyzed using data taken by LHCb corresponding to an integrated luminosity of \SI{3}{fb^{-1}}.
+In order to minimize systematic uncertainties, a parallel measurement of the channel $\PBzero\to\PJpsi\PKstar$ has been carried out.
+After rejecting specific physical backgrounds in both the signal and normalization channels, a multivariate selection procedure has been applied to the blinded signal dataset.
+The normalization yield has been determined from a fit to the normalization decay sample.
+The distribution of combinatorial background in the signal decay has been estimated.
+Using the previous results and assuming a background-only hypothesis, the expected limit on the $\PBzero\to\APDzero\APmuon\APmuon$ branching fraction is determined to be
+\begin{equation}
+  \text{CL}_\text{expected}(90\%) = 6.8^{+5.1}_{-2.9}\,10^{-8}\:.
+\end{equation}
+
+Before the dataset can be unblinded, systematic uncertainties of the measurement must be investigated further.
+In particular, it has to be shown that the measured classifier efficiency is reliable.
+
+The yields of both the signal and normalization decays can be increased by exchanging the currently used mass veto cuts with combined mass and PID cuts.
+
+It would also be possible to investigate other $B\to D\mu^+\mu^-$ decays.
+For example, the decay $\PBzero\to\PJpsi(\APmuon\Pmuon)\APDzero$ can be analyzed using the same dataset.
+In this case, the veto cut on the \PJpsi mass has to be inverted.
 

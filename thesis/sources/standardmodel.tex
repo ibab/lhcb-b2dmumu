@@ -1,0 +1,226 @@
+%!TEX root = ../TiKzPics.tex
+% Author: Julian Wishahi
+% E-Mail: julian.wishahi@tu-dortmund.de
+% Date: June 9th 2014
+
+\definecolor{phdorangeA}{HTML}{FC5716}
+\definecolor{phdorangeB}{HTML}{BE4312}
+\definecolor{phdorangeC}{HTML}{85310E}
+\definecolor{phdorangeD}{HTML}{261107}
+\definecolor{phdblueD}{HTML}{082026}
+\definecolor{phdblueC}{HTML}{0E4253}
+\definecolor{phdblueB}{HTML}{1986AA}
+\definecolor{phdblueA}{HTML}{30A6B2}
+\definecolor{phdwhiteA}{HTML}{F5EADA}
+\definecolor{phdgreenA}{HTML}{91DE23}
+\definecolor{phdgreenB}{HTML}{6DAA0F}
+\definecolor{phdgreenC}{HTML}{38550A}
+\definecolor{phdgreenD}{HTML}{1B2706}
+\definecolor{phdvioletD}{HTML}{240026}
+\definecolor{phdvioletC}{HTML}{4E0053}
+\definecolor{phdvioletB}{HTML}{7F0087}
+\definecolor{phdvioletA}{HTML}{B400C0}
+\definecolor{leptoncolor}{HTML}{6495ED}
+\definecolor{quarkcolor}{HTML}{12DF53}
+\definecolor{gaugecolor}{HTML}{FFA15C}
+\definecolor{higgscolor}{HTML}{000000}
+
+
+
+\newcommand{\CommonParticleTextFormat}[5]
+{\begin{minipage}[t][10ex][t]{5.5em}
+    \centering
+    \vspace{-0.6ex}
+    \begin{minipage}[t][1.8ex][b]{5.5em}
+      \centering
+      {{#1}}
+    \end{minipage}%
+    \linebreak\vspace{-0.5ex}
+    \begin{minipage}[t][3.5ex][t]{0.8em}
+    \raggedleft
+    \vspace{0.5ex}
+    {{#2}}
+    \linebreak
+    {{#3}}
+    \end{minipage}%
+    \begin{minipage}[t][3.5ex][t]{3.4em}
+    \centering
+    \vspace{0.5ex}
+    {{#4}}
+    \end{minipage}%
+    \begin{minipage}[t][3.5ex][t]{1.0em}
+    \phantom{\sfrac{1}{2}}
+    \end{minipage}%
+    \\[1.5ex]
+    \begin{minipage}[t][2.5ex][b]{5.5em}
+      \centering
+      {{#5}}  
+    \end{minipage}
+  \end{minipage}%
+}
+
+% \newcommand{\CommonParticleTextFormat}[5]{%
+%   \begin{minipage}{2.9cm}
+%     \centering
+%     \begin{tabular}{R{0.4cm}C{2cm}L{0.4cm}}
+%       \multicolumn{3}{c}{{#1}}       \\
+%       {#2} & \multirow{3}{*}{{#4}} & \\
+%       {#3} &                       & \\
+%            &                       & \\
+%       %\multicolumn{3}{c}{{#5}}       \\
+%     \end{tabular}
+%   \end{minipage}
+% }
+
+\newcommand\MeVcc{\si{MeV}}
+\newcommand\eVcc{\si{eV}}
+\newcommand\GeVcc{\si{GeV}}
+
+\newcommand{\QuarkTextFormat}[5]
+{
+  \CommonParticleTextFormat{\footnotesize #1}{\footnotesize #2}{\footnotesize #3}{\Huge {#4}}{\footnotesize #5}
+}
+
+\newcommand{\LeptonTextFormat}[5]
+{
+  \CommonParticleTextFormat{\footnotesize #1}{\footnotesize #2}{\footnotesize #3}{\Huge {#4}}{\footnotesize #5}
+}
+
+\newcommand{\BosonTextFormat}[5]
+{
+  \CommonParticleTextFormat{\footnotesize #1}{\footnotesize #2}{\footnotesize #3}{\Huge {#4}}{\footnotesize #5}
+}
+
+
+\begin{tikzpicture}[scale=0.65, transform shape]
+%% Fill Color Styles
+  \tikzstyle{ParticleFill}    = [fill=white]
+  \tikzstyle{QuarkFill}       = [fill=white]
+  \tikzstyle{LeptonFill}      = [fill=white]
+  \tikzstyle{GluonFill}       = [fill=white]
+  \tikzstyle{PhotonFill}      = [fill=white]
+  \tikzstyle{WeakFill}        = [fill=white]
+  \tikzstyle{HiggsFill}       = [fill=white]
+
+%% Element Styles
+  % \tikzstyle{Particle}  = [ParticleFill, ultra thick, rounded corners,
+  %                          text centered,
+  %                          minimum width=3cm, minimum height=3cm, 
+  %                          node distance=3.3cm, inner sep=0]
+  \tikzstyle{Particle}  = [ParticleFill, ultra thick,
+                           text centered,
+                           minimum width=6em, minimum height=6em, 
+                           node distance=6.7em, inner sep=0]
+  \tikzstyle{Quark}     = [draw=quarkcolor, Particle, QuarkFill]
+  \tikzstyle{Lepton}    = [draw=leptoncolor, Particle, LeptonFill]
+  \tikzstyle{Gluon}     = [draw=gaugecolor, Particle, GluonFill]  
+  \tikzstyle{Photon}    = [draw=gaugecolor, Particle, PhotonFill]  
+  \tikzstyle{Weak}      = [draw=gaugecolor, Particle, WeakFill]
+  \tikzstyle{Higgs}     = [draw=higgscolor, Particle, HiggsFill]
+
+  \tikzstyle{GenerationLabel} = [font={\LARGE}, minimum width=2em, node distance=4.2em]
+  \tikzstyle{PeriodLabel}     = [font={\LARGE}, node distance=2.0cm]
+  \tikzstyle{TitleLabel}      = [font={\Huge\bfseries}]
+
+
+  % 1. Generation
+  \node[name=upquark, Quark]       
+       {\QuarkTextFormat{$\SI{2.3}{\MeVcc}$}
+                        {$+\sfrac{2}{3}$}{$\sfrac{1}{2}$}
+                        {$u$}{up}};
+  \node[name=downquark, below of=upquark, Quark]     
+       {\QuarkTextFormat{$\SI{4.8}{\MeVcc}$}
+                        {$-\sfrac{1}{3}$}{$\sfrac{1}{2}$}
+                        {$d$}{down}};
+  \node[name=electron, below of=downquark, Lepton, yshift=-0.5em]
+       {\LeptonTextFormat{$\SI{0.511}{\MeVcc}$}
+                         {$-1$}{$\sfrac{1}{2}$}
+                         {$e$}{electron}};
+  \node[name=electronneutrino, below of=electron, Lepton]  
+       {\LeptonTextFormat{$<\SI{2}{\eVcc}$}
+                         {$0$}{$\sfrac{1}{2}$}
+                         {$\nu_{e}$}{$e$ neutrino}};
+
+  % 2. Generation
+  \node[name=charmquark, right of=upquark, Quark]       
+       {\QuarkTextFormat{$\SI{1275}{\MeVcc}$}
+                        {$+\sfrac{2}{3}$}{$\sfrac{1}{2}$}
+                        {$c$}{charm}};
+  \node[name=strangequark, below of=charmquark, Quark]     
+       {\QuarkTextFormat{$\SI{95}{\MeVcc}$}
+                        {$-\sfrac{1}{3}$}{$\sfrac{1}{2}$}
+                        {$s$}{strange}};
+  \node[name=muon, below of=strangequark, Lepton, yshift=-0.5em]
+       {\LeptonTextFormat{$\SI{105.7}{\MeVcc}$}
+                         {$-1$}{$\sfrac{1}{2}$}
+                         {$\mu$}{muon}};
+  \node[name=muononneutrino, below of=muon, Lepton]  
+       {\LeptonTextFormat{$<\SI{0.19}{\MeVcc}$}
+                         {$0$}{$\sfrac{1}{2}$}
+                         {$\nu_{\mu}$}{$\mu$ neutrino}};
+
+  % 3. Generation
+  \node[name=topquark, right of=charmquark, Quark]       
+       {\QuarkTextFormat{$\SI{173.5}{\GeVcc}$}
+                        {$+\sfrac{2}{3}$}{$\sfrac{1}{2}$}
+                        {$t$}{top}};
+  \node[name=bottomquark, below of=topquark, Quark]     
+       {\QuarkTextFormat{$\SI{4650}{\MeVcc}$}
+                        {$-\sfrac{1}{3}$}{$\sfrac{1}{2}$}
+                        {$b$}{bottom}};
+  \node[name=tau, below of=bottomquark, Lepton, yshift=-0.5em]
+       {\LeptonTextFormat{$\SI{1777}{\MeVcc}$}
+                         {$-1$}{$\sfrac{1}{2}$}
+                         {$\tau$}{tau}};
+  \node[name=tauneutrino, below of=tau, Lepton]  
+       {\LeptonTextFormat{$<\SI{18.2}{\MeVcc}$}
+                         {$0$}{$\sfrac{1}{2}$}
+                         {$\nu_{\tau}$}{$\tau$ neutrino}};
+
+  % Gauge Bosons
+  \node[name=gluon, right of=topquark, Gluon, xshift=+0.7em]       
+       {\BosonTextFormat{$0$}
+                        {$0$}{$1$}
+                        {$g$}{gluon}};
+  \node[name=photon, below of=gluon, Photon]     
+       {\BosonTextFormat{$0$}
+                        {$0$}{$1$}
+                        {$\gamma$}{photon}};
+  \node[name=Zboson, below of=photon, Weak, yshift=-0.5em]
+       {\BosonTextFormat{$\SI{91.2}{\GeVcc}$}
+                        {$0$}{$1$}
+                        {$Z$}{$Z$ boson}};
+  \node[name=Wboson, below of=Zboson, Weak]  
+       {\BosonTextFormat{$\SI{80.4}{\GeVcc}$}
+                        {$\pm 1$}{$1$}
+                        {$W$}{$W$ boson}};
+
+  % Higgs
+  \node[name=Higgs, right of=gluon, Higgs, xshift=+0.7em]       
+       {\BosonTextFormat{$\SI{126}{\GeVcc}$}
+                        {$0$}{$0$}
+                        {$H$}{Higgs boson}};
+
+  % Group LABELS
+  \node[name=Family1, above of=upquark,     GenerationLabel] {1.};
+  \node[name=Family2, above of=charmquark,  GenerationLabel] {2.};
+  \node[name=Family2, above of=topquark,    GenerationLabel] {3.};
+
+  \node[name=Leptons, left of=electronneutrino, node distance=1.00cm, rotate=90, text=leptoncolor, PeriodLabel, text width=6em]
+       {leptons};
+  \node[name=Quarks,  left of=downquark, node distance=1.00cm, rotate=90, text=quarkcolor, PeriodLabel, text width=6em] 
+       {quarks};
+
+  \coordinate (Middle) at ($(Wboson)!0.5!(Zboson)$);
+
+  \node[name=Bosons,  right of=Middle, rotate=90, text=gaugecolor, PeriodLabel, 
+        minimum width=12.7em, node distance=2cm, text width=12em] 
+       {gauge bosons};
+
+  % Description
+    % Description
+  \node[font=\footnotesize,color=black!40,align=left,minimum width=6em,text width=5em,inner sep=0] at (-1.3,+0.79) {mass};
+  \node[font=\footnotesize,color=black!40,align=left,minimum width=6em,text width=5em,inner sep=0] at (-1.3,+0.16) {charge};
+  \node[font=\footnotesize,color=black!40,align=left,minimum width=6em,text width=5em,inner sep=0] at (-1.3,-0.31) {spin};
+
+\end{tikzpicture}

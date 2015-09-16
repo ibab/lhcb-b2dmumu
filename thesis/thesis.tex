@@ -1,10 +1,15 @@
 
 %\RequirePackage{fixltx2e}
 \documentclass[
+  a4paper,
   %tucolor,
   BCOR=12mm,
   %parskip=half,
   open=any,
+  headinclude=false,
+  footinclude=false,
+  %DIV=calc,
+  DIV=9,
 ]{tudothesis}
 
 \usepackage{expl3}
@@ -21,10 +26,11 @@
 
 \usepackage{fontspec}
 \defaultfontfeatures{Ligatures=TeX}
-%\setmainfont{Linux Libertine O}
-%\setsansfont{Linux Biolinum O}
 \setmainfont{Minion Pro}
 \setsansfont{Myriad Pro}
+%\setmainfont{Linux Libertine O}
+%\setsansfont{Linux Biolinum O}
+%\setmainfont{TeX Gyre Pagella}
 
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
@@ -32,7 +38,8 @@
 \setotherlanguages{german}
 
 \usepackage[autostyle]{csquotes}
-\usepackage{microtype}
+%\usepackage{microtype}
+\usepackage{floatpag}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -46,6 +53,10 @@
   partial=upright,
 ]{unicode-math}
 \setmathfont{Latin Modern Math}
+%\setmathfont{Tex Gyre Pagella Math}
+
+\everymath\expandafter{\the \everymath \luatexcatcodetable\CatcodeTableLaTeX}
+\everydisplay\expandafter{\the\everydisplay \luatexcatcodetable\CatcodeTableLaTeX}
 
 \usepackage{xfrac}
 
@@ -73,6 +84,11 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows}
 \usetikzlibrary{arrows.meta}
+\usetikzlibrary{calc}
+
+\newcommand{\resizepgf}[2][\textwidth]{
+\resizebox{#1}{!}{\includepgf{#2}}
+}
 
 \usepackage[version=3]{mhchem}
 
@@ -114,7 +130,7 @@
 
 %\DeclareRobustCommand{\decay}{\texorpdfstring{\HepProcess{\PBzero\to\APDzero\APmuon\Pmuon}}{B⁰ → D⁰μ⁺μ⁻}}
 
-\DeclareRobustCommand{\mytitle}{Search for the Rare Decay\\ \decay \\ with the LHCb experiment}
+\DeclareRobustCommand{\mytitle}{Search for \decay \\ with the LHCb experiment}
 
 \author{\huge Igor Babuschkin}
 \title{\mytitle}
@@ -125,7 +141,9 @@
 \thesisclass{Master of Science}
 \submissiondate{31. September 2015}
 \firstcorrector{Prof.~Dr.~Spaan}
-\secondcorrector{Prof.~Dr.~Kröninger}
+\secondcorrector{Prof.~Dr.~?}
+\usepackage{lineno}
+\linenumbers
 
 \titlehead{\centering\includegraphics[height=2.1cm,trim=0 0 3.6in 0,clip]{logos/tu-logo.pdf}}
 
